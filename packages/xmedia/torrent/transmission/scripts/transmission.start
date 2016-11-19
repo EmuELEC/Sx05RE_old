@@ -1,0 +1,45 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+. /etc/profile
+. /storage/.cache/services/transmission.conf
+
+LOG_FILE="/var/log/transmission.log"
+
+[ -z "$TRANSMISSION_IP" ] && TRANSMISSION_IP="*.*.*.*"
+[ -z "$TRANSMISSION_LOG" ] && TRANSMISSION_LOG="Info"
+[ -z "$TRANSMISSION_DL_DIR" ] && TRANSMISSION_DL_DIR="/storage/downloads/"
+
+if [ "$TRANSMISSION_LOG" == "Error" ]; then
+  TRANSMISSION_LOG_LEVEL="--log-error"
+elif [ "$TRANSMISSION_LOG" == "Info" ]; then
+  TRANSMISSION_LOG_LEVEL="--log-info"
+else
+  TRANSMISSION_LOG_LEVEL="--log-debug"
+fi
+
+export TRANSMISSION_WEB_HOME="/usr/share/transmission/web"
+
+mkdir -p "$TRANSMISSION_DL_DIR"
+mkdir -p "$TRANSMISSION_DL_DIR/incoming"
+mkdir -p "$TRANSMISSION_DL_DIR/watch"
+
+TRANSMISSION_ARG="$TRANSMISSION_ARG -w \"$TRANSMISSION_DL_DIR\""
+TRANSMISSION_ARG="$TRANSMISSION_ARG --incomplete-dir \"$TRANSMISSION_DL_DIR/incoming\""
+TRANSMISSION_ARG="$TRANSMISSION_ARG --watch-dir \"$TRANSMISSION_DL_DIR/watch\""
+TRANSMISSION_ARG="$TRANSMISSION_ARG -e $LOG_FILE $TRANSMISSION_LOG_LEVEL"
+TRANSMISSION_ARG="$TRANSMISSION_ARG -g /storage/.cache/transmission"
+TRANSMISSION_ARG="$TRANSMISSION_ARG -a '$TRANSMISSION_IP'"
+
+if [ "$TRANSMISSION_AUTH" == "1" ]; then
+  TRANSMISSION_ARG="$TRANSMISSION_ARG -t"
+  TRANSMISSION_ARG="$TRANSMISSION_ARG -u $TRANSMISSION_USER"
+  TRANSMISSION_ARG="$TRANSMISSION_ARG -v $TRANSMISSION_PWD"
+else
+  TRANSMISSION_ARG="$TRANSMISSION_ARG -T"
+fi
+
+eval EVENT_NOEPOLL=1 exec transmission-daemon -f $TRANSMISSION_ARG

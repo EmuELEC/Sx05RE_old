@@ -1,0 +1,11 @@
+diff -Naurp vdr-2.2.0/Makefile vdr-2.2.0-patch/Makefile
+--- vdr-2.2.0/Makefile	2015-06-19 16:35:11.000000000 +0300
++++ vdr-2.2.0-patch/Makefile	2015-06-19 15:44:35.000000000 +0300
+@@ -278,6 +278,7 @@ install-dirs:
+ 	@mkdir -p $(DESTDIR)$(RESDIR)
+ 
+ install-conf:
++	@mkdir -p $(DESTDIR)$(CONFDIR)
+ 	@cp -pn *.conf $(DESTDIR)$(CONFDIR)
+ 
+ # Documentation:

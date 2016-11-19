@@ -1,0 +1,12 @@
+diff -Naurp vdr-live-0.3.0/pages/pageelems.ecpp vdr-live-0.3.0-patch/pages/pageelems.ecpp
+--- vdr-live-0.3.0/pages/pageelems.ecpp	2013-04-04 23:16:40.000000000 +0300
++++ vdr-live-0.3.0-patch/pages/pageelems.ecpp	2013-08-07 10:25:15.000000000 +0300
+@@ -104,7 +104,7 @@ int update_status(1);
+ <%args>
+ 	string title;
+ </%args>
+-<%cpp> if (LiveSetup().GetShowIMDb()) { </%cpp> <a href="http://www.imdb.com/find?s=all&q=<$ StringUrlEncode(title) $>" target="_blank"><img src="<$ LiveSetup().GetThemedLink("img", "imdb.png") $>" alt="" <& tooltip.hint text=(tr("Find more at the Internet Movie Database.")) &>></img></a> <%cpp> } </%cpp>
++<%cpp> if (LiveSetup().GetShowIMDb()) { </%cpp> <a href="http://www.kinopoisk.ru/index.php?&kp_query=<$ StringUrlEncode(title) $>" target="_blank"><img src="<$ LiveSetup().GetThemedLink("img", "imdb.png") $>" alt="" <& tooltip.hint text=(tr("Find more at the Internet Movie Database.")) &>></img></a> <%cpp> } </%cpp>
+ </%def>
+ 
+ <# ---------------------------------------------------------------------- #>

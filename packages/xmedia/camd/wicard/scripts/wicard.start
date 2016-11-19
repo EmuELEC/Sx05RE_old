@@ -1,0 +1,33 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+. /etc/profile
+
+SERVICE_DIR="/storage/.cache/services"
+WICARD_DIR="/storage/.config/wicard"
+WICARD_FILE="$WICARD_DIR/wicardd.conf"
+WICARD_KEYS="$WICARD_DIR/keys.bin"
+WICARD_GETKEY="$WICARD_DIR/getkey.conf"
+WICARD_LOG="/var/log/wicard.log"
+WICARD_LOG_OLD="/var/log/wicard.log.old"
+WICARD_BIN="/usr/bin/wicardd"
+
+[ -x "$WICARD_DIR/wicardd" ] && WICARD_BIN="$WICARD_DIR/wicardd"
+[ -f "$SERVICE_DIR/wicard.conf" ] && . $SERVICE_DIR/wicard.conf
+[ -f "$WICARD_GETKEY" ] && . $WICARD_GETKEY
+
+  if [ "$UPLOAD_KEYS" == "yes" ] && [ -n "$URL_KEYS" ]; then
+      [ ! -e "$WICARD_KEYS" ] && wget -q -T 3 -O $WICARD_KEYS $URL_KEYS
+  fi
+
+WICARD_ARGS="-c $WICARD_FILE"
+
+  if [ "$WICARD_DEBUG" == "1" ]; then
+      [ -f "$WICARD_LOG" ] && mv -f $WICARD_LOG $WICARD_LOG_OLD
+      WICARD_ARGS="$WICARD_ARGS -l $WICARD_LOG"
+  fi
+
+exec $WICARD_BIN $WICARD_ARGS > /dev/null 2>&1

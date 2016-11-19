@@ -1,0 +1,60 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+# RetroArch load BIOS
+BIOS_DIR="/storage/roms/bios"
+N64_DIR="/storage/roms/n64"
+
+# ping site
+ping_site () {
+  IS_SITE="false"
+  ping -4 -c 1 -W 1 alexelec.in.ua > /dev/null 2>&1
+  [ $? -eq 0 ] && IS_SITE="true"
+  echo $IS_SITE
+}
+
+# RetroArch load BIOS
+load_bios () {
+  if [ ! -f "$BIOS_DIR/received.bios" ]; then
+    mkdir -p $BIOS_DIR
+    if [ $(ping_site) == "true" ]; then
+      rm -fr $BIOS_DIR/*
+      wget -P $BIOS_DIR "http://src.alexelec.in.ua/RetroArch/bios/BIOS.zip" > /dev/null 2>&1
+      if [ $? -eq 0 ] ; then
+        unzip -q $BIOS_DIR/BIOS.zip -d $BIOS_DIR > /dev/null 2>&1
+        rm -f $BIOS_DIR/BIOS.zip
+        touch $BIOS_DIR/received.bios
+        logger -t RetroArch "download BIOS completed."
+      else
+        logger -t RetroArch "download BIOS failure."
+      fi
+    fi
+  fi
+}
+
+# load Games
+load_games () {
+  if [ ! -f "$BIOS_DIR/received.games" ]; then
+    mkdir -p $N64_DIR
+    if [ $(ping_site) == "true" ]; then
+      rm -fr $N64_DIR/*Tarzan.z64
+      wget -P $N64_DIR "http://src.alexelec.in.ua/RetroArch/games/Tarzan.zip" > /dev/null 2>&1
+      if [ $? -eq 0 ] ; then
+        unzip -q $N64_DIR/Tarzan.zip -d $N64_DIR > /dev/null 2>&1
+        rm -f $N64_DIR/Tarzan.zip
+        touch $BIOS_DIR/received.games
+        logger -t RetroArch "download Games completed."
+      else
+        logger -t RetroArch "download Games failure."
+      fi
+    fi
+  fi
+}
+
+load_bios
+load_games
+
+exit 0

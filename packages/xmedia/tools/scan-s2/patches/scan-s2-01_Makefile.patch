@@ -1,0 +1,19 @@
+diff -Naurp scan-s2-46/Makefile scan-s2-46-patch/Makefile
+--- scan-s2-46/Makefile	2014-10-24 11:16:43.000000000 +0300
++++ scan-s2-46-patch/Makefile	2015-04-09 10:13:41.000000000 +0300
+@@ -1,11 +1,12 @@
+-CC=gcc
++CC      ?=
++CFLG    ?= -g -O3 -Wall -Wno-packed-bitfield-compat
++INCLUDE ?=
+ 
+ SRC=atsc_psip_section.c diseqc.c dump-vdr.c dump-zap.c lnb.c scan.c section.c 
+ HED=atsc_psip_section.h diseqc.h dump-vdr.h dump-zap.h lnb.h scan.h section.h list.h
+ OBJ=atsc_psip_section.o diseqc.o dump-vdr.o dump-zap.o lnb.o scan.o section.o
+ 
+-BIND=/usr/local/bin/
+-INCLUDE=-I../s2/linux/include
++BIND=/usr/bin/
+ 
+ TARGET=scan-s2
+ 

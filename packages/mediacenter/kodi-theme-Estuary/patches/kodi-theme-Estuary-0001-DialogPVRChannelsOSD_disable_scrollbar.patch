@@ -1,0 +1,12 @@
+diff -Naurp kodi-theme-Estuary-17.0-beta5-e92818a/1080i/DialogPVRChannelsOSD.xml kodi-theme-Estuary-17.0-beta5-e92818a-patch/1080i/DialogPVRChannelsOSD.xml
+--- kodi-theme-Estuary-17.0-beta5-e92818a/1080i/DialogPVRChannelsOSD.xml	2016-10-28 20:27:46.000000000 +0300
++++ kodi-theme-Estuary-17.0-beta5-e92818a-patch/1080i/DialogPVRChannelsOSD.xml	2016-11-03 10:56:30.000000000 +0200
+@@ -62,7 +62,7 @@
+ 				<width>830</width>
+ 				<height>880</height>
+ 				<onleft>PreviousChannelGroup</onleft>
+-				<onright>60</onright>
++				<onright>NextChannelGroup</onright>
+ 				<onup>11</onup>
+ 				<ondown>11</ondown>
+ 				<pagecontrol>60</pagecontrol>

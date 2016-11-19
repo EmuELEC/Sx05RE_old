@@ -1,0 +1,468 @@
+diff -Naurp scan-s2-46/scan.c scan-s2-46-patch/scan.c
+--- scan-s2-46/scan.c	2015-06-16 10:22:48.000000000 +0300
++++ scan-s2-46-patch/scan.c	2015-06-23 09:16:44.000000000 +0300
+@@ -118,6 +118,7 @@ static int long_timeout;
+ static int current_tp_only;
+ static int get_other_nits;
+ static int noauto=0;
++static int noinfo=0;
+ static int vdr_dump_provider;
+ static int vdr_dump_channum;
+ static int no_ATSC_PSIP;
+@@ -381,7 +382,7 @@ static void parse_ca_identifier_descript
+ 	for (i = 0; i < len / sizeof(s->ca_id[0]); i++) {
+ 		int id = ((s->ca_id[i] & 0x00FF) << 8) + ((s->ca_id[i] & 0xFF00) >> 8);
+ 		s->ca_id[i] = id;
+-		info("  CA ID 0x%04X\n", s->ca_id[i]);
++		if (!noinfo) info("  CA ID 0x%04X\n", s->ca_id[i]);
+ 
+ 		s->ca_num++;
+ 	}
+@@ -417,7 +418,7 @@ static void parse_network_name_descripto
+ 
+ 	unsigned char len = buf [1];
+ 
+-	info("Network Name '%.*s'\n", len, buf + 2);
++	if (!noinfo) info("Network Name '%.*s'\n", len, buf + 2);
+ }
+ 
+ static void parse_terrestrial_uk_channel_number (const unsigned char *buf, void *dummy)
+@@ -936,16 +937,18 @@ static void parse_service_descriptor (co
+ 	if (dvbtext == NULL) 
+ 		free(dvbtext);
+ 
+-	info("0x%04X 0x%04X: pmt_pid 0x%04X %s -- %s (%s%s)\n",
+-		current_tp->transport_stream_id,
+-		s->service_id,
+-		s->pmt_pid,
+-		s->provider_name, s->service_name,
+-		s->running == RM_NOT_RUNNING ? "not running" :
+-		s->running == RM_STARTS_SOON ? "starts soon" :
+-		s->running == RM_PAUSING     ? "pausing" :
+-		s->running == RM_RUNNING     ? "running" : "???",
+-		s->scrambled ? ", scrambled" : "");
++	if (!noinfo) {
++        info("0x%04X 0x%04X: pmt_pid 0x%04X %s -- %s (%s%s)\n",
++		    current_tp->transport_stream_id,
++		    s->service_id,
++		    s->pmt_pid,
++		    s->provider_name, s->service_name,
++		    s->running == RM_NOT_RUNNING ? "not running" :
++		    s->running == RM_STARTS_SOON ? "starts soon" :
++		    s->running == RM_PAUSING     ? "pausing" :
++		    s->running == RM_RUNNING     ? "running" : "???",
++		    s->scrambled ? ", scrambled" : "");
++    }
+ }
+ 
+ static void parse_ca_descriptor (const unsigned char *buf, struct service *s) 
+@@ -969,7 +972,7 @@ static void parse_ca_descriptor (const u
+ 		if (s->ca_num + 1 >= CA_SYSTEM_ID_MAX)
+ 			warning("TOO MANY CA SYSTEM IDs.\n");
+ 		else {
+-			info("  CA ID     : PID 0x%04X\n", CA_system_ID);
++			if (!noinfo) info("  CA ID     : PID 0x%04X\n", CA_system_ID);
+ 			s->ca_id[s->ca_num]=CA_system_ID;
+ 			s->ca_num++;
+ 		}
+@@ -1095,7 +1098,7 @@ static void parse_pat(struct section_buf
+ 		struct service *s;
+ 		int service_id = (buf[0] << 8) | buf[1];
+ 
+-		info("service_id = 0x%X\n",service_id);
++		if (!noinfo) info("service_id = 0x%X\n",service_id);
+ 		if (service_id == 0)
+ 			goto skip;	/* nit pid entry */
+ 
+@@ -1104,7 +1107,7 @@ static void parse_pat(struct section_buf
+ 		if (!s)
+ 			s = alloc_service(current_tp, service_id);
+ 		s->pmt_pid = ((buf[2] & 0x1f) << 8) | buf[3];
+-		info("pmt_pid = 0x%X\n",s->pmt_pid);
++		if (!noinfo) info("pmt_pid = 0x%X\n",s->pmt_pid);
+ 		if (!s->priv && s->pmt_pid) {
+ 			s->priv = malloc(sizeof(struct section_buf));
+ 			setup_filter(s->priv, demux_devname,
+@@ -1159,7 +1162,7 @@ static void parse_pmt (struct section_bu
+ 		case 0x01:
+ 		case 0x02:
+ 		case 0x1b:
+-			info("  VIDEO     : PID 0x%04X\n", elementary_pid);
++			if (!noinfo) info("  VIDEO     : PID 0x%04X\n", elementary_pid);
+ 			if (s->video_pid == 0)
+ 				s->video_pid = elementary_pid;
+ 			break;
+@@ -1167,7 +1170,7 @@ static void parse_pmt (struct section_bu
+ 		case 0x03:
+ 		case 0x81: /* Audio per ATSC A/53B [2] Annex B */
+ 		case 0x04:
+-			info("  AUDIO     : PID 0x%04X\n", elementary_pid);
++			if (!noinfo) info("  AUDIO     : PID 0x%04X\n", elementary_pid);
+ 			if (s->audio_num < AUDIO_CHAN_MAX) {
+ 				s->audio_pid[s->audio_num] = elementary_pid;
+ 				parse_descriptors (PMT, buf + 5, ES_info_len, s);
+@@ -1180,7 +1183,7 @@ static void parse_pmt (struct section_bu
+ 
+ 		case 0x06:
+ 			if (find_descriptor(0x56, buf + 5, ES_info_len, NULL, NULL)) {
+-				info("  TELETEXT  : PID 0x%04X\n", elementary_pid);
++				if (!noinfo) info("  TELETEXT  : PID 0x%04X\n", elementary_pid);
+ 				s->teletext_pid = elementary_pid;
+ 				break;
+ 			}
+@@ -1190,19 +1193,19 @@ static void parse_pmt (struct section_bu
+ 				* will also be present; so we can be quite confident
+ 				* that we catch DVB subtitling streams only here, w/o
+ 				* parsing the descriptor. */
+-				info("  SUBTITLING: PID 0x%04X\n", elementary_pid);
++				if (!noinfo) info("  SUBTITLING: PID 0x%04X\n", elementary_pid);
+ 				s->subtitling_pid = elementary_pid;
+ 				break;
+ 			}
+ 			else if (find_descriptor(0x6a, buf + 5, ES_info_len, NULL, NULL)) {
+-				info("  AC3       : PID 0x%04X\n", elementary_pid);
++				if (!noinfo) info("  AC3       : PID 0x%04X\n", elementary_pid);
+ 				s->ac3_pid = elementary_pid;
+ 				break;
+ 			}
+ 			/* fall through */
+ 
+ 		default:
+-			info("  OTHER     : PID 0x%04X TYPE 0x%02X\n", elementary_pid, buf[0]);
++			if (!noinfo) info("  OTHER     : PID 0x%04X TYPE 0x%02X\n", elementary_pid, buf[0]);
+ 		};
+ 
+ 		buf += ES_info_len + 5;
+@@ -1390,7 +1393,7 @@ static void parse_atsc_service_loc_desc(
+ 		{
+ 		case 0x02: /* video */
+ 			s->video_pid = e.elementary_PID;
+-			info("  VIDEO     : PID 0x%04X\n", e.elementary_PID);
++			if (!noinfo) info("  VIDEO     : PID 0x%04X\n", e.elementary_PID);
+ 			break;
+ 
+ 		case 0x81: /* ATSC audio */
+@@ -1401,7 +1404,7 @@ static void parse_atsc_service_loc_desc(
+ 				s->audio_lang[s->audio_num][2] =  e.ISO_639_language_code        & 0xff;
+ 				s->audio_num++;
+ 			}
+-			info("  AUDIO     : PID 0x%04X lang: %s\n",e.elementary_PID,s->audio_lang[s->audio_num-1]);
++			if (!noinfo) info("  AUDIO     : PID 0x%04X lang: %s\n",e.elementary_PID,s->audio_lang[s->audio_num-1]);
+ 			break;
+ 
+ 		default:
+@@ -1572,7 +1575,7 @@ static int parse_section(struct section_
+ 	table_id = getBits(buf, 0, 8);
+ 
+ 	if (sb->table_id != table_id) {
+-		info(">>> sb->table_id (%X) != table_id (%X)!\n", sb->table_id, table_id);
++		if (!noinfo) info(">>> sb->table_id (%X) != table_id (%X)!\n", sb->table_id, table_id);
+ 		return -1;
+ 	}
+ 
+@@ -1583,7 +1586,8 @@ static int parse_section(struct section_
+ 	section_number = getBits(buf, 48, 8);
+ 	last_section_number = getBits(buf, 56, 8);
+ 
+-	info(">>> parse_section, section number %d out of %d...!\n", section_number, last_section_number);
++	if (!noinfo)
++        info(">>> parse_section, section number %d out of %d...!\n", section_number, last_section_number);
+ 
+ 	if (sb->segmented && sb->table_id_ext != -1 && sb->table_id_ext != table_id_ext) {
+ 		/* find or allocate actual section_buf matching table_id_ext */
+@@ -1718,7 +1722,7 @@ static int read_sections (struct section
+ 	}
+ 
+ 	if(sb->skip_count > 0) {
+-		info("skipping section, table_id %X, pid %X\n", sb->table_id, sb->pid);
++		if (!noinfo) info("skipping section, table_id %X, pid %X\n", sb->table_id, sb->pid);
+ 		sb->skip_count--;
+ 		return -1;
+ 	}
+@@ -1922,7 +1926,7 @@ static void read_filters (void)
+ 				if (done)
+ 					verbosedebug("filter done pid 0x%04X\n", sb->pid);
+ 				else
+-					warning("filter timeout pid 0x%04X\n", sb->pid);
++					if (!noinfo) warning("filter timeout pid 0x%04X\n", sb->pid);
+ 				remove_filter (sb);
+ 			}
+ 		}
+@@ -1956,10 +1960,10 @@ static int __tune_to_transponder (int fr
+ 	}
+ 
+ 	if (verbosity >= 1) {
+-		dprintf(1, ">>> tune to: ");
++		dprintf(1, "Scanning to: ");
+ 		dump_dvb_parameters (stderr, t);
+-		if (t->last_tuning_failed)
+-			dprintf(1, " (tuning failed)");
++        if (!noinfo)
++		    if (t->last_tuning_failed) dprintf(1, " (tuning failed)");
+ 		dprintf(1, "\n");
+ 	}
+ 
+@@ -2009,7 +2013,7 @@ static int __tune_to_transponder (int fr
+ 			if_freq = abs(t->frequency - lnb_type.low_val);
+ 		}
+ 		if (verbosity >= 2) {
+-			dprintf(1,"DVB-S IF freq is %d\n", if_freq);
++			if (!noinfo) dprintf(1,"DVB-S IF freq is %d\n", if_freq);
+ 		}
+ 
+ 		if (rotor_pos != 0 ) {
+@@ -2041,8 +2045,8 @@ static int __tune_to_transponder (int fr
+ 		}
+ 
+ 		if (verbosity >= 2){
+-			dprintf(1,"DVB-T frequency is %d\n", if_freq);
+-			dprintf(1,"DVB-T bandwidth is %d\n", bandwidth_hz);
++			if (!noinfo) dprintf(1,"DVB-T frequency is %d\n", if_freq);
++			if (!noinfo) dprintf(1,"DVB-T bandwidth is %d\n", bandwidth_hz);
+ 		}
+ 		break;
+ 
+@@ -2061,8 +2065,8 @@ static int __tune_to_transponder (int fr
+ 		}
+ 
+ 		if (verbosity >= 2){
+-			dprintf(1,"DVB-T2 frequency is %d\n", if_freq);
+-			dprintf(1,"DVB-T2 bandwidth is %d\n", bandwidth_hz);
++			if (!noinfo) dprintf(1,"DVB-T2 frequency is %d\n", if_freq);
++			if (!noinfo) dprintf(1,"DVB-T2 bandwidth is %d\n", bandwidth_hz);
+ 		}
+ 		break;
+ 
+@@ -2071,7 +2075,7 @@ static int __tune_to_transponder (int fr
+ 		if_freq = t->frequency;
+ 
+ 		if (verbosity >= 2){
+-			dprintf(1,"DVB-C frequency is %d\n", if_freq);
++			if (!noinfo) dprintf(1,"DVB-C frequency is %d\n", if_freq);
+ 		}
+ 		break;
+ 	}
+@@ -2105,7 +2109,7 @@ static int __tune_to_transponder (int fr
+ 	}
+ 
+ 	if ((ioctl(frontend_fd, FE_SET_PROPERTY, &cmdseq_tune)) == -1) {
+-		perror("FE_SET_PROPERTY TUNE failed");
++		if (!noinfo) perror("FE_SET_PROPERTY TUNE failed");
+ 		return;
+ 	}
+ 
+@@ -2164,7 +2168,7 @@ static int __tune_to_transponder (int fr
+ 		}
+ 	}
+ 
+-	warning(">>> tuning failed!!!\n");
++	if (!noinfo) warning(">>> tuning failed!!!\n");
+ 
+ 	t->last_tuning_failed = 1;
+ 
+@@ -2181,39 +2185,39 @@ static int tune_to_transponder (int fron
+ 	switch(t->delivery_system) 
+ 	{
+ 	case SYS_DVBS:
+-		info("----------------------------------> Using DVB-S\n");
++		if (!noinfo) info("-------------------> Using DVB-S\n");
+ 		break;
+ 
+ 	case SYS_DSS:
+-		info("----------------------------------> Using DSS\n");
++		if (!noinfo) info("-------------------> Using DSS\n");
+ 		break;
+ 
+ 	case SYS_DVBS2:
+-		info("----------------------------------> Using DVB-S2\n");
++		if (!noinfo) info("-------------------> Using DVB-S2\n");
+ 		break;
+ 
+ 	case SYS_DVBT:
+-		info("----------------------------------> Using DVB-T\n");
++		if (!noinfo) info("-------------------> Using DVB-T\n");
+ 		break;
+ 
+ 	case SYS_DVBT2:
+-		info("----------------------------------> Using DVB-T2\n");
++		if (!noinfo) info("-------------------> Using DVB-T2\n");
+ 		break;
+ 
+ 	case SYS_ATSC:
+-		info("----------------------------------> Using ATSC\n");
++		if (!noinfo) info("-------------------> Using ATSC\n");
+ 		break;
+ 
+ 	case SYS_DVBC_ANNEX_AC:
+-		info("----------------------------------> Using DVB-C ANNEX_AC\n");
++		if (!noinfo) info("-------------------> Using DVB-C ANNEX_AC\n");
+ 		break;
+ 
+ 	case SYS_DVBC_ANNEX_B:
+-		info("----------------------------------> Using DVB-C ANNEX_B\n");
++		if (!noinfo) info("-------------------> Using DVB-C ANNEX_B\n");
+ 		break;
+ 
+ 	default:
+-		info("Unsupported Delivery system (%d)!\n", t->delivery_system);
++		if (!noinfo) info("Unsupported Delivery system (%d)!\n", t->delivery_system);
+ 		t->last_tuning_failed = 1;
+ 		return -1;
+ 	}
+@@ -2458,7 +2462,7 @@ static int read_rotor_conf(const char *r
+ 	int i = -1;
+ 	rotor_conf_fd = fopen (rotor_conf, "r");
+ 	if (!rotor_conf_fd){
+-		error("Cannot open rotor configuration file '%s'.\n", rotor_conf);
++		if (!noinfo) error("Cannot open rotor configuration file '%s'.\n", rotor_conf);
+ 		return errno;
+ 	}
+ 	while (fgets(buf, sizeof(buf), rotor_conf_fd)) {
+@@ -2676,7 +2680,7 @@ static int tune_initial (int frontend_fd
+ 							t->inversion = spectral_inversion;
+ 							t->symbol_rate = sr;
+ 
+-							info("initial transponder DVB-S%s %u %c %d %s %s %s %i %i %i\n",
++							if (!noinfo) info("initial transponder DVB-S%s %u %c %d %s %s %s %i %i %i\n",
+ 								t->delivery_system==SYS_DVBS?" ":"2",
+ 								t->frequency,
+ 								pol[0], t->symbol_rate, fec2str(t->fec), rolloff2str(t->rolloff), qam2str(t->modulation), t->stream_id, t->pls_mode, t->pls_code);
+@@ -2702,7 +2706,7 @@ static int tune_initial (int frontend_fd
+ 				t->modulation = str2qam(qam);
+ 			}
+ 
+-			info("initial transponder %u %u %s %s\n",
++			if (!noinfo) info("initial transponder %u %u %s %s\n",
+ 				t->frequency,
+ 				sr,
+ 				fec2str(t->fec),
+@@ -2760,7 +2764,7 @@ static int tune_initial (int frontend_fd
+ 
+ 				t->stream_id = stream_id;
+ 
+-				info("initial transponder %u %s %s %s %s %s %s %s %i\n",
++				if (!noinfo) info("initial transponder %u %s %s %s %s %s %s %s %i\n",
+ 					t->frequency,
+ 					bandwidth2str(t->bandwidth),
+ 					fec2str(t->fecHP),
+@@ -2894,7 +2898,7 @@ static void scan_network (int frontend_f
+ 	int rc;
+ 
+ 	if (tune_initial (frontend_fd, initial) < 0) {
+-		error("initial tuning failed\n");
++		if (!noinfo) error("initial tuning failed\n");
+ 		return;
+ 	}
+ 
+@@ -2931,7 +2935,12 @@ static void dump_lists (void)
+ 			n++;
+ 		}
+ 	}
+-	info("dumping lists (%d services)\n", n);
++    if (noinfo) {
++        info("Found service: %d services\n", n);
++    }
++    else {
++        info("dumping lists (%d services)\n", n);
++    }
+ 
+ 	list_for_each(p1, &scanned_transponders) {
+ 		t = list_entry(p1, struct transponder, list);
+@@ -2963,15 +2972,15 @@ static void dump_lists (void)
+ 					s->provider_name[i] = ' ';
+ 			}
+ 			if (s->video_pid && !(serv_select & 1)) {
+-				warning("no TV services\n");
++				if (!noinfo) warning("no TV services\n");
+ 				continue; /* no TV services */
+ 			}
+ 			if (!s->video_pid && s->audio_num && !(serv_select & 2)) {
+-				warning("no radio services\n");
++				if (!noinfo) warning("no radio services\n");
+ 				continue; /* no radio services */
+ 			}
+ 			if (!s->video_pid && !s->audio_num && !(serv_select & 4)) {
+-				warning("no data/other services\n");
++				if (!noinfo) warning("no data/other services\n");
+ 				continue; /* no data/other services */
+ 			}
+ 
+@@ -3002,7 +3011,7 @@ static void dump_lists (void)
+ 			}
+ 		}
+ 	}
+-	info("Done.\n");
++	if (!noinfo) info("Done.\n");
+ }
+ 
+ static void show_existing_tuning_data_files(void)
+@@ -3031,7 +3040,7 @@ static void show_existing_tuning_data_fi
+ static void handle_sigint(int sig)
+ {
+ 	(void)sig;
+-	error("interrupted by SIGINT, dumping partial result...\n");
++	if (!noinfo) error("interrupted by SIGINT, dumping partial result...\n");
+ 	dump_lists();
+ 	exit(2);
+ }
+@@ -3085,7 +3094,8 @@ static const char *usage = "\n"
+ "		s=S2  Disable DVB-S2 scan (good for owners of cards that do not\n"
+ "		      support DVB-S2 systems)\n"
+ "	-X	Disable AUTOs for initial transponders (esp. for hardware which\n"
+-"		not support it). Instead try each value of any free parameters.\n";
++"		not support it). Instead try each value of any free parameters.\n"
++"	-G	Info for KODI addon.\n";
+ 
+ 
+ void bad_usage(char *pname, int problem)
+@@ -3135,11 +3145,9 @@ int main (int argc, char **argv)
+ 		return -1;
+ 	}
+ 
+-	info("API major %d, minor %d\n", DVB_API_VERSION, DVB_API_VERSION_MINOR);
+-
+ 	/* start with default lnb type */
+ 	lnb_type = *lnb_enum(0);
+-	while ((opt = getopt(argc, argv, "5cnXpa:f:d:O:k:I:S:s:r:R:o:D:x:t:i:l:vquPA:U")) != -1) {
++	while ((opt = getopt(argc, argv, "5cnXpa:f:d:O:k:I:S:s:r:R:o:D:x:t:i:l:vquPA:U:G")) != -1) {
+ 		switch (opt) 
+ 		{
+ 		case 'a':
+@@ -3273,6 +3281,10 @@ int main (int argc, char **argv)
+ 			unique_anon_services = 1;
+ 			break;
+ 
++		case 'G':
++			noinfo = 1;
++			break;
++
+ 		default:
+ 			bad_usage(argv[0], 0);
+ 			return -1;
+@@ -3287,6 +3299,9 @@ int main (int argc, char **argv)
+ 			return -1;
+ 	}
+ 
++	if (!noinfo)
++        info("API major %d, minor %d\n", DVB_API_VERSION, DVB_API_VERSION_MINOR);
++
+ 	lnb_type.low_val *= 1000;	/* convert to kiloherz */
+ 	lnb_type.high_val *= 1000;	/* convert to kiloherz */
+ 	lnb_type.switch_val *= 1000;	/* convert to kiloherz */
+@@ -3310,14 +3325,14 @@ int main (int argc, char **argv)
+ 	}
+ 
+ 	if (initial)
+-		info("scanning %s\n", initial);
++		if (!noinfo) info("Scanning transponder file: %s\n", initial);
+ 
+ 	snprintf (frontend_devname, sizeof(frontend_devname),
+ 		"/dev/dvb/adapter%i/frontend%i", adapter, frontend);
+ 
+ 	snprintf (demux_devname, sizeof(demux_devname),
+ 		"/dev/dvb/adapter%i/demux%i", adapter, demux);
+-	info("using '%s' and '%s'\n", frontend_devname, demux_devname);
++	if (!noinfo) info("using '%s' and '%s'\n", frontend_devname, demux_devname);
+ 
+ 	for (i = 0; i < MAX_RUNNING; i++)
+ 		poll_fds[i].fd = -1;

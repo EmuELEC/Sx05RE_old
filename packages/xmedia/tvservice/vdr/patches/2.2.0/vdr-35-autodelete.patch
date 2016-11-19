@@ -1,0 +1,84 @@
+--- vdr-2.2.0.orig/config.c
++++ vdr-2.2.0/config.c
+@@ -495,6 +495,7 @@ cSetup::cSetup(void)
+   ChannelsWrap = 0;
+   ShowChannelNamesWithSource = 0;
+   EmergencyExit = 1;
++  CutterAutoDelete = 0;
+ }
+ 
+ cSetup& cSetup::operator= (const cSetup &s)
+@@ -721,6 +722,7 @@ bool cSetup::Parse(const char *Name, con
+   else if (!strcasecmp(Name, "ChannelsWrap"))        ChannelsWrap       = atoi(Value);
+   else if (!strcasecmp(Name, "ShowChannelNamesWithSource")) ShowChannelNamesWithSource = atoi(Value);
+   else if (!strcasecmp(Name, "EmergencyExit"))       EmergencyExit      = atoi(Value);
++  else if (!strcasecmp(Name, "CutterAutoDelete"))    CutterAutoDelete   = atoi(Value);
+   else if (!strcasecmp(Name, "LastReplayed"))        cReplayControl::SetRecording(Value);
+   else
+      return false;
+@@ -851,6 +853,7 @@ bool cSetup::Save(void)
+   Store("ChannelsWrap",       ChannelsWrap);
+   Store("ShowChannelNamesWithSource", ShowChannelNamesWithSource);
+   Store("EmergencyExit",      EmergencyExit);
++  Store("CutterAutoDelete",   CutterAutoDelete);
+   Store("LastReplayed",       cReplayControl::LastReplayed());
+ 
+   Sort();
+--- vdr-2.2.0.orig/config.h
++++ vdr-2.2.0/config.h
+@@ -363,6 +363,7 @@ public:
+   int ChannelsWrap;
+   int ShowChannelNamesWithSource;
+   int EmergencyExit;
++  int CutterAutoDelete;
+   int __EndData__;
+   cString InitialChannel;
+   cString DeviceBondings;
+--- vdr-2.2.0.orig/cutter.c
++++ vdr-2.2.0/cutter.c
+@@ -713,9 +713,22 @@ bool cCutter::Active(void)
+         return true;
+      error = cuttingThread->Error();
+      Stop();
+-     if (!error)
++     if (!error) {
+         cRecordingUserCommand::InvokeCommand(RUC_EDITEDRECORDING, editedVersionName, originalVersionName);
++        if (Setup.CutterAutoDelete) {
++           /* Remove original (if cutting was successful) */
++           cRecording *recording = Recordings.GetByName(originalVersionName);
++           if (!recording)
++              fprintf(stderr, "ERROR: Can't found '%s' after editing process\n", *originalVersionName);
++           else {
++              if (recording->Delete())
++                 Recordings.DelByName(recording->FileName());
++              else
++                 fprintf(stderr, "ERROR: Can't delete '%s' after editing process\n", *originalVersionName);
++           }
++        }
+      }
++  }
+   return false;
+ }
+ 
+--- vdr-2.2.0.orig/menu.c
++++ vdr-2.2.0/menu.c
+@@ -3821,6 +3821,7 @@ cMenuSetupRecord::cMenuSetupRecord(void)
+   Add(new cMenuEditIntItem( tr("Setup.Recording$Instant rec. time (min)"),   &data.InstantRecordTime, 0, MAXINSTANTRECTIME, tr("Setup.Recording$present event")));
+   Add(new cMenuEditIntItem( tr("Setup.Recording$Max. video file size (MB)"), &data.MaxVideoFileSize, MINVIDEOFILESIZE, MAXVIDEOFILESIZETS));
+   Add(new cMenuEditBoolItem(tr("Setup.Recording$Split edited files"),        &data.SplitEditedFiles));
++  Add(new cMenuEditBoolItem(tr("Setup.Recording$Cutter auto delete"),        &data.CutterAutoDelete));
+   Add(new cMenuEditStraItem(tr("Setup.Recording$Delete timeshift recording"),&data.DelTimeshiftRec, 3, delTimeshiftRecTexts));
+ }
+ 
+--- vdr-2.2.0.orig/po/de_DE.po
++++ vdr-2.2.0/po/de_DE.po
+@@ -1227,6 +1227,9 @@ msgstr "Editierte Dateien aufteilen"
+ msgid "Setup.Recording$Delete timeshift recording"
+ msgstr "Zeitversetzte Aufnahme löschen"
+ 
++msgid "Setup.Recording$Cutter auto delete"
++msgstr "Aufnahmen nach dem Schneiden löschen"
++
+ msgid "Replay"
+ msgstr "Wiedergabe"
+ 

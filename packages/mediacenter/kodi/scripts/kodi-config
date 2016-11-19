@@ -1,0 +1,54 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+
+# hack: make addon-bins executable
+# done in kodi on addon install. but just in case..
+chmod +x /storage/.kodi/addons/*/bin/*
+
+# setup Kodi sources
+if [ ! -f $HOME/.kodi/userdata/sources.xml ]; then
+  if [ -f /usr/share/kodi/config/sources.xml ]; then
+    cp /usr/share/kodi/config/sources.xml $HOME/.kodi/userdata
+  fi
+fi
+
+# common setup guisettings
+if [ ! -f $HOME/.kodi/userdata/guisettings.xml ] ; then
+  if [ -f /usr/share/kodi/config/guisettings.xml ]; then
+    cp /usr/share/kodi/config/guisettings.xml $HOME/.kodi/userdata
+  fi
+fi
+
+# add AlexELEC addons
+if [ ! -d $HOME/.kodi/addons ]; then
+  if [ -e /usr/share/kodi/config/addons-alexelec/plugins.tbz2 ]; then
+    mkdir -p $HOME/.kodi/addons
+    tar xjf /usr/share/kodi/config/addons-alexelec/plugins.tbz2 -C $HOME/.kodi/addons/
+  fi
+fi
+
+# add default addons settings
+if [ ! -d $HOME/.kodi/userdata/addon_data/weather.yahoo ]; then
+  if [ -d /usr/share/kodi/config/weather.yahoo ]; then
+    mkdir -p $HOME/.kodi/userdata/addon_data
+    cp -R /usr/share/kodi/config/weather.yahoo $HOME/.kodi/userdata/addon_data
+  fi
+fi
+
+# add default config file to HOME dir Kodi
+if [ ! -f $HOME/.kodi/userdata/advancedsettings.xml ] ; then
+  cp /usr/share/kodi/system/advancedsettings.xml $HOME/.kodi/userdata
+fi
+
+if [ ! -f $HOME/.kodi/userdata/keymaps/keyboard.xml ] ; then
+  mkdir -p $HOME/.kodi/userdata/keymaps
+  cp /usr/share/kodi/system/keymaps/keyboard.xml $HOME/.kodi/userdata/keymaps
+fi
+
+KODI_ARGS="--lircdev /run/lirc/lircd"
+
+echo "KODI_ARGS=\"$KODI_ARGS\"" > /run/alexelec/kodi.conf

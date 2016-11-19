@@ -1,0 +1,88 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+URL=$1
+TOUT=$2
+
+[ -z $URL ] && exit 1
+[ -z $TOUT ] && TOUT="3000000"
+
+TMPDIR="/tmp/infostream"
+FF_TEMP="$TMPDIR/ffmpeg.log"
+ID_TEMP="$TMPDIR/ff-id.log"
+
+mkdir -p $TMPDIR
+rm -rf $TMPDIR/*
+
+[ "$(pidof ffmpeg)" ] && killall -9 ffmpeg > /dev/null 2>&1
+[ "$(pidof m3u_kill)" ] && killall -9 m3u_kill > /dev/null 2>&1
+
+KILL_TOUT=$( expr 30000000 + $TOUT )
+
+/usr/bin/m3u_kill $KILL_TOUT &
+ffmpeg -timeout $TOUT -i $URL 2>&1 | grep -A 6 'Duration' | \
+  sed '1d; s/^[ \t]*//; s/[ \t]*$//; s/://g; s/#0[0-9]//g; \
+  s/(...)//; s/Metadata.*//; s/service_provider.*//; s/service_name.*//; /^$/d' | \
+  awk '{print $1,"=",$2,"#",$3}' > $FF_TEMP
+
+killall -9 m3u_kill > /dev/null 2>&1
+
+if [ ! -s $FF_TEMP ]; then
+  echo "STREAM=0"
+  exit 1
+fi
+
+rm -f $ID_TEMP
+
+cat $FF_TEMP |
+    while read -r LINE ; do
+        STR=`echo $LINE | awk '{print $1}'`
+
+        case $STR in
+          "Program" )
+              PROG=`echo $LINE | awk '{print $3}'`
+              [ "$PROG" == "0" ] && PROG="1"
+              echo "EPG_ID=$PROG" >> $ID_TEMP
+           ;;
+          "Stream" )
+              AV=`echo $LINE | awk -F'#' '{print $2}'`
+              CODE_HEX=`echo $LINE | awk '{print $3}' | sed ' s/\[//; s/\]//'`
+              if [ $AV = "Video" ]; then
+                  CODE_VDEM=`printf "%d\n" $CODE_HEX`
+                  echo "VIDEO_ID=$CODE_VDEM" >> $ID_TEMP
+              elif [ $AV = "Audio" ]; then
+                  CODE_ADEM=`printf "%d\n" $CODE_HEX`
+                  echo "AUDIO_ID=$CODE_ADEM" >> $ID_TEMP
+              fi
+           ;;
+        esac
+    done
+
+if [ ! -f $ID_TEMP ]; then
+  echo "STREAM=0"
+  exit 1
+fi
+
+EPG_ID=""
+VIDEO_ID=""
+AUDIO_ID=""
+
+. $ID_TEMP
+
+if [ "$VIDEO_ID" == "" ]; then
+  echo "STREAM=0"
+  exit 1
+fi
+
+[ -z "$EPG_ID" ] && EPG_ID=1
+[ -z "$AUDIO_ID" ] && AUDIO_ID=0
+
+echo "STREAM=1"
+echo "EPG_ID=$EPG_ID"
+echo "VIDEO_ID=$VIDEO_ID"
+echo "AUDIO_ID=$AUDIO_ID"
+
+exit 0

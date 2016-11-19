@@ -1,0 +1,15 @@
+[req] 
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+
+[ req_distinguished_name ]
+
+[ v3_req ]
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName=critical,email:certtest@alexelec.in.ua,URI:http://alexelec.in.ua/,IP:192.168.0.1,dirName:dir_sect
+
+[dir_sect]
+C=UA
+O=AlexELEC
+OU=build
+CN=Alex

@@ -1,0 +1,69 @@
+diff -Naurp pvr.iptvsimple-adee8a7/pvr.iptvsimple/addon.xml.in pvr.iptvsimple-adee8a7-patch/pvr.iptvsimple/addon.xml.in
+--- pvr.iptvsimple-adee8a7/pvr.iptvsimple/addon.xml.in	2016-10-11 12:45:04.000000000 +0300
++++ pvr.iptvsimple-adee8a7-patch/pvr.iptvsimple/addon.xml.in	2016-11-03 09:40:19.000000000 +0200
+@@ -1,9 +1,9 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <addon
+   id="pvr.iptvsimple"
+-  version="2.4.4"
++  version="2.4.5"
+   name="PVR IPTV Simple Client"
+-  provider-name="nightik">
++  provider-name="nightik (Alex@ELEC)">
+   <requires>
+     <c-pluff version="0.1"/>
+     <import addon="xbmc.pvr" version="5.2.0"/>
+diff -Naurp pvr.iptvsimple-adee8a7/pvr.iptvsimple/changelog.txt pvr.iptvsimple-adee8a7-patch/pvr.iptvsimple/changelog.txt
+--- pvr.iptvsimple-adee8a7/pvr.iptvsimple/changelog.txt	2016-10-11 12:45:04.000000000 +0300
++++ pvr.iptvsimple-adee8a7-patch/pvr.iptvsimple/changelog.txt	2016-11-03 09:41:36.000000000 +0200
+@@ -1,3 +1,6 @@
++v2.4.5
++- For Alex@ELEC: add pause and config.
++
+ v2.4.4
+ - Fix: Handle time offset in EPG programme start and end times.
+ 
+diff -Naurp pvr.iptvsimple-adee8a7/pvr.iptvsimple/resources/settings.xml pvr.iptvsimple-adee8a7-patch/pvr.iptvsimple/resources/settings.xml
+--- pvr.iptvsimple-adee8a7/pvr.iptvsimple/resources/settings.xml	2016-10-11 12:45:04.000000000 +0300
++++ pvr.iptvsimple-adee8a7-patch/pvr.iptvsimple/resources/settings.xml	2016-11-03 09:46:44.000000000 +0200
+@@ -5,7 +5,7 @@
+     <setting id="sep1" label="30010" type="lsep"/> 
+     <setting id="m3uPathType" type="enum" label="30000" lvalues="30001|30002" default="1" />
+     <setting id="m3uPath" type="file" label="30011" default="" visible="eq(-1,0)"/>
+-    <setting id="m3uUrl" type="text" label="30012" default="" visible="eq(-2,1)"/>
++    <setting id="m3uUrl" type="text" label="30012" default="http://127.0.0.1:8000/channels/?type=m3u" visible="eq(-2,1)"/>
+     <setting id="m3uCache" type="bool" label="30025" default="true" visible="eq(-3,1)"/>
+     <setting id="startNum" type="number" label="30013" default="1" />
+   </category>
+@@ -15,7 +15,7 @@
+     <setting id="sep2" label="30020" type="lsep"/>
+     <setting id="epgPathType" type="enum" label="30000" lvalues="30001|30002" default="1" />
+     <setting id="epgPath" type="file" label="30021" default="" visible="eq(-1,0)"/>
+-    <setting id="epgUrl" type="text" label="30022" default="" visible="eq(-2,1)"/>
++    <setting id="epgUrl" type="text" label="30022" default="http://api.torrent-tv.ru/ttv.xmltv.xml.gz" visible="eq(-2,1)"/>
+     <setting id="epgCache" type="bool" label="30026" default="true" visible="eq(-3,1)"/>
+     <setting id="epgTimeShift" type="slider" label="30024" default="0" range="-12,.5,12" option="float"/>
+     <setting id="epgTSOverride" type="bool" label="30023" default="false"/>
+@@ -28,6 +28,6 @@
+     <setting id="logoPath" type="folder" label="30031" default="" visible="eq(-1,0)"/>
+     <setting id="logoBaseUrl" type="text" label="30032" default="" visible="eq(-2,1)"/>
+     <setting id="sep3" label="30040" type="lsep"/>
+-    <setting id="logoFromEpg" type="enum" label="30041" default="0" lvalues="30042|30043|30044"/>
++    <setting id="logoFromEpg" type="enum" label="30041" default="1" lvalues="30042|30043|30044"/>
+   </category>
+ </settings>
+diff -Naurp pvr.iptvsimple-adee8a7/src/client.cpp pvr.iptvsimple-adee8a7-patch/src/client.cpp
+--- pvr.iptvsimple-adee8a7/src/client.cpp	2016-10-11 12:45:04.000000000 +0300
++++ pvr.iptvsimple-adee8a7-patch/src/client.cpp	2016-11-03 09:37:50.000000000 +0200
+@@ -442,9 +442,10 @@ PVR_ERROR SignalStatus(PVR_SIGNAL_STATUS
+   return PVR_ERROR_NO_ERROR;
+ }
+ 
++bool CanPauseStream(void) { return true; }
++
+ /** UNUSED API FUNCTIONS */
+ const char * GetLiveStreamURL(const PVR_CHANNEL &channel)  { return ""; }
+-bool CanPauseStream(void) { return false; }
+ int GetRecordingsAmount(bool deleted) { return -1; }
+ PVR_ERROR GetRecordings(ADDON_HANDLE handle, bool deleted) { return PVR_ERROR_NOT_IMPLEMENTED; }
+ PVR_ERROR OpenDialogChannelScan(void) { return PVR_ERROR_NOT_IMPLEMENTED; }

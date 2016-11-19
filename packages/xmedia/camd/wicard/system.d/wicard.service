@@ -1,0 +1,16 @@
+[Unit]
+Description=Wicard Daemon
+After=network-online.target
+Before=kodi.service
+Wants=network-online.target
+ConditionPathExists=/storage/.cache/services/wicard.conf
+
+[Service]
+ExecStart=/bin/sh -c 'exec /usr/bin/wicard.start'
+TimeoutStopSec=1
+Restart=always
+RestartSec=2
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target

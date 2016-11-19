@@ -1,0 +1,36 @@
+diff -Naurp vdr-plugin-vnsiserver/hash.c vdr-plugin-vnsiserver-patch/hash.c
+--- vdr-plugin-vnsiserver/hash.c	2015-11-19 16:51:44.000000000 +0200
++++ vdr-plugin-vnsiserver-patch/hash.c	2015-11-19 17:03:40.000000000 +0200
+@@ -93,7 +93,9 @@ uint32_t CreateStringHash(const cString&
+ }
+ 
+ uint32_t CreateChannelUID(const cChannel* channel) {
+-  cString channelid = channel->GetChannelID().ToString();
++  cString channelid = cString::sprintf("%s%s",
++      (const char*)channel->GetChannelID().ToString(),
++      (const char*)channel->Name());
+   return CreateStringHash(channelid);
+ }
+ 
+@@ -104,7 +106,9 @@ const cChannel* FindChannelByUID(uint32_
+   LOCK_CHANNELS_READ;
+   // maybe we need to use a lookup table
+   for (const cChannel *channel = Channels->First(); channel; channel = Channels->Next(channel)) {
+-    cString channelid = channel->GetChannelID().ToString();
++    cString channelid = cString::sprintf("%s%s",
++      (const char*)channel->GetChannelID().ToString(),
++      (const char*)channel->Name());
+     if(channelUID == CreateStringHash(channelid)) {
+       result = channel;
+       break;
+@@ -114,7 +118,9 @@ const cChannel* FindChannelByUID(uint32_
+   // maybe we need to use a lookup table
+   Channels.Lock(false);
+   for (cChannel *channel = Channels.First(); channel; channel = Channels.Next(channel)) {
+-    cString channelid = channel->GetChannelID().ToString();
++    cString channelid = cString::sprintf("%s%s",
++      (const char*)channel->GetChannelID().ToString(),
++      (const char*)channel->Name());
+     if(channelUID == CreateStringHash(channelid)) {
+       result = channel;
+       break;

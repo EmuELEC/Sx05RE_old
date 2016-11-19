@@ -1,0 +1,233 @@
+diff -Nupr iptv-2.2.1/device.c iptv-2.2.1-mod/device.c
+--- iptv-2.2.1/device.c	2015-04-04 11:20:00.000000000 +1000
++++ iptv-2.2.1-mod/device.c	2016-01-03 22:04:41.000000000 +1000
+@@ -295,9 +295,9 @@ bool cIptvDevice::SetChannelDevice(const
+   if (pIptvStreamerM && pIptvStreamerM->SetSource(itp.Address(), itp.Parameter(), deviceIndexM, protocol)) {
+      channelM = *channelP;
+      if (sidScanEnabledM && pSidScannerM && IptvConfig.GetSectionFiltering())
+-        pSidScannerM->SetChannel(channelM.GetChannelID());
++        pSidScannerM->SetChannel(channelM.GetChannelID(),channelP->Parameters());
+      if (pidScanEnabledM && pPidScannerM)
+-        pPidScannerM->SetChannel(channelM.GetChannelID());
++        pPidScannerM->SetChannel(channelM.GetChannelID(),channelP->Parameters());
+      }
+   return true;
+ }
+diff -Nupr iptv-2.2.1/iptv.c iptv-2.2.1-mod/iptv.c
+--- iptv-2.2.1/iptv.c	2015-04-04 11:20:00.000000000 +1000
++++ iptv-2.2.1-mod/iptv.c	2015-06-04 17:47:26.000000000 +1000
+@@ -7,6 +7,9 @@
+ 
+ #include <getopt.h>
+ #include <vdr/plugin.h>
++#include <vdr/channels.h>
++#include <vdr/tools.h>
++#include <vdr/sources.h>
+ #include "common.h"
+ #include "config.h"
+ #include "setup.h"
+@@ -35,6 +38,7 @@ public:
+   virtual const char *Description(void) { return tr(DESCRIPTION); }
+   virtual const char *CommandLineHelp(void);
+   virtual bool ProcessArgs(int argc, char *argv[]);
++  virtual void DeleteDuplicateChannels(void);
+   virtual bool Initialize(void);
+   virtual bool Start(void);
+   virtual void Stop(void);
+@@ -100,6 +104,30 @@ bool cPluginIptv::ProcessArgs(int argc,
+   return true;
+ }
+ 
++/*------- Delete duplicate channels -------*/
++
++void cPluginIptv::DeleteDuplicateChannels(void)
++{
++  int n = Channels.Count();
++  cChannel *channel, *Channel;
++  for (int a = 0; a < n; a++) {
++      channel = Channels.Get(a);
++      if (channel && channel->GroupSep()) continue;
++      for (int b = 0; b < n; b++) {
++          Channel = Channels.Get(b);
++          if (Channel && Channel->GroupSep()) continue;
++          if (a != b && channel && Channel && cSource::IsType(channel->Source(), 'I') && !strcmp(channel->Parameters(), Channel->Parameters())) {
++             dsyslog("deleting duplicate channel %s\n", (const char*)Channel->ToText());
++             Channels.Del(Channel);
++             n--;
++             b--;
++          }
++      }
++  }
++  Channels.Save();
++}
++/*--------------------------------------------------------*/
++
+ bool cPluginIptv::Initialize(void)
+ {
+   debug1("%s", __PRETTY_FUNCTION__);
+@@ -113,6 +141,10 @@ bool cPluginIptv::Start(void)
+ {
+   debug1("%s", __PRETTY_FUNCTION__);
+   // Start any background activities the plugin shall perform.
++#ifdef DVBCHANPATCH
++  if (Setup.DelDupChan == 1)
++#endif
++     DeleteDuplicateChannels();
+   if (curl_global_init(CURL_GLOBAL_ALL) == CURLE_OK) {
+      curl_version_info_data *data = curl_version_info(CURLVERSION_NOW);
+      cString info = cString::sprintf("Using CURL %s", data->version);
+diff -Nupr iptv-2.2.1/Makefile iptv-2.2.1-mod/Makefile
+--- iptv-2.2.1/Makefile	2015-04-04 11:20:00.000000000 +1000
++++ iptv-2.2.1-mod/Makefile	2015-06-04 17:45:26.000000000 +1000
+@@ -12,6 +12,8 @@
+ 
+ PLUGIN = iptv
+ 
++-include $(VDRDIR)/Make.config
++
+ ### The version number of this plugin (taken from the main source file):
+ 
+ VERSION = $(shell grep 'const char VERSION\[\] *=' $(PLUGIN).c | awk '{ print $$5 }' | sed -e 's/[";]//g')
+@@ -70,6 +72,10 @@ ifneq ($(strip $(GITTAG)),)
+ DEFINES += -DGITVERSION='"-GIT-$(GITTAG)"'
+ endif
+ 
++ifdef DVBCHANPATCH
++DEFINES += -DDVBCHANPATCH
++endif
++
+ .PHONY: all all-redirect
+ all-redirect: all
+ 
+diff -Nupr iptv-2.2.1/pidscanner.c iptv-2.2.1-mod/pidscanner.c
+--- iptv-2.2.1/pidscanner.c	2015-04-04 11:20:00.000000000 +1000
++++ iptv-2.2.1-mod/pidscanner.c	2015-05-30 01:03:04.000000000 +1000
+@@ -20,7 +20,8 @@ cPidScanner::cPidScanner(void)
+   vPidM(0xFFFF),
+   aPidM(0xFFFF),
+   numVpidsM(0),
+-  numApidsM(0)
++  numApidsM(0),
++  parameters(NULL)
+ {
+   debug1("%s", __PRETTY_FUNCTION__);
+ }
+@@ -30,7 +31,7 @@ cPidScanner::~cPidScanner()
+   debug1("%s", __PRETTY_FUNCTION__);
+ }
+ 
+-void cPidScanner::SetChannel(const tChannelID &channelIdP)
++void cPidScanner::SetChannel(const tChannelID &channelIdP, const char *Parameters)
+ {
+   debug1("%s (%s)", __PRETTY_FUNCTION__, *channelIdP.ToString());
+   channelIdM = channelIdP;
+@@ -39,6 +40,7 @@ void cPidScanner::SetChannel(const tChan
+   aPidM = 0xFFFF;
+   numApidsM = 0;
+   processM = true;
++  parameters = Parameters;
+ }
+ 
+ void cPidScanner::Process(const uint8_t* bufP)
+@@ -112,7 +114,13 @@ void cPidScanner::Process(const uint8_t*
+               timeoutM.Set(PIDSCANNER_TIMEOUT_IN_MS);
+               return;
+               }
+-           cChannel *IptvChannel = Channels.GetByChannelID(channelIdM);
++           cChannel *IptvChannel = NULL;
++           for (cChannel *cChannel = Channels.First(); cChannel; cChannel = Channels.Next(cChannel)) {
++              if(cSource::IsType(cChannel->Source(), 'I') && !strcmp(cChannel->Parameters(),parameters) && channelIdM == cChannel->GetChannelID()){
++                 IptvChannel = cChannel;
++                 break;
++              }
++           }
+            if (IptvChannel) {
+               int Apids[MAXAPIDS + 1] = { 0 }; // these lists are zero-terminated
+               int Atypes[MAXAPIDS + 1] = { 0 };
+diff -Nupr iptv-2.2.1/pidscanner.h iptv-2.2.1-mod/pidscanner.h
+--- iptv-2.2.1/pidscanner.h	2015-04-04 11:20:00.000000000 +1000
++++ iptv-2.2.1-mod/pidscanner.h	2015-04-25 20:09:05.000000000 +1000
+@@ -28,11 +28,12 @@ private:
+   int aPidM;
+   int numVpidsM;
+   int numApidsM;
++  cString parameters;
+ 
+ public:
+   cPidScanner(void);
+   ~cPidScanner();
+-  void SetChannel(const tChannelID &channelIdP);
++  void SetChannel(const tChannelID &channelIdP, const char *Parameters);
+   void Process(const uint8_t* bufP);
+   void Open()  { debug1("%s", __PRETTY_FUNCTION__); timeoutM.Set(PIDSCANNER_TIMEOUT_IN_MS); }
+   void Close() { debug1("%s", __PRETTY_FUNCTION__); timeoutM.Set(0); }
+diff -Nupr iptv-2.2.1/sidscanner.c iptv-2.2.1-mod/sidscanner.c
+--- iptv-2.2.1/sidscanner.c	2015-04-04 11:20:00.000000000 +1000
++++ iptv-2.2.1-mod/sidscanner.c	2015-05-30 01:03:15.000000000 +1000
+@@ -15,6 +15,7 @@ cSidScanner::cSidScanner(void)
+   sidFoundM(false),
+   nidFoundM(false),
+   tidFoundM(false),
++  parameters(NULL),
+   isActiveM(false)
+ {
+   debug1("%s", __PRETTY_FUNCTION__);
+@@ -27,13 +28,14 @@ cSidScanner::~cSidScanner()
+   debug1("%s", __PRETTY_FUNCTION__);
+ }
+ 
+-void cSidScanner::SetChannel(const tChannelID &channelIdP)
++void cSidScanner::SetChannel(const tChannelID &channelIdP, const char *Parameters)
+ {
+   debug1("%s (%s)", __PRETTY_FUNCTION__, *channelIdP.ToString());
+   channelIdM = channelIdP;
+   sidFoundM = false;
+   nidFoundM = false;
+   tidFoundM = false;
++  parameters = Parameters;
+ }
+ 
+ void cSidScanner::Process(u_short pidP, u_char tidP, const u_char *dataP, int lengthP)
+@@ -91,14 +93,20 @@ void cSidScanner::Process(u_short pidP,
+   if ((newSid >= 0) || (newNid >= 0) || (newTid >= 0)) {
+      if (!Channels.Lock(true, 10))
+         return;
+-     cChannel *IptvChannel = Channels.GetByChannelID(channelIdM);
++     cChannel *IptvChannel = NULL;
++        for (cChannel *cChannel = Channels.First(); cChannel; cChannel = Channels.Next(cChannel)) {
++           if(cSource::IsType(cChannel->Source(), 'I') && !strcmp(cChannel->Parameters(),parameters) && channelIdM == cChannel->GetChannelID()){
++           IptvChannel = cChannel;
++           break;
++        }
++     }
+      if (IptvChannel)
+         IptvChannel->SetId((newNid < 0) ? IptvChannel->Nid() : newNid, (newTid < 0) ? IptvChannel->Tid() : newTid,
+                            (newSid < 0) ? IptvChannel->Sid() : newSid, IptvChannel->Rid());
+      Channels.Unlock();
+      }
+   if (sidFoundM && nidFoundM && tidFoundM) {
+-     SetChannel(tChannelID::InvalidID);
++     SetChannel(tChannelID::InvalidID,NULL);
+      SetStatus(false);
+      }
+ }
+diff -Nupr iptv-2.2.1/sidscanner.h iptv-2.2.1-mod/sidscanner.h
+--- iptv-2.2.1/sidscanner.h	2015-04-04 11:20:00.000000000 +1000
++++ iptv-2.2.1-mod/sidscanner.h	2015-04-25 20:12:19.000000000 +1000
+@@ -19,6 +19,7 @@ private:
+   bool sidFoundM;
+   bool nidFoundM;
+   bool tidFoundM;
++  cString parameters;
+   bool isActiveM;
+ 
+ protected:
+@@ -27,7 +28,7 @@ protected:
+ public:
+   cSidScanner(void);
+   ~cSidScanner();
+-  void SetChannel(const tChannelID &channelIdP);
++  void SetChannel(const tChannelID &channelIdP,const char *Parameters);
+   void Open()  { debug1("%s", __PRETTY_FUNCTION__); isActiveM = true; }
+   void Close() { debug1("%s", __PRETTY_FUNCTION__); isActiveM = false; }
+ };

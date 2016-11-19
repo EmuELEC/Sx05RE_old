@@ -1,0 +1,71 @@
+diff -Naurp vdr-plugin-vnsiserver-87b14f7/po/ru_RU.po vdr-plugin-vnsiserver-87b14f7-patch/po/ru_RU.po
+--- vdr-plugin-vnsiserver-87b14f7/po/ru_RU.po	1970-01-01 03:00:00.000000000 +0300
++++ vdr-plugin-vnsiserver-87b14f7-patch/po/ru_RU.po	2016-07-21 09:58:41.564807119 +0300
+@@ -0,0 +1,67 @@
++# VDR VNSI plugin language source file.
++# Copyright (C) 2015 Alwin Esch
++# This file is distributed under the same license as the VDR package.
++#
++msgid ""
++msgstr ""
++"Project-Id-Version: vdr-vnsiserver 1.5.0\n"
++"Report-Msgid-Bugs-To: <see README>\n"
++"POT-Creation-Date: 2016-07-21 09:27+0300\n"
++"PO-Revision-Date: blabla\n"
++"Last-Translator: blabla\n"
++"Language-Team: Russian <alex@alexelec.in.ua>\n"
++"Language: ru\n"
++"MIME-Version: 1.0\n"
++"Content-Type: text/plain; charset=UTF-8\n"
++"Content-Transfer-Encoding: 8bit\n"
++
++msgid "Your scanner version doesnt support services - Please upgrade."
++msgstr "Ваша версия сканера не поддерживается - пожалуйста обновите."
++
++msgid "Your scanner version is to old - Please upgrade."
++msgstr "Старая версия сканера - пожалуйста обновите."
++
++msgid "Off"
++msgstr "Выкл."
++
++msgid "RAM"
++msgstr "ОЗУ"
++
++msgid "File"
++msgstr "Файл"
++
++msgid "Time Shift Mode"
++msgstr "Режим сдвига времени"
++
++msgid "TS Buffersize (RAM) (1-80) x 100MB"
++msgstr "TS размер буфера (RAM) (1-80) x 100MB"
++
++msgid "TS Buffersize (File) (1-10) x 1GB"
++msgstr "TS размер буфера (Файл) (1-10) x 1GB"
++
++msgid "TS Buffer Directory"
++msgstr "TS Каталог буфера"
++
++msgid "Play Recording instead of live"
++msgstr "Играть Запись вместо LiveTV"
++
++msgid "Avoid EPG scan while streaming"
++msgstr "Избегайть сканирования EPG при потоковой передаче"
++
++msgid "Disable scramble timeout"
++msgstr "Отключение тайм-аута скремблирования"
++
++msgid "Recording with the same name exists"
++msgstr "Запись с таким именем существует"
++
++msgid "Error while read last filenumber"
++msgstr "Ошибка считывания последнего номера файла"
++
++msgid "Error while accessing vdrfile"
++msgstr "Ошибка доступа к vdr-файлу"
++
++msgid "Error while accessing indexfile"
++msgstr "Ошибка доступа к index-файлу"
++
++msgid "Deleted recording vanished"
++msgstr "Удаленные записи исчезли"

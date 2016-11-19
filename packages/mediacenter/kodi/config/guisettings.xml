@@ -1,0 +1,28 @@
+<settings>
+    <debug>
+        <screenshotpath pathversion="1">/storage/screenshots/</screenshotpath>
+    </debug>
+    <general>
+        <settinglevel>3</settinglevel>
+    </general>
+    <locale>
+        <audiolanguage default="true">original</audiolanguage>
+        <charset default="true">DEFAULT</charset>
+        <country default="true">Russia</country>
+        <keyboardlayouts default="true">English QWERTY|Russian ЙЦУКЕН</keyboardlayouts>
+        <language default="true">resource.language.ru_ru</language>
+        <longdateformat default="true">regional</longdateformat>
+        <shortdateformat default="true">regional</shortdateformat>
+        <speedunit default="true">regional</speedunit>
+        <subtitlelanguage default="true">original</subtitlelanguage>
+        <temperatureunit default="true">regional</temperatureunit>
+        <timeformat default="true">regional</timeformat>
+        <timezone>Europe/Kiev</timezone>
+        <timezonecountry>Ukraine</timezonecountry>
+        <use24hourclock default="true">regional</use24hourclock>
+    </locale>
+    <audio>
+        <mute>false</mute>
+        <fvolumelevel>0.500000</fvolumelevel>
+    </audio>
+</settings>

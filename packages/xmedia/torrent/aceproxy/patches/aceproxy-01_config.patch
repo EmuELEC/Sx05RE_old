@@ -1,0 +1,46 @@
+diff -Naurp aceproxy-26e79d1/aceproxy/aceconfig.py aceproxy-26e79d1-patch/aceproxy/aceconfig.py
+--- aceproxy-26e79d1/aceproxy/aceconfig.py	2016-08-23 13:29:03.000000000 +0300
++++ aceproxy-26e79d1-patch/aceproxy/aceconfig.py	2016-10-18 13:26:35.000000000 +0300
+@@ -30,7 +30,7 @@ class AceConfig(acedefconfig.AceDefConfi
+     aceport = 62062
+     # Ace Stream age parameter (LT_13, 13_17, 18_24, 25_34, 35_44, 45_54,
+     # 55_64, GT_65)
+-    aceage = AceConst.AGE_18_24
++    aceage = AceConst.AGE_35_44
+     # Ace Stream sex parameter (MALE or FEMALE)
+     acesex = AceConst.SEX_MALE
+     # Ace Stream Engine startup timeout
+@@ -96,7 +96,7 @@ class AceConfig(acedefconfig.AceDefConfi
+     vlcspawn = False
+     # VLC cmd line (use `--file-logging --logfile=filepath` to write log)
+     # Please use the full path to executable for Windows, for example - C:\\Program Files\\VideoLAN\\VLC\\vlc.exe
+-    vlccmd = "vlc -I telnet --clock-jitter -1 --network-caching -1 --sout-mux-caching 2000 --telnet-password admin --telnet-port 4212"
++    vlccmd = "cvlc -I telnet --clock-jitter -1 --network-caching -1 --sout-mux-caching 5000 --telnet-password admin --telnet-port 4212 --file-logging --logfile=/var/log/vlc-aceproxy.log --sout-ts-pid-video=110 --sout-ts-pid-audio=120"
+     # VLC spawn timeout
+     # Adjust this if you get error 'Cannot spawn VLC!'
+     vlcspawntimeout = 5
+@@ -170,7 +170,7 @@ class AceConfig(acedefconfig.AceDefConfi
+     # In seconds.
+     videodestroydelay = 0
+     # Pre-buffering timeout. In seconds.
+-    videotimeout = 40
++    videotimeout = 120
+     #
+     # Some video players (mostly STBs and Smart TVs) can generate dummy requests
+     # to detect MIME-type or something before playing which Ace Stream handles badly.
+@@ -188,13 +188,13 @@ class AceConfig(acedefconfig.AceDefConfi
+     # Logging configuration
+     #
+     # Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+-    loglevel = logging.DEBUG
++    loglevel = logging.INFO
+     # Log message format
+     logfmt = '%(asctime)s %(levelname)s %(threadName)s %(filename)s:%(lineno)d %(name)s| %(message)s'
+     # Log date format
+     logdatefmt='%d.%m %H:%M:%S'
+     # Full path to a log file
+-    logfile = None 
++    logfile = '/var/log/aceproxy.log'
+     
+     # This method is used to detect fake requests. Some players send such 
+     # requests in order to detect the MIME type and/or check the stream availability.

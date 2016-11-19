@@ -1,0 +1,17 @@
+[Unit]
+Description=VNC Server Amlogic
+After=graphical.target
+ConditionPathExists=/storage/.cache/services/vnc.conf
+
+[Service]
+EnvironmentFile=-/run/alexelec/aml-vnc.conf
+ExecStartPre=-/usr/bin/vnc-config
+ExecStart=/usr/bin/aml-vnc $VNC_ARGS
+ExecStop=/bin/kill -TERM $MAINPID
+TimeoutStopSec=1
+Restart=always
+RestartSec=2
+StartLimitInterval=0
+
+[Install]
+WantedBy=kodi.target

@@ -1,0 +1,35 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+SERVICE_DIR="/storage/.cache/services"
+CHROOT_DIR="/storage/.config/acestream"
+
+[ -f $SERVICE_DIR/acestream.conf ] && . $SERVICE_DIR/acestream.conf
+
+[ -z $ACE_CACHE_TYPE ] && ACE_CACHE_TYPE="memory"
+[ -z $ACE_CACHE_LIMIT ] && ACE_CACHE_LIMIT="5"
+[ -z $ACE_LIFE_BUFFER ] && ACE_LIFE_BUFFER="60"
+[ -z $ACE_LIFE_CACHE_SIZE ] && ACE_LIFE_CACHE_SIZE="20971520"
+[ -z $ACE_LOGIN ] && ACE_LOGIN="user"
+[ -z $ACE_PASSW ] && ACE_PASSW="pass"
+
+ACE_ARG="--live-cache-type $ACE_CACHE_TYPE \
+         --live-buffer $ACE_LIFE_BUFFER \
+         --cache-limit $ACE_CACHE_LIMIT \
+         --live-cache-size $ACE_LIFE_CACHE_SIZE \
+         --login $ACE_LOGIN \
+         --password $ACE_PASSW"
+
+if [ -f $CHROOT_DIR/acestream-user.conf ]; then
+  . $CHROOT_DIR/acestream-user.conf
+  if [ -n "$ACE_USER_ARG" ]; then
+    ACE_ARG="$ACE_USER_ARG"
+  fi
+fi
+
+[ "$ACE_DEBUG" == "1" ] && ACE_ARG="$ACE_ARG --debug-profile --log-debug 1 --log-modules root:D"
+
+/usr/bin/acestream.start --client-console --cache-dir /media/acecache --state-dir /media/acecache $ACE_ARG

@@ -1,0 +1,37 @@
+diff -Naurp vdr-2.0.3/device.c vdr-2.0.3-patch/device.c
+--- vdr-2.0.3/device.c	2013-10-04 11:25:52.000000000 +0300
++++ vdr-2.0.3-patch/device.c	2013-10-04 09:18:19.000000000 +0300
+@@ -19,6 +19,9 @@
+ #include "status.h"
+ #include "transfer.h"
+ 
++// reel-channelscan
++bool scanning_on_receiving_device = false; 
++
+ // --- cLiveSubtitle ---------------------------------------------------------
+ 
+ class cLiveSubtitle : public cReceiver {
+diff -Naurp vdr-2.0.3/device.h vdr-2.0.3-patch/device.h
+--- vdr-2.0.3/device.h	2013-10-04 11:25:52.000000000 +0300
++++ vdr-2.0.3-patch/device.h	2013-10-04 09:19:24.000000000 +0300
+@@ -34,6 +34,8 @@
+ #define VOLUMEDELTA         5 // used to increase/decrease the volume
+ #define MAXOCCUPIEDTIMEOUT 99 // max. time (in seconds) a device may be occupied
+ 
++extern bool scanning_on_receiving_device;
++
+ enum eSetChannelResult { scrOk, scrNotAvailable, scrNoTransfer, scrFailed };
+ 
+ enum ePlayMode { pmNone,           // audio/video from decoder
+diff -Naurp vdr-2.0.3/vdr.c vdr-2.0.3-patch/vdr.c
+--- vdr-2.0.3/vdr.c	2013-10-04 11:25:52.000000000 +0300
++++ vdr-2.0.3-patch/vdr.c	2013-10-04 09:21:04.000000000 +0300
+@@ -854,7 +854,7 @@ int main(int argc, char *argv[])
+         if (!EITScanner.Active() && cDevice::PrimaryDevice()->HasDecoder()) {
+            static time_t lastTime = 0;
+            if (!cDevice::PrimaryDevice()->HasProgramme()) {
+-              if (!CamMenuActive() && Now - lastTime > MINCHANNELWAIT) { // !CamMenuActive() to avoid interfering with the CAM if a CAM menu is open
++              if (!CamMenuActive() && !scanning_on_receiving_device && Now - lastTime > MINCHANNELWAIT) { // !CamMenuActive() to avoid interfering with the CAM if a CAM menu is open
+                  cChannel *Channel = Channels.GetByNumber(cDevice::CurrentChannel());
+                  if (Channel && (Channel->Vpid() || Channel->Apid(0) || Channel->Dpid(0))) {
+                     if (cDevice::GetDeviceForTransponder(Channel, LIVEPRIORITY) && Channels.SwitchTo(Channel->Number())) // try to switch to the original channel...

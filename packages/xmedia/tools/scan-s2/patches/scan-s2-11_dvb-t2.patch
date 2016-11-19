@@ -1,0 +1,15 @@
+diff -Naurp scan-s2-46/dump-vdr.c scan-s2-46-patch/dump-vdr.c
+--- scan-s2-46/dump-vdr.c	2016-03-04 19:11:29.000000000 +0200
++++ scan-s2-46-patch/dump-vdr.c	2016-03-04 19:23:11.000000000 +0200
+@@ -193,7 +193,10 @@ void vdr_dump_dvb_parameters (FILE *f, t
+ 			if(t->delivery_system == SYS_DVBT2)
+ 			{
+ 				fprintf (f, "S1");
+-				fprintf (f, "P%i", t->stream_id);
++				if (t->stream_id == -1)
++					fprintf (f, "P%i", 0);
++				else
++					fprintf (f, "P%i", t->stream_id);
+ 			}
+ 			fprintf (f, ":T:27500:");
+ 			break;

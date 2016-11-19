@@ -1,0 +1,12 @@
+[Unit]
+Description=Config Android disk mount
+After=userconfig.service
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'exec /usr/bin/nand-config.sh'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

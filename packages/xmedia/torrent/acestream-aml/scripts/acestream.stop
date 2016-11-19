@@ -1,0 +1,27 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+SERVICE_DIR="/storage/.cache/services"
+CHROOT_DIR="/storage/.config/acestream"
+
+[ -f $SERVICE_DIR/acestream.conf ] && . $SERVICE_DIR/acestream.conf
+
+pkill -9 -f "/system/data/data/org.acestream.engine/files/python/bin/python" &>/dev/null
+pkill -9 -f "/system/bin/acestream.sh" &>/dev/null
+
+[ "$ACE_CLEAN_CACHE" == "1" ] && rm -fR $CHROOT_DIR/media/acecache &>/dev/null
+
+if [ "$ACE_MOUNT_USB" != "none" ]; then
+  /sbin/chroot $CHROOT_DIR /system/bin/toolbox umount /media &>/dev/null
+fi
+
+umount $CHROOT_DIR/proc &>/dev/null
+umount $CHROOT_DIR/sys &>/dev/null
+umount $CHROOT_DIR/dev &>/dev/null
+
+if [ "$ACE_MOUNT_USB" != "none" ]; then
+  rm -fR $CHROOT_DIR/media/acecache &>/dev/null
+fi

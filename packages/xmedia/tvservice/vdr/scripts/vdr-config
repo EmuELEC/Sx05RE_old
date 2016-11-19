@@ -1,0 +1,74 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+. /etc/profile
+
+LOCK_DIR="/var/lock"
+SERVICE_DIR="/storage/.cache/services"
+VDR_CONFIG_DIR="/storage/.config/vdr"
+
+. $SERVICE_DIR/vdr.conf
+[ -f "$VDR_CONFIG_DIR/vdr-plugins.conf" ] && . $VDR_CONFIG_DIR/vdr-plugins.conf
+[ -f "$SERVICE_DIR/locale.conf" ] && . $SERVICE_DIR/locale.conf
+[ -z "$SYS_LOCALE" ] && SYS_LOCALE="ru_RU.UTF-8"
+
+load_firmware () {
+  HD_STAR_ID="1f4d:3000"
+  TIMEOUT=20 # 5sec (5x4=20)
+  lsusb | grep $HD_STAR_ID > /dev/null 2>&1
+  if [ "$?" == "0" ]; then
+    logger -t vdr "Load DVB firmware: $HD_STAR_ID"
+    eval LANG=$SYS_LOCALE exec vdr --no-kbd --log=0 > /dev/null 2>&1 &
+    for i in $(seq 1 $TIMEOUT) ; do
+        dmesg | grep 'ds3000_firmware_ondemand: Waiting for firmware upload(2)' > /dev/null 2>&1
+        if [ "$?" == "0" ]; then
+            usleep 2000000
+            break
+        fi
+        usleep 250000
+    done
+    killall -9 vdr > /dev/null 2>&1
+    logger -t vdr "Load DVB firmware: $HD_STAR_ID completed."
+    touch $LOCK_DIR/dvb-fw.load
+    usleep 1000000
+  fi
+}
+
+[ ! -f "$LOCK_DIR/dvb-fw.load" ] && load_firmware
+
+  VDR_ARGS="--no-kbd"
+
+  if [ -d "$VDR_VIDEO_DIR" ]; then
+       VDR_ARGS="$VDR_ARGS --video=\'$VDR_VIDEO_DIR\'"
+  fi
+
+  if [ "$VDR_DEBUG" == "1" ]; then
+      VDR_ARGS="$VDR_ARGS --log=3"
+  else
+      VDR_ARGS="$VDR_ARGS --log=1"
+  fi
+
+  VDR_ARGS="$VDR_ARGS -P vnsiserver"
+  [ "$VDR_DVBAPI" == "1" ] && VDR_ARGS="$VDR_ARGS -P'dvbapi -d'"
+  [ "$VDR_IPTV" == "1" ] && VDR_ARGS="$VDR_ARGS -P iptv"
+  [ "$VDR_SATIP" == "1" ] && VDR_ARGS="$VDR_ARGS -P satip"
+  [ "$VDR_STREAMDEV_SERVER" == "1" ] && VDR_ARGS="$VDR_ARGS -P streamdev-server"
+  [ "$VDR_STREAMDEV_CLIENT" == "1" ] && VDR_ARGS="$VDR_ARGS -P streamdev-client -P epgsync -P svdrpservice"
+  [ "$VDR_CHSCAN" == "1" ] && VDR_ARGS="$VDR_ARGS -P channelscan"
+
+  if [ "$VDR_LIVE" == "1" ]; then
+      mkdir -p /storage/.cache/vdr/epgimages
+      VDR_ARGS="$VDR_ARGS -P epgsearch -P'live --ip=0.0.0.0 -e /storage/.cache/vdr/epgimages'"
+      if [ ! -e /storage/.config/vdr/plugins/live/live.pem ] || [ ! -e /storage/.config/vdr/plugins/live/live-key.pem ]; then
+          openssl req -new -x509 -nodes -days 9999 -batch -subj "/" -outform pem -out /storage/.config/vdr/plugins/live/live.pem -keyout /storage/.config/vdr/plugins/live/live-key.pem > /dev/null 2>&1
+      fi
+  fi
+
+  [ -n "$VDR_PLUGINS" ] && VDR_ARGS="$VDR_ARGS $VDR_PLUGINS"
+
+echo 'performance' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+echo "SYS_LOCALE=\"$SYS_LOCALE\"" > /run/alexelec/vdr.conf
+echo "VDR_ARGS=\"$VDR_ARGS\"" >> /run/alexelec/vdr.conf

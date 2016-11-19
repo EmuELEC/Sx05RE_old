@@ -1,0 +1,43 @@
+diff -Naurp kodi-language-addons-4e66e1c/resource.language.ru_ru/addon.xml kodi-language-addons-4e66e1c-patch/resource.language.ru_ru/addon.xml
+--- kodi-language-addons-4e66e1c/resource.language.ru_ru/addon.xml	2016-11-10 14:23:28.000000000 +0200
++++ kodi-language-addons-4e66e1c-patch/resource.language.ru_ru/addon.xml	2016-11-10 17:24:08.000000000 +0200
+@@ -1,7 +1,7 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <addon
+   id="resource.language.ru_ru"
+-  version="3.0.7"
++  version="4.0.7"
+   name="Russian"
+   provider-name="Team Kodi">
+   <requires>
+diff -Naurp kodi-language-addons-4e66e1c/resource.language.ru_ru/resources/strings.po kodi-language-addons-4e66e1c-patch/resource.language.ru_ru/resources/strings.po
+--- kodi-language-addons-4e66e1c/resource.language.ru_ru/resources/strings.po	2016-11-10 14:23:28.000000000 +0200
++++ kodi-language-addons-4e66e1c-patch/resource.language.ru_ru/resources/strings.po	2016-11-10 17:27:03.000000000 +0200
+@@ -4358,8 +4358,8 @@ msgid "Total uptime"
+ msgstr "Общее время работы"
+ 
+ msgctxt "#12395"
+-msgid "Battery level"
+-msgstr "Уровень батареи"
++msgid "Linux version"
++msgstr "Версия Linux"
+ 
+ msgctxt "#12600"
+ msgid "Weather"
+@@ -4406,12 +4406,12 @@ msgid "Quit"
+ msgstr "Выход"
+ 
+ msgctxt "#13010"
+-msgid "Hibernate"
+-msgstr "Спящий режим"
++msgid "Games"
++msgstr "Игры"
+ 
+ msgctxt "#13011"
+-msgid "Suspend"
+-msgstr "Ждущий режим"
++msgid "Switch to Android"
++msgstr "Переключить в Android"
+ 
+ msgctxt "#13012"
+ msgid "Exit"

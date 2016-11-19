@@ -1,0 +1,288 @@
+From bd339a23185973f1ff035e970fb90e27e02e5815 Mon Sep 17 00:00:00 2001
+From: Markus Pfau <pfau@peak3d.de>
+Date: Mon, 7 Nov 2016 21:02:40 +0100
+Subject: [PATCH] AML clock timing adjustments
+
+---
+ .../cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 66 ++++++++++++++++------
+ xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.h  |  3 +
+ .../DVDCodecs/Video/DVDVideoCodecAmlogic.cpp       |  5 +-
+ .../DVDCodecs/Video/DVDVideoCodecAmlogic.h         |  5 +-
+ .../VideoRenderers/HwDecRender/RendererAML.cpp     | 36 ++++++++++--
+ 5 files changed, 89 insertions(+), 26 deletions(-)
+
+diff --git a/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp b/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp
+index f9b4138..fa76d46 100644
+--- a/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp
++++ b/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp
+@@ -26,6 +26,7 @@
+ #include "cores/VideoPlayer/DVDClock.h"
+ #include "cores/VideoPlayer/VideoRenderers/RenderFlags.h"
+ #include "cores/VideoPlayer/VideoRenderers/RenderManager.h"
++#include "settings/AdvancedSettings.h"
+ #include "guilib/GraphicContext.h"
+ #include "settings/DisplaySettings.h"
+ #include "settings/MediaSettings.h"
+@@ -713,7 +714,7 @@ int write_av_packet(am_private_t *para, am_packet_t *pkt)
+         }
+         pkt->newflag = 0;
+     }
+-	
++
+     buf = pkt->data;
+     size = pkt->data_size ;
+     if (size == 0 && pkt->isvalid) {
+@@ -1381,6 +1382,7 @@ int set_header_info(am_private_t *para)
+ /*************************************************************************/
+ CAMLCodec::CAMLCodec()
+   : CThread("CAMLCodec")
++  , m_bDeque(false)
+ {
+   m_opened = false;
+   am_private = new am_private_t;
+@@ -1408,6 +1410,16 @@ CAMLCodec::~CAMLCodec()
+   delete m_dll, m_dll = NULL;
+ }
+ 
++float CAMLCodec::OMXPtsToSeconds(int omxpts)
++{
++  return static_cast<float>(omxpts) / PTS_FREQ;
++}
++
++int CAMLCodec::GetAmlDuration() const
++{
++  return am_private ? am_private->video_rate : 0;
++};
++
+ bool CAMLCodec::OpenDecoder(CDVDStreamInfo &hints)
+ {
+ #ifdef TARGET_ANDROID
+@@ -1812,9 +1824,6 @@ int CAMLCodec::Decode(uint8_t *pData, size_t iSize, double dts, double pts)
+     if (am_private->am_pkt.avdts != (int64_t)AV_NOPTS_VALUE)
+       am_private->am_pkt.avdts -= m_start_dts;
+ 
+-    //CLog::Log(LOGDEBUG, "CAMLCodec::Decode: iSize(%d), dts(%f), pts(%f), avdts(%llx), avpts(%llx)",
+-    //  iSize, dts, pts, am_private->am_pkt.avdts, am_private->am_pkt.avpts);
+-
+     // some formats need header/data tweaks.
+     // the actual write occurs once in write_av_packet
+     // and is controlled by am_pkt.newflag.
+@@ -1859,24 +1868,37 @@ int CAMLCodec::Decode(uint8_t *pData, size_t iSize, double dts, double pts)
+ 
+   // keep hw buffered demux above 1 second
+   if (GetTimeSize() < target_timesize)
++  {
++    m_bDeque = false;
+     rtn |= VC_BUFFER;
++  }
++  else
++    m_bDeque = true;
+ 
+-  // wait until we get a new frame or 25ms,
+-  if (m_ptsQueue.size() == 0)
+-    m_ready_event.WaitMSec(25);
+-
+-  if (m_ptsQueue.size() > 0)
+   {
+     CSingleLock lock(m_ptsQueueMutex);
+-    m_cur_pts = m_ptsQueue.front();
+-    m_ptsQueue.pop_front();
+-    rtn |= VC_PICTURE;
++    if (!rtn && m_ptsQueue.size() == 0)
++    {
++      lock.Leave();
++      m_ready_event.WaitMSec(25);
++      lock.Enter();
++    }
++    if (m_ptsQueue.size() > 0)
++    {
++      m_cur_pts = m_ptsQueue.front();
++      m_ptsQueue.pop_front();
++      rtn |= VC_PICTURE;
++    }
+   }
+-/*
+-  CLog::Log(LOGDEBUG, "CAMLCodec::Decode: "
+-    "rtn(%d), m_cur_pictcnt(%lld), m_cur_pts(%f), lastpts(%f), GetTimeSize(%f), GetDataSize(%d)",
+-    rtn, m_cur_pictcnt, (float)m_cur_pts/PTS_FREQ, (float)am_private->am_pkt.lastpts/PTS_FREQ, GetTimeSize(), GetDataSize());
+-*/
++
++  if (g_advancedSettings.CanLogComponent(LOGVIDEO))
++    CLog::Log(LOGDEBUG, "CAMLCodec::Decode: ret: %d dts_in: %0.6f, pts_in: %0.6f, ptsOut:%0.6f"
++      ,rtn
++      ,static_cast<float>(dts)/DVD_TIME_BASE
++      ,static_cast<float>(pts)/DVD_TIME_BASE
++      ,static_cast<float>(m_cur_pts)/PTS_FREQ
++    );
++
+   return rtn;
+ }
+ 
+@@ -2005,10 +2027,16 @@ void CAMLCodec::Process()
+ 
+   while (!m_bStop)
+   {
++    if (!m_bDeque)
++    {
++      usleep(1000);
++      continue;
++    }
++
+     if (m_dll->codec_poll_cntl(&am_private->vcodec) < 0)
+     {
+       CLog::Log(LOGDEBUG, "CAMLCodec::Process: codec_poll_cntl failed");
+-      Sleep(10);
++      usleep(10000);
+     }
+ 
+     {
+@@ -2017,6 +2045,8 @@ void CAMLCodec::Process()
+       if (DequeueBuffer(pts) == 0)
+       {
+         m_ptsQueue.push_back(pts + m_start_pts);
++        if (g_advancedSettings.CanLogComponent(LOGVIDEO))
++          CLog::Log(LOGDEBUG, "CAMLCodec::Process: %0.4f", static_cast<float>(pts + m_start_pts)/PTS_FREQ);
+         m_ready_event.Set();
+       }
+     }
+diff --git a/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.h b/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.h
+index 0eb5c3e..715f790 100644
+--- a/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.h
++++ b/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.h
+@@ -53,6 +53,8 @@ class CAMLCodec : public CThread
+   void          SetVideoRect(const CRect &SrcRect, const CRect &DestRect);
+   int64_t       GetCurPts() const { return m_cur_pts; }
+   int       	GetOMXPts() const { return static_cast<int>(m_cur_pts - m_start_pts); }
++  static float  OMXPtsToSeconds(int omxpts);
++  int           GetAmlDuration() const;
+ 
+ protected:
+   virtual void  Process();
+@@ -73,6 +75,7 @@ class CAMLCodec : public CThread
+ 
+   DllLibAmCodec   *m_dll;
+   bool             m_opened;
++  bool             m_bDeque;
+   am_private_t    *am_private;
+   CDVDStreamInfo   m_hints;
+   volatile int     m_speed;
+diff --git a/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp b/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp
+index 5939f38..70f0da4 100644
+--- a/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp
++++ b/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp
+@@ -315,7 +315,7 @@ bool CDVDVideoCodecAmlogic::GetPicture(DVDVideoPicture* pDvdVideoPicture)
+     m_Codec->GetPicture(&m_videobuffer);
+   *pDvdVideoPicture = m_videobuffer;
+ 
+-  CDVDAmlogicInfo* info = new CDVDAmlogicInfo(this, m_Codec, m_Codec->GetOMXPts());
++  CDVDAmlogicInfo* info = new CDVDAmlogicInfo(this, m_Codec, m_Codec->GetOMXPts(), m_Codec->GetAmlDuration());
+ 
+   {
+     CSingleLock lock(m_secure);
+@@ -607,11 +607,12 @@ void CDVDVideoCodecAmlogic::RemoveInfo(CDVDAmlogicInfo *info)
+   m_inflight.erase(m_inflight.find(info));
+ }
+ 
+-CDVDAmlogicInfo::CDVDAmlogicInfo(CDVDVideoCodecAmlogic *codec, CAMLCodec *amlcodec, int omxPts)
++CDVDAmlogicInfo::CDVDAmlogicInfo(CDVDVideoCodecAmlogic *codec, CAMLCodec *amlcodec, int omxPts, int amlDuration)
+   : m_refs(0)
+   , m_codec(codec)
+   , m_amlCodec(amlcodec)
+   , m_omxPts(omxPts)
++  , m_amlDuration(amlDuration)
+ {
+ }
+ 
+diff --git a/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.h b/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.h
+index 2c44241..39f408e 100644
+--- a/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.h
++++ b/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.h
+@@ -36,7 +36,7 @@ class CDVDVideoCodecAmlogic;
+ class CDVDAmlogicInfo
+ {
+ public:
+-  CDVDAmlogicInfo(CDVDVideoCodecAmlogic *codec, CAMLCodec *amlcodec, int omxPts);
++  CDVDAmlogicInfo(CDVDVideoCodecAmlogic *codec, CAMLCodec *amlcodec, int omxPts, int amlDuration);
+ 
+   // reference counting
+   CDVDAmlogicInfo* Retain();
+@@ -44,6 +44,7 @@ class CDVDAmlogicInfo
+ 
+   CAMLCodec *getAmlCodec() const;
+   int GetOmxPts() const { return m_omxPts; }
++  int GetAmlDuration() const { return m_amlDuration; }
+   void invalidate();
+ 
+ protected:
+@@ -52,7 +53,7 @@ class CDVDAmlogicInfo
+ 
+   CDVDVideoCodecAmlogic* m_codec;
+   CAMLCodec* m_amlCodec;
+-  int m_omxPts;
++  int m_omxPts, m_amlDuration;
+ };
+ 
+ class CDVDVideoCodecAmlogic : public CDVDVideoCodec
+diff --git a/xbmc/cores/VideoPlayer/VideoRenderers/HwDecRender/RendererAML.cpp b/xbmc/cores/VideoPlayer/VideoRenderers/HwDecRender/RendererAML.cpp
+index d8674c8..8f1a1a0 100644
+--- a/xbmc/cores/VideoPlayer/VideoRenderers/HwDecRender/RendererAML.cpp
++++ b/xbmc/cores/VideoPlayer/VideoRenderers/HwDecRender/RendererAML.cpp
+@@ -31,6 +31,7 @@
+ #include "settings/MediaSettings.h"
+ #include "windowing/WindowingFactory.h"
+ #include "cores/VideoPlayer/VideoRenderers/RenderCapture.h"
++#include "settings/AdvancedSettings.h"
+ 
+ CRendererAML::CRendererAML()
+ {
+@@ -122,19 +123,46 @@ bool CRendererAML::RenderUpdateVideoHook(bool clear, DWORD flags, DWORD alpha)
+   ManageRenderArea();
+ 
+   CDVDAmlogicInfo *amli = static_cast<CDVDAmlogicInfo *>(m_buffers[m_iYV12RenderBuffer].hwDec);
++
+   if (amli && amli->GetOmxPts() != m_prevPts)
+   {
+     m_prevPts = amli->GetOmxPts();
+-    SysfsUtils::SetInt("/sys/module/amvideo/parameters/omx_pts", amli->GetOmxPts());
++    int duration = amli->GetAmlDuration();
++
++    long pts;
++    int fd = open("/sys/class/tsync/pts_pcrscr", O_RDONLY);
++    if (fd >= 0)
++    {
++      char pts_str[64];
++      int size = read(fd, pts_str, sizeof(pts_str));
++      close(fd);
++      if( size > 0 )
++      {
++        pts = strtol(pts_str, NULL, 16);
++        if (pts < m_prevPts || pts > m_prevPts + 2*duration)
++        {
++          CLog::Log(LOGDEBUG, "RenderUpdateVideoHook: Adjusting: omx:%u ptssrc:%u", static_cast<unsigned int>(m_prevPts), static_cast<unsigned int>(pts));
++          fd = open("/sys/class/tsync/pts_pcrscr", O_WRONLY);
++          if (fd)
++          {
++            sprintf(pts_str, "0x%x", m_prevPts + duration);
++            write(fd, pts_str, strlen(pts_str));
++            close(fd);
++          }
++        }
++      }
++    }
++
++    if (g_advancedSettings.CanLogComponent(LOGVIDEO))
++      CLog::Log(LOGDEBUG, "RenderUpdateVideoHook: pts:%0.6f", CAMLCodec::OMXPtsToSeconds(m_prevPts));
++
++    SysfsUtils::SetInt("/sys/module/amvideo/parameters/omx_pts", m_prevPts);
+ 
+     CAMLCodec *amlcodec = amli->getAmlCodec();
+     if (amlcodec)
+       amlcodec->SetVideoRect(m_sourceRect, m_destRect);
+   }
+-
+   usleep(10000);
+-
+-  return true;
+ }
+ 
+ #endif

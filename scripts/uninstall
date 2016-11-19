@@ -1,0 +1,91 @@
+#!/bin/bash
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+. config/options $1
+
+if [ -z "$1" ]; then
+  echo "usage: $0 package_name[:<host|target|init|bootstrap>]"
+  exit 1
+fi
+
+  PACKAGE_NAME=$(echo $1 | awk -F : '{print $1}')
+  TARGET=$(echo $1 | awk -F : '{print $2}')
+  if [ -z "$TARGET" ]; then
+    TARGET="target"
+  fi
+
+if [ -n "$PKG_ARCH" -a ! "$PKG_ARCH" = "any" ]; then
+  echo "$PKG_ARCH" | grep -q "$TARGET_ARCH" || exit 0
+  echo "$PKG_ARCH" | grep -q "\-$TARGET_ARCH" && exit 0
+fi
+
+STAMP=$STAMPS/$PACKAGE_NAME/build_$TARGET
+
+if [ -f $STAMP ]; then
+
+    # include buildfile
+    . $PKG_DIR/package.mk
+
+    # virtual packages dont must be build, they only contains dependencies, so dont go further here
+    if [ ! "$PKG_SECTION" = "virtual" ]; then
+
+      # setup configure script
+      if [ -z "$PKG_CONFIGURE_SCRIPT" ]; then
+        PKG_CONFIGURE_SCRIPT="$ROOT/$PKG_BUILD/configure"
+      else
+        PKG_CONFIGURE_SCRIPT="$ROOT/$PKG_BUILD/$PKG_CONFIGURE_SCRIPT"
+      fi
+      if [ -z "$PKG_CMAKE_SCRIPT" ]; then
+        PKG_CMAKE_SCRIPT="$ROOT/$PKG_BUILD/CMakeLists.txt"
+      else
+        PKG_CMAKE_SCRIPT="$ROOT/$PKG_BUILD/$PKG_CMAKE_SCRIPT"
+      fi
+
+      # ensure $PKG_BUILD is there. (installer? PKG_URL="")
+      if [ ! -d $PKG_BUILD ] ; then
+        exit 0
+      fi
+
+      cd $PKG_BUILD
+
+      if [ "$TARGET" = "target" ]; then
+        if [ -f "$PKG_CONFIGURE_SCRIPT" -o -f "$PKG_CMAKE_SCRIPT" ]; then
+          cd .$TARGET_NAME
+        fi
+      elif [ "$TARGET" = "host" ]; then
+        if [ -f "$PKG_CONFIGURE_SCRIPT" -o -f "$PKG_CMAKE_SCRIPT" ]; then
+          cd .$HOST_NAME
+        fi
+      elif [ "$TARGET" = "init" ]; then
+        if [ -f "$PKG_CONFIGURE_SCRIPT" -o -f "$PKG_CMAKE_SCRIPT" ]; then
+          cd .$TARGET_NAME-init
+        fi
+      elif [ "$TARGET" = "bootstrap" ]; then
+        if [ -f "$PKG_CONFIGURE_SCRIPT" -o -f "$PKG_CMAKE_SCRIPT" ]; then
+          cd .$TARGET_NAME-bootstrap
+        fi
+      fi
+
+      MAKEUNINSTALL="$ROOT/$TOOLCHAIN/bin/make -j1 DESTDIR=$SYSROOT_PREFIX uninstall"
+
+      if [ "$TARGET" = "target" ]; then
+        $MAKEUNINSTALL $PKG_MAKEINSTALL_OPTS_TARGET
+      elif [ "$TARGET" = "host" ]; then
+        make uninstall $PKG_MAKEINSTALL_OPTS_HOST
+      elif [ "$TARGET" = "init" ]; then
+        make uninstall DESTDIR=$INSTALL $PKG_MAKEINSTALL_OPTS_INIT
+      elif [ "$TARGET" = "bootstrap" ]; then
+        $MAKEUNINSTALL $PKG_MAKEINSTALL_OPTS_BOOTSTRAP
+      fi
+
+      cd $ROOT
+    fi  # ! "$PKG_SECTION" = "virtual"
+
+    if [ -f "$STAMP" ]; then
+      rm -f $STAMP
+    fi
+
+fi

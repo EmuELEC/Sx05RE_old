@@ -1,0 +1,15 @@
+diff -Naurp vdr-2.1.6/menu.c vdr-2.1.6-patch/menu.c
+--- vdr-2.1.6/menu.c	2014-09-25 14:11:22.000000000 +0300
++++ vdr-2.1.6-patch/menu.c	2014-09-25 13:14:34.000000000 +0300
+@@ -3902,9 +3902,9 @@ cMenuMain::cMenuMain(eOSState State, boo
+ :cOsdMenu("")
+ {
+   // Load Menu Configuration
+-  cString menuXML = cString::sprintf("%s/setup/vdr-menu.%s.xml", cPlugin::ConfigDirectory(), Setup.OSDLanguage);
++  cString menuXML = cString::sprintf("%s/../menu.%s.xml", cPlugin::ConfigDirectory(), Setup.OSDLanguage);
+   if (access(menuXML, 04) == -1)
+-     menuXML = cString::sprintf("%s/setup/vdr-menu.xml", cPlugin::ConfigDirectory());
++     menuXML = cString::sprintf("%s/../menu.xml", cPlugin::ConfigDirectory());
+   subMenu.LoadXml(menuXML);
+   nrDynamicMenuEntries = 0;
+   SetMenuCategory(mcMain);

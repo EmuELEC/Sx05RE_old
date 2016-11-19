@@ -1,0 +1,12 @@
+diff -Naurp vdr-2.0.1/epg.c vdr-2.0.1-patch/epg.c
+--- vdr-2.0.1/epg.c	2013-04-17 07:15:23.000000000 +0300
++++ vdr-2.0.1-patch/epg.c	2013-04-17 05:09:56.000000000 +0300
+@@ -928,7 +928,7 @@ const cEvent *cSchedule::GetPresentEvent
+          pe = p;
+       else if (p->StartTime() > now + 3600)
+          break;
+-      if (p->SeenWithin(RUNNINGSTATUSTIMEOUT) && p->RunningStatus() >= SI::RunningStatusPausing)
++      if (p->SeenWithin(RUNNINGSTATUSTIMEOUT) && p->RunningStatus() >= SI::RunningStatusPausing && p->EndTime() > now)
+          return p;
+       }
+   return pe;

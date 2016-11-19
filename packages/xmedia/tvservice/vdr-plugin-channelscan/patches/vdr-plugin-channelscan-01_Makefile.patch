@@ -1,0 +1,58 @@
+diff -Naurp vdr-plugin-channelscan-0.6.2-3-3/Makefile vdr-plugin-channelscan-0.6.2-3-3-patch/Makefile
+--- vdr-plugin-channelscan-0.6.2-3-3/Makefile	2015-06-04 10:24:07.000000000 +0300
++++ vdr-plugin-channelscan-0.6.2-3-3-patch/Makefile	2015-08-03 07:32:53.000000000 +0300
+@@ -22,13 +22,12 @@ VERSION = $(shell grep 'static const cha
+ 
+ ### The directory environment:
+ 
+-VDRDIR = ../../..
+-LIBDIR = ../../lib
+-PKGCFG = $(if $(VDRDIR),$(shell pkg-config --variable=$(1) $(VDRDIR)/vdr.pc),$(shell pkg-config --variable=$(1) vdr || pkg-config --variable=$(1) ../../../vdr.pc))
+-LIBDIR = $(DESTDIR)$(call PKGCFG,libdir)
+-LOCDIR = $(DESTDIR)$(call PKGCFG,locdir)
++# Use package data if installed...otherwise assume we're under the VDR source directory:
++PKGCFG  = $(if $(VDRDIR),$(shell pkg-config --variable=$(1) $(VDRDIR)/vdr.pc),$(shell pkg-config --variable=$(1) vdr || pkg-config --variable=$(1) ../../../vdr.pc))
++LIBDIR  = $(call PKGCFG,libdir)
++LOCDIR  = $(call PKGCFG,locdir)
++PLGCFG  = $(call PKGCFG,plgcfg)
+ #
+-
+ TMPDIR ?= /tmp
+ 
+ ### Allow user defined options to overwrite defaults:
+@@ -56,7 +55,7 @@ SOFILE = libvdr-$(PLUGIN).so
+ 
+ ### Includes and Defines (add further entries here):
+ 
+-INCLUDES +=
++INCLUDES += -I$(VDRDIR)/include
+ 
+ #DEFINES += -D_GNU_SOURCE -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DVDRDIR=\"$(VDRDIR)\" -DDEBUG_CHANNELSCAN
+ DEFINES += -DPLUGIN_NAME_I18N='"$(PLUGIN)"' -DVDRDIR=\"$(VDRDIR)\"  -DNDEBUG
+@@ -113,7 +112,7 @@ PODIR     = po
+ 
+ I18Npo    = $(wildcard $(PODIR)/*.po)
+ I18Nmo    = $(addsuffix .mo, $(foreach file, $(I18Npo), $(basename $(file))))
+-I18Nmsgs  = $(addprefix $(LOCDIR)/, $(addsuffix /LC_MESSAGES/vdr-$(PLUGIN).mo, $(notdir $(foreach file, $(I18Npo), $(basename $(file))))))
++I18Nmsgs  = $(addprefix $(DESTDIR)$(LOCDIR)/, $(addsuffix /LC_MESSAGES/vdr-$(PLUGIN).mo, $(notdir $(foreach file, $(I18Npo), $(basename $(file))))))
+ I18Npot   = $(PODIR)/$(PLUGIN).pot
+ 
+ %.mo: %.po
+@@ -126,7 +125,7 @@ $(I18Npot): $(wildcard *.c)
+ 	msgmerge -U --no-wrap --no-location --backup=none -q -N $@ $<
+ 	@touch $@
+ 
+-$(I18Nmsgs): $(LOCDIR)/%/LC_MESSAGES/vdr-$(PLUGIN).mo: $(PODIR)/%.mo
++$(I18Nmsgs): $(DESTDIR)$(LOCDIR)/%/LC_MESSAGES/vdr-$(PLUGIN).mo: $(PODIR)/%.mo
+ 	install -D -m644 $< $@
+ 
+ ### Targets:
+@@ -146,7 +145,7 @@ $(SOFILE): $(OBJS)
+ #	$(CXX) $(CXXFLAGS) -lbz2 -lz -shared $(OBJS) -o $@
+ 
+ install-lib: $(SOFILE)
+-	install -D $^ $(LIBDIR)/$^.$(APIVERSION)
++	install -D $^ $(DESTDIR)$(LIBDIR)/$^.$(APIVERSION)
+ 
+ install: install-lib install-i18n
+ 

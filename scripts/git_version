@@ -1,0 +1,11 @@
+#!/bin/bash
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+. config/options $1
+
+[ -f "$PKG_BUILD/VERSION" ] && PKG_GIT_VERSION=`cat $PKG_BUILD/VERSION`
+
+echo $PKG_GIT_VERSION

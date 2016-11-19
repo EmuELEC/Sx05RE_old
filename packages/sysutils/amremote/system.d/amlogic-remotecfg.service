@@ -1,0 +1,11 @@
+[Unit]
+Description=Amlogic IR remote support
+After=userconfig.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c '/usr/bin/remotecfg /storage/.config/amremote/remote.conf'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=basic.target

@@ -1,0 +1,25 @@
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+################################################################################
+# acestreamengine user arguments sample (use only args: memory or disk)
+################################################################################
+
+# cache in memory
+ACE_USER_ARG="--live-cache-type memory \
+              --live-buffer 60 \
+              --live-cache-size 20971520 \
+              --cache-limit 10 \
+              --login LOGIN \
+              --password PASSWORD"
+
+# cache in disk
+ACE_USER_ARG="--live-cache-type disk \
+              --live-buffer 60 \
+              --cache-limit 10 \
+              --max-file-size 5368709120 \
+              --live-disk-cache-size 8589934592 \
+              --login LOGIN \
+              --password PASSWORD"

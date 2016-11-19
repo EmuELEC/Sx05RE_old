@@ -1,0 +1,33 @@
+From 7097ce7b51e603514233115e8889d11c9a715c12 Mon Sep 17 00:00:00 2001
+From: kszaq <kszaquitto@gmail.com>
+Date: Sun, 4 Sep 2016 00:51:03 +0200
+Subject: [PATCH] aml: If we don't want passthrough, is should be redirected to device 0
+
+---
+ xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp b/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
+index e22db7a..87e79c0 100644
+--- a/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
++++ b/xbmc/cores/AudioEngine/Sinks/AESinkALSA.cpp
+@@ -523,13 +523,9 @@ bool CAESinkALSA::Initialize(AEAudioFormat &format, std::string &device)
+   {
+     m_passthrough   = false;
+   }
+-#if defined(HAS_LIBAMCODEC)
+-  if (aml_present())
+-  {
+-    aml_set_audio_passthrough(m_passthrough);
+-    device = "default";
+-  }
+-#endif
++
++  if (!m_passthrough && (device.find("hdmi:CARD=AMLM8AUDIO") != std::string::npos))
++    device = "hw:AMLM8AUDIO,0";
+ 
+   if (inconfig.channels == 0)
+   {
+-- 
+1.8.3.1
+

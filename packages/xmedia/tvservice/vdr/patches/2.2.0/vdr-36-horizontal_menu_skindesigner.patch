@@ -1,0 +1,79 @@
+Common subdirectories: vdr-2.2.0/PLUGINS and /usr/local/src/vdr-2.2.0/PLUGINS
+Common subdirectories: vdr-2.2.0/libsi and /usr/local/src/vdr-2.2.0/libsi
+diff -upN '--exclude=Make.config' a/osdbase.c b/osdbase.c
+--- a/osdbase.c	2015-01-15 11:11:11.000000000 +0100
++++ b/osdbase.c	2015-08-06 17:27:18.778646643 +0200
+@@ -87,6 +87,7 @@ cOsdMenu::cOsdMenu(const char *Title, in
+   title = NULL;
+   menuCategory = mcUnknown;
+   menuSortMode = msmUnknown;
++  menuOrientation = moVertical;
+   SetTitle(Title);
+   SetCols(c0, c1, c2, c3, c4);
+   first = 0;
+@@ -231,6 +232,7 @@ void cOsdMenu::Display(void)
+   if (menuCategory != displayMenu->MenuCategory())
+      displayMenu->SetMenuCategory(menuCategory);
+   displayMenu->SetMenuSortMode(menuSortMode);
++  menuOrientation = displayMenu->MenuOrientation();
+   displayMenuItems = displayMenu->MaxItems();
+   displayMenu->SetTabs(cols[0], cols[1], cols[2], cols[3], cols[4]);//XXX
+   displayMenu->SetTitle(title);
+@@ -541,13 +543,13 @@ eOSState cOsdMenu::ProcessKey(eKeys Key)
+     case k0:      return osUnknown;
+     case k1...k9: return hasHotkeys ? HotKey(Key) : osUnknown;
+     case kUp|k_Repeat:
+-    case kUp:   CursorUp();   break;
++    case kUp:   if (menuOrientation == moHorizontal) PageUp(); else CursorUp();   break;
+     case kDown|k_Repeat:
+-    case kDown: CursorDown(); break;
++    case kDown: if (menuOrientation == moHorizontal) PageDown(); else CursorDown();   break;
+     case kLeft|k_Repeat:
+-    case kLeft: PageUp(); break;
++    case kLeft: if (menuOrientation == moHorizontal) CursorUp(); else PageUp();   break;
+     case kRight|k_Repeat:
+-    case kRight: PageDown(); break;
++    case kRight: if (menuOrientation == moHorizontal) CursorDown(); else PageDown();    break;
+     case kBack: return osBack;
+     case kOk:   if (marked >= 0) {
+                    SetStatus(NULL);
+diff -upN '--exclude=Make.config' a/osdbase.h b/osdbase.h
+--- a/osdbase.h	2015-01-15 11:09:18.000000000 +0100
++++ b/osdbase.h	2015-07-31 15:23:29.232867174 +0200
+@@ -93,6 +93,7 @@ private:
+   int first, current, marked;
+   eMenuCategory menuCategory;
+   eMenuSortMode menuSortMode;
++  eMenuOrientation menuOrientation;
+   cOsdMenu *subMenu;
+   const char *helpRed, *helpGreen, *helpYellow, *helpBlue;
+   bool helpDisplayed;
+Common subdirectories: vdr-2.2.0/po and /usr/local/src/vdr-2.2.0/po
+diff -upN '--exclude=Make.config' a/skins.h b/skins.h
+--- a/skins.h	2015-01-15 11:45:47.000000000 +0100
++++ b/skins.h	2015-08-06 17:33:41.500188153 +0200
+@@ -129,6 +129,12 @@ enum eMenuSortMode {
+   msmProvider
+   };
+ 
++#define MENU_ORIENTATION_DEFINED 1
++enum eMenuOrientation {
++  moVertical = 0,
++  moHorizontal
++  };
++
+ class cSkinDisplayMenu : public cSkinDisplay {
+        ///< This class implements the general purpose menu display, which is
+        ///< used throughout the program to display information and let the
+@@ -179,6 +185,10 @@ public:
+        ///< Sets the mode by which the items in this menu are sorted.
+        ///< This is purely informative and may be used by a skin to display the
+        ///< current sort mode by means of some text or symbol.
++  virtual eMenuOrientation MenuOrientation(void) { return moVertical; }
++       ///< Asks the skin for the orientation of the displayed menu
++       ///< If menu orientation is set to horizontal, the keys left / right
++       ///< and up / down are just toggled
+   virtual void Scroll(bool Up, bool Page);
+        ///< If this menu contains a text area that can be scrolled, this function
+        ///< will be called to actually scroll the text. Up indicates whether the
+Common subdirectories: vdr-2.2.0/symbols and /usr/local/src/vdr-2.2.0/symbols

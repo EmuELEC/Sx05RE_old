@@ -1,0 +1,44 @@
+diff -Naurp vdr-2.1.6/diseqc.c vdr-2.1.6-patch/diseqc.c
+--- vdr-2.1.6/diseqc.c	2013-12-28 13:33:08.000000000 +0200
++++ vdr-2.1.6-patch/diseqc.c	2014-09-22 16:39:25.000000000 +0300
+@@ -382,6 +382,7 @@ cDiseqc::eDiseqcActions cDiseqc::Execute
+           case ' ': break;
+           case 't': return daToneOff;
+           case 'T': return daToneOn;
++          case 'F': return daVoltageOff;
+           case 'v': return daVoltage13;
+           case 'V': return daVoltage18;
+           case 'A': return daMiniA;
+diff -Naurp vdr-2.1.6/diseqc.conf vdr-2.1.6-patch/diseqc.conf
+--- vdr-2.1.6/diseqc.conf	2013-11-04 14:48:31.000000000 +0200
++++ vdr-2.1.6-patch/diseqc.conf	2014-09-22 16:24:35.000000000 +0300
+@@ -17,6 +17,7 @@
+ # command:
+ #   t         tone off
+ #   T         tone on
++#   F         voltage off (0V)
+ #   v         voltage low (13V)
+ #   V         voltage high (18V)
+ #   A         mini A
+diff -Naurp vdr-2.1.6/diseqc.h vdr-2.1.6-patch/diseqc.h
+--- vdr-2.1.6/diseqc.h	2013-06-12 14:52:17.000000000 +0300
++++ vdr-2.1.6-patch/diseqc.h	2014-09-22 16:26:47.000000000 +0300
+@@ -65,6 +65,7 @@ public:
+     daNone,
+     daToneOff,
+     daToneOn,
++    daVoltageOff,
+     daVoltage13,
+     daVoltage18,
+     daMiniA,
+diff -Naurp vdr-2.1.6/dvbdevice.c vdr-2.1.6-patch/dvbdevice.c
+--- vdr-2.1.6/dvbdevice.c	2014-09-22 17:44:06.000000000 +0300
++++ vdr-2.1.6-patch/dvbdevice.c	2014-09-22 16:31:59.000000000 +0300
+@@ -755,6 +755,7 @@ void cDvbTuner::ExecuteDiseqc(const cDis
+       switch (da) {
+         case cDiseqc::daToneOff:   if (d) CHECK(ioctl(fd_frontend, FE_SET_TONE, SEC_TONE_OFF)); break;
+         case cDiseqc::daToneOn:    if (d) CHECK(ioctl(fd_frontend, FE_SET_TONE, SEC_TONE_ON)); break;
++        case cDiseqc::daVoltageOff: if (d) CHECK(ioctl(fd_frontend, FE_SET_VOLTAGE, SEC_VOLTAGE_OFF)); break;
+         case cDiseqc::daVoltage13: if (d) CHECK(ioctl(fd_frontend, FE_SET_VOLTAGE, SEC_VOLTAGE_13)); break;
+         case cDiseqc::daVoltage18: if (d) CHECK(ioctl(fd_frontend, FE_SET_VOLTAGE, SEC_VOLTAGE_18)); break;
+         case cDiseqc::daMiniA:     if (d) CHECK(ioctl(fd_frontend, FE_DISEQC_SEND_BURST, SEC_MINI_A)); break;

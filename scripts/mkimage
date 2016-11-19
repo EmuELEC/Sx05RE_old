@@ -1,0 +1,193 @@
+#!/bin/bash
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+################################################################################
+# variables such as $ROOT $PATH etc... that are required for this
+# script to work must be passed via env ... in scripts/image
+################################################################################
+
+# set variables
+  LE_TMP=$(mktemp -d)
+  SAVE_ERROR="$LE_TMP/save_error"
+
+  if [ -z "$SYSTEM_SIZE" -o -z "$SYSTEM_PART_START" ]; then
+    echo "mkimage: SYSTEM_SIZE and SYSTEM_PART_START must be configured!"
+    exit 1
+  fi
+
+  STORAGE_SIZE=32 # STORAGE_SIZE must be >= 32 !
+
+  DISK_SIZE=$(( $SYSTEM_SIZE + $STORAGE_SIZE + 4 ))
+  DISK="$TARGET_IMG/$IMAGE_NAME.img"
+
+# functions
+  cleanup() {
+    echo "image: cleanup..."
+    rm -rf "$LE_TMP"
+    echo
+    exit
+  }
+
+  show_error() {
+    echo "image: error happen..."
+    echo
+    cat "$SAVE_ERROR"
+    echo
+    cleanup
+    exit
+  }
+
+trap cleanup SIGINT
+
+# generate volume id for fat partition
+  UUID_1=$(date '+%d%m')
+  UUID_2=$(date '+%M%S')
+  FAT_SERIAL_NUMBER="${UUID_1}${UUID_2}"
+  UUID_SYSTEM="${UUID_1}-${UUID_2}"
+  FAT_VOLUME_LABEL="ALEXELEC"
+  EXT_VOLUME_LABEL="ALEXELEC_DISK"
+
+# create an image
+  echo
+  echo "image: creating file $(basename $DISK)..."
+  dd if=/dev/zero of="$DISK" bs=1M count="$DISK_SIZE" conv=fsync >"$SAVE_ERROR" 2>&1 || show_error
+
+# write a disklabel
+  echo "image: creating partition table..."
+  if [ "$BOOTLOADER" = "syslinux" ]; then
+    parted -s "$DISK" mklabel gpt
+  else
+    parted -s "$DISK" mklabel msdos
+  fi
+  sync
+
+# create part1
+  echo "image: creating part1..."
+  SYSTEM_PART_END=$(( ($SYSTEM_SIZE * 1024 * 1024 / 512) + $SYSTEM_PART_START ))
+  parted -s "$DISK" -a min unit s mkpart primary fat32 $SYSTEM_PART_START $SYSTEM_PART_END
+  if [ "$BOOTLOADER" = "syslinux" ]; then
+    parted -s "$DISK" set 1 legacy_boot on
+  else
+    parted -s "$DISK" set 1 boot on
+  fi
+  sync
+# create part2
+  echo "image: creating part2..."
+  STORAGE_PART_START=$(( $SYSTEM_PART_END + 2048 ))
+  STORAGE_PART_END=$(( $STORAGE_PART_START + (( $STORAGE_SIZE * 1024 * 1024 / 512 )) ))
+  parted -s "$DISK" -a min unit s mkpart primary ext4 $STORAGE_PART_START $STORAGE_PART_END
+  sync
+
+if [ "$BOOTLOADER" = "syslinux" ]; then
+  # write mbr
+    echo "image: writing mbr..."
+    MBR="$ROOT/$TOOLCHAIN/share/syslinux/gptmbr.bin"
+    if [ -n "$MBR" ]; then
+      dd bs=440 count=1 conv=fsync,notrunc if="$MBR" of="$DISK" >"$SAVE_ERROR" 2>&1 || show_error
+    fi
+fi
+
+# create filesystem on part1
+  echo "image: creating filesystem on part1..."
+  OFFSET=$(( $SYSTEM_PART_START * 512 ))
+  HEADS=4
+  TRACKS=32
+  SECTORS=$(( $SYSTEM_SIZE * 1024 * 1024 / 512 / $HEADS / $TRACKS ))
+
+  shopt -s expand_aliases  # enables alias expansion in script
+  alias mformat="mformat -i $DISK@@$OFFSET -h $HEADS -t $TRACKS -s $SECTORS"
+  alias mcopy="mcopy -i $DISK@@$OFFSET"
+  alias mmd="mmd -i $DISK@@$OFFSET"
+
+  if [ "$BOOTLOADER" = "syslinux" ]; then
+    mformat -v "$FAT_VOLUME_LABEL" -N "$FAT_SERIAL_NUMBER" ::
+  elif [ "$BOOTLOADER" = "bcm2835-bootloader" -o "$BOOTLOADER" = "u-boot" ]; then
+    mformat -v "$FAT_VOLUME_LABEL" ::
+  fi
+  sync
+
+# create bootloader configuration
+  echo "image: copying files to part1..."
+  mcopy $TARGET_IMG/$IMAGE_NAME.kernel "::/$KERNEL_NAME"
+  mcopy $TARGET_IMG/$IMAGE_NAME.system ::/SYSTEM
+  mcopy $RELEASE_DIR/target/KERNEL.md5 "::/$KERNEL_NAME.md5"
+  mcopy $RELEASE_DIR/target/SYSTEM.md5 ::/SYSTEM.md5
+  if [ -f $TARGET_IMG/$IMAGE_NAME.dtb ]; then
+    echo "image: copy dtb if exist to part1..."
+    mcopy $TARGET_IMG/$IMAGE_NAME.dtb ::/dtb.img
+  fi
+
+  if [ -f "$INSTALL_SRC_DIR/aml_autoscript.src" ]; then
+    echo "Creating Amlogic ZIP env-update package"
+	cat "$INSTALL_SRC_DIR/aml_autoscript.src" > "$LE_TMP/aml_autoscript.src"
+	$MKIMAGE_TOOL_CMD "$LE_TMP/aml_autoscript.src" "$LE_TMP/aml_autoscript" > /dev/null
+	pushd $LE_TMP > /dev/null
+	zip -q env-update.zip aml_autoscript
+    echo "Signing the env-update package"
+    mkdir -p sign
+    SIGNAPK_DIR="$ROOT/tools/signapk"
+    java -Xmx1024m -jar $SIGNAPK_DIR/signapk.jar -w $SIGNAPK_DIR/testkey.x509.pem $SIGNAPK_DIR/testkey.pk8 env-update.zip sign/aml_autoscript.zip
+	popd > /dev/null
+    mcopy "$LE_TMP/aml_autoscript" "::/aml_autoscript"
+    mcopy "$LE_TMP/sign/aml_autoscript.zip" "::/aml_autoscript.zip"
+  fi
+
+# extract part2 from image to format and copy files
+  echo "image: extracting part2 from image..."
+  STORAGE_PART_COUNT=$(( $STORAGE_PART_END - $STORAGE_PART_START + 1 ))
+  sync
+  dd if="$DISK" of="$LE_TMP/part2.ext4" bs=512 skip="$STORAGE_PART_START" count="$STORAGE_PART_COUNT" conv=fsync >"$SAVE_ERROR" 2>&1 || show_error
+
+# create filesystem on part2
+  echo "image: creating filesystem on part2..."
+  mke2fs -F -q -t ext4 -m 0 "$LE_TMP/part2.ext4"
+  tune2fs -L "$EXT_VOLUME_LABEL" -U $UUID_STORAGE "$LE_TMP/part2.ext4" >"$SAVE_ERROR" 2>&1 || show_error
+  e2fsck -n "$LE_TMP/part2.ext4" >"$SAVE_ERROR" 2>&1 || show_error
+  sync
+
+# add resize mark
+  mkdir "$LE_TMP/part2.fs"
+  touch "$LE_TMP/part2.fs/.please_resize_me"
+  echo "image: populating filesystem on part2..."
+  populatefs -U -d "$LE_TMP/part2.fs" "$LE_TMP/part2.ext4" >"$SAVE_ERROR" 2>&1 || show_error
+  sync
+  e2fsck -n "$LE_TMP/part2.ext4" >"$SAVE_ERROR" 2>&1 || show_error
+
+# merge part2 back to disk image
+  echo "image: merging part2 back to image..."
+  dd if="$LE_TMP/part2.ext4" of="$DISK" bs=512 seek="$STORAGE_PART_START" conv=fsync,notrunc >"$SAVE_ERROR" 2>&1 || show_error
+
+
+# extract part1 from image to run fsck
+  echo "image: extracting part1 from image..."
+  SYSTEM_PART_COUNT=$(( $SYSTEM_PART_END - $SYSTEM_PART_START + 1 ))
+  sync
+  dd if="$DISK" of="$LE_TMP/part1.fat" bs=512 skip="$SYSTEM_PART_START" count="$SYSTEM_PART_COUNT" conv=fsync >"$SAVE_ERROR" 2>&1 || show_error
+  echo "image: checking filesystem on part1..."
+  fsck -n $LE_TMP/part1.fat >"$SAVE_ERROR" 2>&1 || show_error
+
+# create virtual images
+  if [ "$PROJECT" = Virtual ]; then
+    echo "image: creating open virtual appliance..."
+    qemu-img convert -O vmdk -o subformat=streamOptimized "$DISK" "$DISK.vmdk"
+    sed -e "s,@DISTRO@,$DISTRO,g" -e "s,@DISK@,$(basename $DISK),g" -e "s,@DISK_SIZE@,$(ls -l $DISK.vmdk | awk '{print $5}'),g" $PROJECT_DIR/$PROJECT/config/ovf.template > $DISK.ovf
+    tar -C $TARGET_IMG -cf $DISK.ova $(basename $DISK).ovf $(basename $DISK).vmdk
+    echo "image: cleaning up..."
+    rm $DISK.vmdk $DISK.ovf
+    [ -n "$SUDO_USER" ] && chown $SUDO_USER: $DISK.ova
+  fi
+
+# gzip
+  echo "image: compressing..."
+  gzip < $DISK > $DISK.gz
+
+# set owner
+  if [ -n "$SUDO_USER" ] ; then
+    chown $SUDO_USER: $DISK.gz
+  fi
+
+# cleanup
+  cleanup

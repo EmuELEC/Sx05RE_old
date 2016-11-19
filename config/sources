@@ -1,0 +1,8 @@
+# Sourceforge download site
+  SOURCEFORGE_SRC="http://prdownloads.sourceforge.net"
+
+# AlexElec source
+  ALEXELEC_SRC="http://src.alexelec.in.ua"
+
+# Lakka source
+  LAKKA_MIRROR="http://sources.lakka.tv"

@@ -1,0 +1,19 @@
+[Unit]
+Description=MiniDLNA UPnP Server
+Requires=network-online.target
+After=network-online.target
+Before=kodi.service
+ConditionPathExists=/storage/.cache/services/minidlna.conf
+
+[Service]
+Type=forking
+PIDFile=/var/run/minidlna/minidlna.pid
+ExecStart=/usr/bin/minidlnad -f /storage/.config/minidlna/minidlna.conf
+ExecReload=/bin/kill -HUP $MAINPID
+TimeoutStopSec=1s
+Restart=always
+RestartSec=2
+StartLimitInterval=0
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,72 @@
+diff -Naurp kodi-17.0-beta5-e92818a/system/keymaps/keyboard.xml kodi-17.0-beta5-e92818a-patch/system/keymaps/keyboard.xml
+--- kodi-17.0-beta5-e92818a/system/keymaps/keyboard.xml	2016-11-03 10:25:41.000000000 +0200
++++ kodi-17.0-beta5-e92818a-patch/system/keymaps/keyboard.xml	2016-11-03 10:47:20.000000000 +0200
+@@ -61,8 +61,8 @@
+       <c mod="longpress">Menu</c>
+       <space>Pause</space>
+       <x>Stop</x>
+-      <period>SkipNext</period>
+-      <comma>SkipPrevious</comma>
++      <period>PageDown</period>
++      <comma>PageUp</comma>
+       <tab>FullScreen</tab>
+       <printscreen>Screenshot</printscreen>
+       <s mod="ctrl">Screenshot</s>
+@@ -357,8 +357,8 @@
+       <down mod="longpress">NextSubtitle</down>
+       <left mod="alt">PlayerControl(tempodown)</left>
+       <right mod="alt">PlayerControl(tempoup)</right>
+-      <a>AudioDelay</a>
+-      <a mod="ctrl">AudioNextLanguage</a>
++      <a>AudioNextLanguage</a>
++      <a mod="ctrl">AudioDelay</a>
+       <escape>Fullscreen</escape>
+       <c>Playlist</c>
+       <v>ActivateWindow(Teletext)</v>
+@@ -524,7 +524,7 @@
+       <zoom>AspectRatio</zoom>
+       <t>ShowSubtitles</t>
+       <l>NextSubtitle</l>
+-      <a>AudioDelay</a>
++      <a>AudioNextLanguage</a>
+       <escape>Fullscreen</escape>
+       <return>Select</return>
+       <enter>Select</enter>      <!-- backspace>Fullscreen</backspace -->
+@@ -629,8 +629,8 @@
+   </NumericInput>
+   <FullscreenLiveTV>
+     <keyboard>
+-      <left>StepBack</left>
+-      <right>StepForward</right>
++      <left>ActivateWindow(PVROSDChannels)</left>
++      <right>ActivateWindow(PVROSDGuide)</right>
+       <up>Up</up>
+       <down>Down</down>
+       <return>OSD</return>
+diff -Naurp kodi-17.0-beta5-e92818a/xbmc/addons/AddonManager.cpp kodi-17.0-beta5-e92818a-patch/xbmc/addons/AddonManager.cpp
+--- kodi-17.0-beta5-e92818a/xbmc/addons/AddonManager.cpp	2016-10-28 20:27:46.000000000 +0300
++++ kodi-17.0-beta5-e92818a-patch/xbmc/addons/AddonManager.cpp	2016-11-03 10:36:59.000000000 +0200
+@@ -703,6 +703,7 @@ bool CAddonMgr::AddToUpdateBlacklist(con
+ bool CAddonMgr::IsBlacklisted(const std::string& id) const
+ {
+   CSingleLock lock(m_critSection);
++  if (id.substr(0,4) == "pvr.") return true;
+   return m_updateBlacklist.find(id) != m_updateBlacklist.end();
+ }
+ 
+diff -Naurp kodi-17.0-beta5-e92818a/xbmc/view/ViewStateSettings.cpp kodi-17.0-beta5-e92818a-patch/xbmc/view/ViewStateSettings.cpp
+--- kodi-17.0-beta5-e92818a/xbmc/view/ViewStateSettings.cpp	2016-10-28 20:27:46.000000000 +0300
++++ kodi-17.0-beta5-e92818a-patch/xbmc/view/ViewStateSettings.cpp	2016-11-03 10:29:25.000000000 +0200
+@@ -124,11 +124,7 @@ bool CViewStateSettings::Load(const TiXm
+   pElement = settings->FirstChild(XML_GENERAL);
+   if (pElement != NULL)
+   {
+-    int settingLevel;
+-    if (XMLUtils::GetInt(pElement, XML_SETTINGLEVEL, settingLevel, (const int)SettingLevelBasic, (const int)SettingLevelExpert))
+-      m_settingLevel = (SettingLevel)settingLevel;
+-    else
+-      m_settingLevel = SettingLevelStandard;
++    m_settingLevel = SettingLevelExpert;
+ 
+     const TiXmlNode* pEventLogNode = pElement->FirstChild(XML_EVENTLOG);
+     if (pEventLogNode != NULL)

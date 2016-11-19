@@ -1,0 +1,18 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+. /storage/.cache/services/vnc.conf
+
+[ -z "$VNC_PORT" ] && VNC_PORT="5900"
+[ -z "$VNC_PWD" ] && VNC_PWD="none"
+
+VNC_ARGS="-P $VNC_PORT"
+
+if [ ! "$VNC_PWD" == "none" ]; then
+  VNC_ARGS="$VNC_ARGS -p $VNC_PWD "
+fi
+
+echo "VNC_ARGS=\"$VNC_ARGS\"" > /run/alexelec/aml-vnc.conf

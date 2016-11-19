@@ -1,0 +1,99 @@
+diff -Naurp scan-s2-42/dump-vdr.c scan-s2-42-patch/dump-vdr.c
+--- scan-s2-42/dump-vdr.c	2014-05-22 17:23:07.000000000 +0300
++++ scan-s2-42-patch/dump-vdr.c	2014-09-20 10:37:13.000000000 +0300
+@@ -79,7 +79,15 @@ static const char *west_east_flag_name [
+ 
+ static char sat_polarisation(transponder_t *t)
+ {
+-	return t->polarisation == POLARISATION_VERTICAL ? 'V' : 'H';
++    char polar;
++    switch (t->polarisation)
++    {
++        case POLARISATION_VERTICAL: polar = 'V'; break;
++        case POLARISATION_HORIZONTAL: polar = 'H'; break;
++        case POLARISATION_CIRCULAR_LEFT: polar = 'L'; break;
++        case POLARISATION_CIRCULAR_RIGHT: polar = 'R'; break;
++    }
++    return polar;
+ }
+ 
+ extern enum format output_format;
+diff -Naurp scan-s2-42/scan.c scan-s2-42-patch/scan.c
+--- scan-s2-42/scan.c	2014-05-22 17:23:07.000000000 +0300
++++ scan-s2-42-patch/scan.c	2014-09-20 12:11:09.000000000 +0300
+@@ -1938,6 +1938,8 @@ static int __tune_to_transponder (int fr
+ 	uint32_t bandwidth_hz = 0;
+ 	current_tp = t;
+ 	int hiband = 0;
++	int polar;
++	long volt;
+ 
+ 	struct dtv_property p_clear[] = {
+ 		{ .cmd = DTV_CLEAR },
+@@ -1965,6 +1967,19 @@ static int __tune_to_transponder (int fr
+ 	{
+ 	case SYS_DVBS:
+ 	case SYS_DVBS2:
++		switch (t->polarisation)
++		{
++			case POLARISATION_VERTICAL:
++			case POLARISATION_CIRCULAR_RIGHT:
++				polar = 0;
++				volt = lnb_type.low_val;
++				break;
++			case POLARISATION_HORIZONTAL:
++			case POLARISATION_CIRCULAR_LEFT:
++				polar = 1;
++				volt = lnb_type.high_val;
++				break;
++		}
+ 		if (lnb_type.high_val) {
+ 			if (lnb_type.switch_val) {
+ 				/* Voltage-controlled switch */
+@@ -1975,7 +1990,7 @@ static int __tune_to_transponder (int fr
+ 
+ 				setup_switch (frontend_fd,
+ 					switch_pos,
+-					t->polarisation == POLARISATION_VERTICAL ? 0 : 1,
++					polar,
+ 					hiband,
+ 					uncommitted_switch_pos);
+ 
+@@ -1987,8 +2002,7 @@ static int __tune_to_transponder (int fr
+ 					if_freq = abs(t->frequency - lnb_type.low_val);
+ 			} else {
+ 				/* C-Band Multipoint LNBf */
+-				if_freq = abs(t->frequency - (t->polarisation == POLARISATION_VERTICAL ? 
+-					lnb_type.low_val: lnb_type.high_val));
++				if_freq = abs(t->frequency - volt);
+ 			}
+ 		} else	{
+ 			/* Monopoint LNBf without switch */
+@@ -2005,7 +2019,7 @@ static int __tune_to_transponder (int fr
+ 			err = rotate_rotor(	frontend_fd,
+ 						curr_rotor_pos, 
+ 						rotor_pos,
+-						t->polarisation == POLARISATION_VERTICAL ? 0 : 1,
++						polar,
+ 						hiband);
+ 			if (err)
+ 				error("Error in rotate_rotor err=%i\n",err); 
+@@ -2644,9 +2658,17 @@ static int tune_initial (int frontend_fd
+ 							switch(pol[0]) 
+ 							{
+ 							case 'H':
+-							case 'L':
+ 								t->polarisation = POLARISATION_HORIZONTAL;
+ 								break;
++							case 'V':
++								t->polarisation = POLARISATION_VERTICAL;
++								break;
++							case 'L':
++								t->polarisation = POLARISATION_CIRCULAR_LEFT;
++								break;
++							case 'R':
++								t->polarisation = POLARISATION_CIRCULAR_RIGHT;
++								break;
+ 							default:
+ 								t->polarisation = POLARISATION_VERTICAL;;
+ 								break;

@@ -1,0 +1,9 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+usleep $1
+[ "$(pidof ffmpeg)" ] && killall -9 ffmpeg > /dev/null 2>&1
+exit 0

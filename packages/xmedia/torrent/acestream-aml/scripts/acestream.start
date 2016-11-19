@@ -1,0 +1,47 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+SERVICE_DIR="/storage/.cache/services"
+CHROOT_DIR="/storage/.config/acestream"
+LOG_FILE="/var/log/acestream.log"
+
+[ -f $SERVICE_DIR/acestream.conf ] && . $SERVICE_DIR/acestream.conf
+
+mkdir -p $CHROOT_DIR/dev
+mkdir -p $CHROOT_DIR/sys
+mkdir -p $CHROOT_DIR/proc
+mkdir -p $CHROOT_DIR/media
+
+mount -o bind /dev $CHROOT_DIR/dev &>/dev/null
+mount -t proc proc $CHROOT_DIR/proc &>/dev/null
+mount -t sysfs sysfs $CHROOT_DIR/sys &>/dev/null
+
+[ -z "$ACE_MOUNT_USB" ] && ACE_MOUNT_USB="none"
+[ -z "$ACE_CLEAN_CACHE" ] && ACE_CLEAN_CACHE="1"
+
+if [ "$ACE_MOUNT_USB" != "none" ]; then
+  MOUNT_DISK=$(echo $ACE_MOUNT_USB | awk '{ print $1 }')
+  MOUNT_TYPE=$(/bin/mount | grep "$MOUNT_DISK" | sed -e "s|^.* type ||" | awk '{ print $1 }')
+
+  if [ "$MOUNT_TYPE" == "vfat" -o "$MOUNT_TYPE" == "ext4" -o "$MOUNT_TYPE" == "ext3" -o "$MOUNT_TYPE" == "ext2" ]; then
+    rm -fR $CHROOT_DIR/media/acecache &>/dev/null
+    /sbin/chroot $CHROOT_DIR /system/bin/toolbox mount -t $MOUNT_TYPE $MOUNT_DISK /media &>/dev/null
+  fi
+fi
+
+[ "$ACE_CLEAN_CACHE" == "1" ] && rm -fR $CHROOT_DIR/media/acecache &>/dev/null
+
+/sbin/chroot $CHROOT_DIR /system/bin/sh -c "cd /system/data/data/org.acestream.engine/files ; /system/bin/acestream.sh"  > $LOG_FILE 2>&1 - << EOF
+import os
+import argparse
+from acestreamengine import Core
+ 
+params = "$@".split(' ')
+if params == ['']:
+    params = []
+ 
+Core.run(params)
+EOF

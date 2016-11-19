@@ -1,0 +1,14 @@
+[Unit]
+Description=Setup debug config
+DefaultDependencies=no
+After=systemd-tmpfiles-setup.service
+ConditionKernelCommandLine=|debugging
+ConditionPathExists=|/storage/.cache/debug.alexelec
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'cp /usr/share/debugconf/*.conf /run/alexelec/debug'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target

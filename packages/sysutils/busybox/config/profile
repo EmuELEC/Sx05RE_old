@@ -1,0 +1,36 @@
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+# parse command line arguments
+  for arg in $(cat /proc/cmdline); do
+    case $arg in
+      debugging)
+        export DEBUG=yes
+        ;;
+      progress)
+        PROGRESS=yes
+        ;;
+    esac
+  done
+
+  if [ -e /storage/.cache/debug.alexelec ] ; then
+    export DEBUG=yes
+  fi
+
+# functions
+  progress() {
+    if test "$PROGRESS" = yes; then
+      logger -s -t Boot "### $1 ###"
+    else
+      logger -t Boot "### $1 ###"
+    fi
+  }
+
+# read config files
+  for config in /etc/profile.d/*; do
+    if [ -f "$config" ] ; then
+      . $config
+    fi
+  done
