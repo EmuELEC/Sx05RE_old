@@ -39,6 +39,20 @@ if [ ! -d $HOME/.kodi/userdata/addon_data/weather.yahoo ]; then
   fi
 fi
 
+if [ ! -d $HOME/.kodi/userdata/addon_data/script.skinshortcuts ]; then
+  if [ -d /usr/share/kodi/config/script.skinshortcuts ]; then
+    mkdir -p $HOME/.kodi/userdata/addon_data
+    cp -R /usr/share/kodi/config/script.skinshortcuts $HOME/.kodi/userdata/addon_data
+  fi
+fi
+
+if [ ! -d $HOME/.kodi/userdata/addon_data/skin.aeon.nox.5 ]; then
+  if [ -d /usr/share/kodi/config/skin.aeon.nox.5 ]; then
+    mkdir -p $HOME/.kodi/userdata/addon_data
+    cp -R /usr/share/kodi/config/skin.aeon.nox.5 $HOME/.kodi/userdata/addon_data
+  fi
+fi
+
 # add default config file to HOME dir Kodi
 if [ ! -f $HOME/.kodi/userdata/advancedsettings.xml ] ; then
   cp /usr/share/kodi/system/advancedsettings.xml $HOME/.kodi/userdata

@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<shortcuts>
+	<shortcut>
+		<defaultID>service.system.settings</defaultID>
+		<label>Системные</label>
+		<label2>Программа</label2>
+		<icon>DefaultAddon.png</icon>
+		<thumb>image://%2Fusr%2Fshare%2Fkodi%2Faddons%2Fservice.system.settings%2Ficon.png/</thumb>
+		<action>RunAddOn(service.system.settings)</action>
+	</shortcut>
+	<shortcut>
+		<defaultID>service.alexelec.settings</defaultID>
+		<label>Расширенные</label>
+		<label2>Программа</label2>
+		<icon>DefaultAddon.png</icon>
+		<thumb>image://%2Fusr%2Fshare%2Fkodi%2Faddons%2Fservice.alexelec.settings%2Ficon.png/</thumb>
+		<action>RunAddOn(service.alexelec.settings)</action>
+	</shortcut>
+	<shortcut>
+		<defaultID />
+		<label>Дополнения</label>
+		<label2>Custom item</label2>
+		<icon>DefaultShortcut.png</icon>
+		<thumb />
+		<action>ActivateWindow(AddonBrowser)</action>
+	</shortcut>
+	<shortcut>
+		<defaultID>7</defaultID>
+		<label>7</label>
+		<label2 />
+		<icon>DefaultShortcut.png</icon>
+		<thumb />
+		<action>ActivateWindow(FileManager)</action>
+	</shortcut>
+	<shortcut>
+		<defaultID>130</defaultID>
+		<label>130</label>
+		<label2 />
+		<icon>DefaultShortcut.png</icon>
+		<thumb />
+		<action>ActivateWindow(SystemInfo)</action>
+	</shortcut>
+</shortcuts>

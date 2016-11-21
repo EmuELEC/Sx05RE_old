@@ -21,6 +21,34 @@
         <timezonecountry>Ukraine</timezonecountry>
         <use24hourclock default="true">regional</use24hourclock>
     </locale>
+    <lookandfeel>
+        <enablerssfeeds>true</enablerssfeeds>
+        <font default="true">Default</font>
+        <rssedit default="true"></rssedit>
+        <skin default="true">skin.estuary</skin>
+        <skincolors default="true">SKINDEFAULT</skincolors>
+        <skintheme default="true">SKINDEFAULT</skintheme>
+        <skinzoom default="true">0</skinzoom>
+        <soundskin default="true">resource.uisounds.kodi</soundskin>
+        <startupwindow default="true">10000</startupwindow>
+        <stereostrength default="true">5</stereostrength>
+    </lookandfeel>
+    <pvrplayback>
+        <channelentrytimeout default="true">0</channelentrytimeout>
+        <confirmchannelswitch default="true">false</confirmchannelswitch>
+        <enableradiords default="true">true</enableradiords>
+        <fps default="true">0</fps>
+        <playminimized>true</playminimized>
+        <scantime default="true">10</scantime>
+        <signalquality>true</signalquality>
+        <startlast default="true">0</startlast>
+        <trafficadvisory default="true">false</trafficadvisory>
+        <trafficadvisoryvolume default="true">10</trafficadvisoryvolume>
+    </pvrplayback>
+    <weather>
+        <addon>weather.yahoo</addon>
+        <currentlocation default="true">1</currentlocation>
+    </weather>
     <audio>
         <mute>false</mute>
         <fvolumelevel>0.500000</fvolumelevel>
