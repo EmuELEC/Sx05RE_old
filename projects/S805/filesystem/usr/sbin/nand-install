@@ -13,6 +13,10 @@ install_to_nand() {
       echo "Unmounting SYSTEM partiton."
       umount -f /dev/system
     fi
+    if systemctl is-active storage-nand.mount &>/dev/null ; then
+      echo "Unmounting DATA partiton."
+      systemctl stop storage-nand.mount
+    fi
     mkdir -p /tmp/system
 
     mount -o rw,remount /flash
