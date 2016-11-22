@@ -20,21 +20,14 @@ PKG_LOCALE_INSTALL="yes"
 
 make_target() {
   VDR_DIR=$(get_build_dir vdr)
-  make VDRDIR=$VDR_DIR \
-       LIBDIR="." \
-       LOCDIR="./locale"
+  make VDRDIR=$VDR_DIR
 }
 
 makeinstall_target() {
-  mkdir -p $INSTALL/usr/lib/vdr
-    cp client/libvdr-streamdev*.so.* $INSTALL/usr/lib/vdr
-    cp server/libvdr-streamdev*.so.* $INSTALL/usr/lib/vdr
+  VDR_DIR=$(get_build_dir vdr)
+  make VDRDIR=$VDR_DIR DESTDIR=$INSTALL LIBDIR=/usr/lib/vdr install
 
   mkdir -p $INSTALL/usr/config/vdr/plugins/streamdev-server
     cp streamdev-server/* $INSTALL/usr/config/vdr/plugins/streamdev-server
     echo '0.0.0.0/0' >> $INSTALL/usr/config/vdr/plugins/streamdev-server/streamdevhosts.conf
-
-  mkdir -p $INSTALL/usr/share
-    cp -a server/locale $INSTALL/usr/share
-    cp -a client/locale $INSTALL/usr/share
 }
