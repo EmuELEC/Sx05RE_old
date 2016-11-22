@@ -31,3 +31,6 @@ mkpkg-temp
 
 # crap
 .DS_Store
+
+# clean files
+/clean_*

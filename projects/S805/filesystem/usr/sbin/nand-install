@@ -42,12 +42,12 @@ install_to_nand() {
     nand-reboot
 
   else
-    echo "No LE image found on /flash! Exiting..."
+    echo "No AlexELEC image found on /flash! Exiting..."
   fi
 }
 
 echo "This script will erase BOOT, SYSTEM, and DATA on your device"
-echo "and install LE that you booted from SD card/USB drive."
+echo "and install AlexELEC that you booted from SD card/USB drive."
 echo ""
 echo "The script does not have any safeguards!"
 echo ""
