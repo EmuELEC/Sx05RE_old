@@ -8,19 +8,20 @@ SOURCEREMOTECONF="/tmp/remote/remote.conf"
 TARGETREMOTECONF="/storage/.config/amremote/remote.conf"
 REMOTECONFPRESENT="no"
 
-mkdir -p /tmp/remote
-mkdir -p /tmp/system
-mount -o ro /dev/system /tmp/system
+if ! grep -q /dev/system /proc/mounts ; then
+  mkdir -p /tmp/remote
+  mkdir -p /tmp/system
+  mount -o ro /dev/system /tmp/system
 
-if [ -f /tmp/system/etc/remote.conf ] ; then
-  cp -f /tmp/system/etc/remote.conf $SOURCEREMOTECONF
-  REMOTECONFPRESENT="yes"
-elif [ -f /tmp/system/remote.conf ] ; then
-  cp -f /tmp/system/remote.conf $SOURCEREMOTECONF
-  REMOTECONFPRESENT="yes"
+  if [ -f /tmp/system/etc/remote.conf ] ; then
+    cp -f /tmp/system/etc/remote.conf $SOURCEREMOTECONF
+    REMOTECONFPRESENT="yes"
+  elif [ -f /tmp/system/remote.conf ] ; then
+    cp -f /tmp/system/remote.conf $SOURCEREMOTECONF
+    REMOTECONFPRESENT="yes"
+  fi
+  umount /tmp/system
 fi
-
-umount /tmp/system
 
 if [ "$REMOTECONFPRESENT" = "yes" ]; then
   cp -f "$SOURCEREMOTECONF" "$TARGETREMOTECONF"

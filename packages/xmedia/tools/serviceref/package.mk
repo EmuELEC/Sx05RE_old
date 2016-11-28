@@ -6,7 +6,7 @@
 PKG_NAME="serviceref"
 PKG_VERSION="0.1"
 PKG_REV="1"
-PKG_ARCH="arm"
+PKG_ARCH="any"
 PKG_LICENSE="OSS"
 PKG_SITE="https://github.com/pipelka/vdr-plugin-xvdr/tree/master/tools"
 PKG_URL=""

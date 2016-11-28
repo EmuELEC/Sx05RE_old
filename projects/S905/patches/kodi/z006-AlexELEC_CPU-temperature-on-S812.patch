@@ -1,0 +1,32 @@
+diff -Naurp kodi-15.2-02e7013/xbmc/utils/CPUInfo.cpp kodi-15.2-02e7013-patch/xbmc/utils/CPUInfo.cpp
+--- kodi-15.2-02e7013/xbmc/utils/CPUInfo.cpp	2016-04-02 09:51:27.000000000 +0300
++++ kodi-15.2-02e7013-patch/xbmc/utils/CPUInfo.cpp	2016-04-02 08:54:26.000000000 +0300
+@@ -257,18 +257,9 @@ CCPUInfo::CCPUInfo(void)
+   }
+ #else
+   m_fProcStat = fopen("/proc/stat", "r");
+-  m_fProcTemperature = fopen("/proc/acpi/thermal_zone/THM0/temperature", "r");
+-  if (m_fProcTemperature == NULL)
+-    m_fProcTemperature = fopen("/proc/acpi/thermal_zone/THRM/temperature", "r");
+-  if (m_fProcTemperature == NULL)
+-    m_fProcTemperature = fopen("/proc/acpi/thermal_zone/THR0/temperature", "r");
+-  if (m_fProcTemperature == NULL)
+-    m_fProcTemperature = fopen("/proc/acpi/thermal_zone/TZ0/temperature", "r");
+-  // read from the new location of the temperature data on new kernels, 2.6.39, 3.0 etc
++  m_fProcTemperature = fopen("/sys/class/thermal/thermal_zone0/temp", "r");  // On Amlogic M8S Plus (S812)
+   if (m_fProcTemperature == NULL)   
+-    m_fProcTemperature = fopen("/sys/class/hwmon/hwmon0/temp1_input", "r");
+-  if (m_fProcTemperature == NULL)   
+-    m_fProcTemperature = fopen("/sys/class/thermal/thermal_zone0/temp", "r");  // On Raspberry PIs
++    m_fProcTemperature = fopen("/sys/class/thermal/thermal_zone1/temp", "r");
+ 
+   m_fCPUFreq = fopen ("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", "r");
+   if (m_fCPUFreq == NULL)
+@@ -613,7 +604,6 @@ bool CCPUInfo::getTemperature(CTemperatu
+     if (!ret)
+     {
+       ret = fscanf(m_fProcTemperature, "%d", &value);
+-      value = value / 1000;
+       scale = 'c';
+       ret++;
+     }
