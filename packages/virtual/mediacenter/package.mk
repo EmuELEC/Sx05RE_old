@@ -45,3 +45,13 @@ PKG_AUTORECONF="no"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET pvr.dvblink"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET pvr.vuplus"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET pvr.stalker"
+
+# kodi-binary-addons visualization
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET visualization.spectrum"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET visualization.waveform"
+
+# audioencoder
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET audioencoder.flac"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET audioencoder.lame"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET audioencoder.vorbis"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET audioencoder.wav"
