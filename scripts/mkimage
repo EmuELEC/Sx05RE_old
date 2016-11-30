@@ -68,11 +68,7 @@ trap cleanup SIGINT
   echo "image: creating part1..."
   SYSTEM_PART_END=$(( ($SYSTEM_SIZE * 1024 * 1024 / 512) + $SYSTEM_PART_START ))
   parted -s "$DISK" -a min unit s mkpart primary fat32 $SYSTEM_PART_START $SYSTEM_PART_END
-  if [ "$BOOTLOADER" = "syslinux" ]; then
-    parted -s "$DISK" set 1 legacy_boot on
-  else
-    parted -s "$DISK" set 1 boot on
-  fi
+  parted -s "$DISK" set 1 boot on
   sync
 # create part2
   echo "image: creating part2..."
@@ -80,15 +76,6 @@ trap cleanup SIGINT
   STORAGE_PART_END=$(( $STORAGE_PART_START + (( $STORAGE_SIZE * 1024 * 1024 / 512 )) ))
   parted -s "$DISK" -a min unit s mkpart primary ext4 $STORAGE_PART_START $STORAGE_PART_END
   sync
-
-if [ "$BOOTLOADER" = "syslinux" ]; then
-  # write mbr
-    echo "image: writing mbr..."
-    MBR="$ROOT/$TOOLCHAIN/share/syslinux/gptmbr.bin"
-    if [ -n "$MBR" ]; then
-      dd bs=440 count=1 conv=fsync,notrunc if="$MBR" of="$DISK" >"$SAVE_ERROR" 2>&1 || show_error
-    fi
-fi
 
 # create filesystem on part1
   echo "image: creating filesystem on part1..."
@@ -102,11 +89,7 @@ fi
   alias mcopy="mcopy -i $DISK@@$OFFSET"
   alias mmd="mmd -i $DISK@@$OFFSET"
 
-  if [ "$BOOTLOADER" = "syslinux" ]; then
-    mformat -v "$FAT_VOLUME_LABEL" -N "$FAT_SERIAL_NUMBER" ::
-  elif [ "$BOOTLOADER" = "bcm2835-bootloader" -o "$BOOTLOADER" = "u-boot" ]; then
-    mformat -v "$FAT_VOLUME_LABEL" ::
-  fi
+  mformat -v "$FAT_VOLUME_LABEL" ::
   sync
 
 # create bootloader configuration
@@ -120,10 +103,15 @@ fi
     mcopy $TARGET_IMG/$IMAGE_NAME.dtb ::/dtb.img
   fi
 
+  for src in $INSTALL_SRC_DIR/*autoscript.src ; do
+    if [ -e "$src" ] ; then
+      $MKIMAGE_TOOL_CMD "$src" "$LE_TMP/$(basename $src .src)" > /dev/null
+      mcopy "$LE_TMP/$(basename $src .src)" ::
+    fi
+  done
+
   if [ -f "$INSTALL_SRC_DIR/aml_autoscript.src" ]; then
     echo "Creating Amlogic ZIP env-update package"
-	cat "$INSTALL_SRC_DIR/aml_autoscript.src" > "$LE_TMP/aml_autoscript.src"
-	$MKIMAGE_TOOL_CMD "$LE_TMP/aml_autoscript.src" "$LE_TMP/aml_autoscript" > /dev/null
 	pushd $LE_TMP > /dev/null
 	zip -q env-update.zip aml_autoscript
     echo "Signing the env-update package"
@@ -131,8 +119,7 @@ fi
     SIGNAPK_DIR="$ROOT/tools/signapk"
     java -Xmx1024m -jar $SIGNAPK_DIR/signapk.jar -w $SIGNAPK_DIR/testkey.x509.pem $SIGNAPK_DIR/testkey.pk8 env-update.zip sign/aml_autoscript.zip
 	popd > /dev/null
-    mcopy "$LE_TMP/aml_autoscript" "::/aml_autoscript"
-    mcopy "$LE_TMP/sign/aml_autoscript.zip" "::/aml_autoscript.zip"
+    mcopy "$LE_TMP/sign/aml_autoscript.zip" ::
   fi
 
 # extract part2 from image to format and copy files
@@ -168,17 +155,6 @@ fi
   dd if="$DISK" of="$LE_TMP/part1.fat" bs=512 skip="$SYSTEM_PART_START" count="$SYSTEM_PART_COUNT" conv=fsync >"$SAVE_ERROR" 2>&1 || show_error
   echo "image: checking filesystem on part1..."
   fsck -n $LE_TMP/part1.fat >"$SAVE_ERROR" 2>&1 || show_error
-
-# create virtual images
-  if [ "$PROJECT" = Virtual ]; then
-    echo "image: creating open virtual appliance..."
-    qemu-img convert -O vmdk -o subformat=streamOptimized "$DISK" "$DISK.vmdk"
-    sed -e "s,@DISTRO@,$DISTRO,g" -e "s,@DISK@,$(basename $DISK),g" -e "s,@DISK_SIZE@,$(ls -l $DISK.vmdk | awk '{print $5}'),g" $PROJECT_DIR/$PROJECT/config/ovf.template > $DISK.ovf
-    tar -C $TARGET_IMG -cf $DISK.ova $(basename $DISK).ovf $(basename $DISK).vmdk
-    echo "image: cleaning up..."
-    rm $DISK.vmdk $DISK.ovf
-    [ -n "$SUDO_USER" ] && chown $SUDO_USER: $DISK.ova
-  fi
 
 # gzip
   echo "image: compressing..."

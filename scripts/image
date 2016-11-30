@@ -195,14 +195,14 @@ if [ "$BUILD_ANDROID_BOOTIMG" = "yes" ]; then
     ANDROID_BOOTIMG_SECOND="--second $DTB_BLOB_OUTPUT"
   elif [ "$DTB_BLOBS_COUNT" -eq 1 ]; then
     cp -f $DTB_BLOBS $DTB_BLOB_OUTPUT
-    ANDROID_BOOTIMG_SECOND="--second $DTB_BLOBS"
+	ANDROID_BOOTIMG_SECOND="--second $DTB_BLOBS"
   else
     ANDROID_BOOTIMG_SECOND=""
   fi
   echo "  ANDROID_BOOTIMG_SECOND: $ANDROID_BOOTIMG_SECOND"
   mkbootimg --kernel arch/$TARGET_KERNEL_ARCH/boot/$KERNEL_TARGET --ramdisk $ROOT/$BUILD/image/initramfs.cpio \
       $ANDROID_BOOTIMG_SECOND $ANDROID_BOOTIMG_OPTIONS --output arch/$TARGET_KERNEL_ARCH/boot/boot.img
-  if [ -f "$DTB_BLOB_OUTPUT" -a "$PROJECT" = "S905" ]; then
+  if [ -f "$DTB_BLOB_OUTPUT" ]; then
     cp -f $DTB_BLOB_OUTPUT $TARGET_IMG/$IMAGE_NAME.dtb
   fi
   echo "...done"

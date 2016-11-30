@@ -27,15 +27,6 @@ for arg in $(cat /proc/cmdline); do
   esac
 done
 
-# Set display mode: 1080p 50hz
-case "$hdmimode" in
-  1080*)
-    hdmimode="1080p50hz"
-    ;;
-esac
-
-echo "$hdmimode" > /sys/class/display/mode
-
 # Add information where to run AlexELEC from
 if [ -z "$BOOT_IMAGE" -o -z "$boot" -o -z "$disk" ]; then
   cmdline=$(cat /proc/cmdline)
@@ -89,7 +80,7 @@ done
 # Attempt to fix MPEG-TS stream lost packet (HDMI-CEC irq issue)
 echo 2 > /proc/irq/231/smp_affinity
 
-# DVB
+# USB
 echo 4 > /proc/irq/61/smp_affinity
 echo 8 > /proc/irq/62/smp_affinity
 
