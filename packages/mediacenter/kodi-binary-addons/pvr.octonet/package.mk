@@ -1,6 +1,6 @@
 ################################################################################
-#      This file is part of LibreELEC - https://libreelec.tv
-#      Copyright (C) 2009-2016 Lukas Rusak (lrusak@libreelec.tv)
+#      This file is part of LibreELEC - http://www.libreelec.tv
+#      Copyright (C) 2016 Team LibreELEC
 #
 #  LibreELEC is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -16,17 +16,21 @@
 #  along with LibreELEC.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
-PKG_NAME="inputstream.smoothstream"
-PKG_VERSION="081c6c4"
+PKG_NAME="pvr.octonet"
+PKG_VERSION="ff2d4a7"
+PKG_REV="1"
+PKG_ARCH="any"
 PKG_LICENSE="GPL"
 PKG_SITE="http://www.kodi.tv"
-PKG_URL="https://github.com/peak3d/inputstream.smoothstream/archive/$PKG_VERSION.tar.gz"
-PKG_DEPENDS_TARGET="toolchain kodi-platform"
+PKG_URL="https://github.com/DigitalDevices/pvr.octonet/archive/$PKG_VERSION.tar.gz"
+PKG_DEPENDS_TARGET="toolchain kodi-platform jsoncpp"
 PKG_SECTION=""
-PKG_SHORTDESC="inputstream.smoothstream"
-PKG_LONGDESC="inputstream.smoothstream"
+PKG_SHORTDESC="A pvr plugin for DigitalDevices Octonet Sat>IP servers"
+PKG_LONGDESC="A pvr plugin for DigitalDevices Octonet Sat>IP servers"
+PKG_AUTORECONF="no"
 
 PKG_IS_ADDON="yes"
+PKG_ADDON_TYPE="xbmc.pvrclient"
 
 PKG_CMAKE_OPTS_TARGET="-DCMAKE_MODULE_PATH=$SYSROOT_PREFIX/usr/lib/kodi \
                        -DCMAKE_PREFIX_PATH=$SYSROOT_PREFIX/usr"
