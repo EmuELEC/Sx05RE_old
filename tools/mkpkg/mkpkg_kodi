@@ -5,7 +5,7 @@
 ################################################################################
 
 if [ -z "$1" ]; then
-  BRANCH="master"
+  BRANCH="Krypton"
 else
   BRANCH="$1"
 fi
@@ -57,5 +57,5 @@ echo "packing sources..."
   tar cvJf $PKG_NAME-theme-Estuary-$PKG_VERSION.tar.xz $PKG_NAME-theme-Estuary-$PKG_VERSION
 
 echo "remove temporary sourcedir..."
-  rm -rf $PKG_NAME-$PKG_VERSION
-  rm -rf $PKG_NAME-theme-Estuary-$PKG_VERSION
+  #rm -rf $PKG_NAME-$PKG_VERSION
+  #rm -rf $PKG_NAME-theme-Estuary-$PKG_VERSION

@@ -1,0 +1,66 @@
+diff -Naurp kodi-theme-Estuary-17.0-beta7-b9fe8e9/language/resource.language.en_gb/strings.po kodi-theme-Estuary-17.0-beta7-b9fe8e9-patch/language/resource.language.en_gb/strings.po
+--- kodi-theme-Estuary-17.0-beta7-b9fe8e9/language/resource.language.en_gb/strings.po	2016-12-01 11:20:46.000000000 +0200
++++ kodi-theme-Estuary-17.0-beta7-b9fe8e9-patch/language/resource.language.en_gb/strings.po	2016-12-01 11:42:10.000000000 +0200
+@@ -673,3 +673,13 @@ msgstr ""
+ msgctxt "#31161"
+ msgid "Numeric pad"
+ msgstr ""
++
++#: /xml/Settings.xml
++msgctxt "#31201"
++msgid "System"
++msgstr ""
++
++#: /xml/Settings.xml
++msgctxt "#31202"
++msgid "Advanced"
++msgstr ""
+diff -Naurp kodi-theme-Estuary-17.0-beta7-b9fe8e9/language/resource.language.ru_ru/strings.po kodi-theme-Estuary-17.0-beta7-b9fe8e9-patch/language/resource.language.ru_ru/strings.po
+--- kodi-theme-Estuary-17.0-beta7-b9fe8e9/language/resource.language.ru_ru/strings.po	2016-12-01 11:20:46.000000000 +0200
++++ kodi-theme-Estuary-17.0-beta7-b9fe8e9-patch/language/resource.language.ru_ru/strings.po	2016-12-01 11:41:57.000000000 +0200
+@@ -343,3 +343,11 @@ msgstr "Скрыть"
+ msgctxt "#31134"
+ msgid "Remaining"
+ msgstr "Осталось"
++
++msgctxt "#31201"
++msgid "System"
++msgstr "Системные"
++
++msgctxt "#31202"
++msgid "Advanced"
++msgstr "Расширенные"
+diff -Naurp kodi-theme-Estuary-17.0-beta7-b9fe8e9/xml/DialogPVRChannelsOSD.xml kodi-theme-Estuary-17.0-beta7-b9fe8e9-patch/xml/DialogPVRChannelsOSD.xml
+--- kodi-theme-Estuary-17.0-beta7-b9fe8e9/xml/DialogPVRChannelsOSD.xml	2016-12-01 11:20:46.000000000 +0200
++++ kodi-theme-Estuary-17.0-beta7-b9fe8e9-patch/xml/DialogPVRChannelsOSD.xml	2016-12-01 11:32:12.000000000 +0200
+@@ -15,7 +15,7 @@
+ 					<width>875</width>
+ 					<height>100%</height>
+ 					<onleft>PreviousChannelGroup</onleft>
+-					<onright>60</onright>
++					<onright>NextChannelGroup</onright>
+ 					<onup>11</onup>
+ 					<ondown>11</ondown>
+ 					<pagecontrol>60</pagecontrol>
+diff -Naurp kodi-theme-Estuary-17.0-beta7-b9fe8e9/xml/Settings.xml kodi-theme-Estuary-17.0-beta7-b9fe8e9-patch/xml/Settings.xml
+--- kodi-theme-Estuary-17.0-beta7-b9fe8e9/xml/Settings.xml	2016-12-01 11:20:46.000000000 +0200
++++ kodi-theme-Estuary-17.0-beta7-b9fe8e9-patch/xml/Settings.xml	2016-12-01 11:35:06.000000000 +0200
+@@ -149,10 +149,14 @@
+ 					<icon>icons/settings/system.png</icon>
+ 				</item>
+ 				<item>
+-					<label>LibreELEC</label>
+-					<onclick>RunAddon(service.libreelec.settings)</onclick>
+-					<icon>icons/settings/libreelec.png</icon>
+-					<visible>System.HasAddon(service.libreelec.settings)</visible>
++					<label>AlexELEC $LOCALIZE[31201]</label>
++					<onclick>RunAddon(service.system.settings)</onclick>
++					<icon>icons/settings/setsys.png</icon>
++				</item>
++				<item>
++					<label>AlexELEC $LOCALIZE[31202]</label>
++					<onclick>RunAddon(service.alexelec.settings)</onclick>
++					<icon>icons/settings/alexelec.png</icon>
+ 				</item>
+ 				<item>
+ 					<label>$LOCALIZE[138]</label>

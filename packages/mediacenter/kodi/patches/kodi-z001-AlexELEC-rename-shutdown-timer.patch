@@ -1,0 +1,12 @@
+diff -Naurp kodi-17.0-beta7-b9fe8e9/addons/resource.language.en_gb/resources/strings.po kodi-17.0-beta7-b9fe8e9-patch/addons/resource.language.en_gb/resources/strings.po
+--- kodi-17.0-beta7-b9fe8e9/addons/resource.language.en_gb/resources/strings.po	2016-12-01 12:29:44.000000000 +0200
++++ kodi-17.0-beta7-b9fe8e9-patch/addons/resource.language.en_gb/resources/strings.po	2016-12-01 13:17:09.000000000 +0200
+@@ -11517,7 +11517,7 @@ msgstr ""
+ 
+ #: addons/skin.estuary/1080i/DialogButtonMenu.xml
+ msgctxt "#20151"
+-msgid "Cancel shutdown timer"
++msgid "Cancel timer"
+ msgstr ""
+ 
+ msgctxt "#20152"

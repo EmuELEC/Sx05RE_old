@@ -1,22 +1,7 @@
-From 3ff502a62b3c7fd031db1b76618fb624d7ee3cac Mon Sep 17 00:00:00 2001
-From: kszaq <kszaquitto@gmail.com>
-Date: Sat, 10 Sep 2016 11:57:54 +0200
-Subject: [PATCH] aml: Add VP9 HW decoding support
-
-Thanks to Braindamagedman at LE Forum for adapting vp9_update_frame_header:
-https://forum.libreelec.tv/thread-1176-post-14476.html#pid14476
----
- .../cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 125 +++++++++++++++++++++
- .../DVDCodecs/Video/DVDVideoCodecAmlogic.cpp       |   7 ++
- xbmc/utils/AMLUtils.cpp                            |  17 +++
- xbmc/utils/AMLUtils.h                              |   1 +
- 4 files changed, 150 insertions(+)
-
-diff --git a/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp b/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp
-index cd59480..9fb6a88 100644
---- a/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp
-+++ b/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp
-@@ -442,6 +442,9 @@ static vformat_t codecid_to_vformat(enum AVCodecID id)
+diff -Naurp kodi-17.0-beta7-b9fe8e9/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp kodi-17.0-beta7-b9fe8e9-patch/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp
+--- kodi-17.0-beta7-b9fe8e9/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp	2016-12-01 12:29:44.000000000 +0200
++++ kodi-17.0-beta7-b9fe8e9-patch/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp	2016-12-01 13:01:07.000000000 +0200
+@@ -443,6 +443,9 @@ static vformat_t codecid_to_vformat(enum
      case AV_CODEC_ID_WMV3:
        format = VFORMAT_VC1;
        break;
@@ -26,7 +11,7 @@ index cd59480..9fb6a88 100644
      case AV_CODEC_ID_AVS:
      case AV_CODEC_ID_CAVS:
        format = VFORMAT_AVS;
-@@ -553,6 +556,9 @@ static vdec_type_t codec_tag_to_vdec_type(unsigned int codec_tag)
+@@ -554,6 +557,9 @@ static vdec_type_t codec_tag_to_vdec_typ
        // vp6
        dec_type = VIDEO_DEC_FORMAT_SW;
        break;
@@ -36,7 +21,7 @@ index cd59480..9fb6a88 100644
      case AV_CODEC_ID_CAVS:
      case AV_CODEC_ID_AVS:
        // avs
-@@ -960,6 +966,116 @@ static int hevc_write_header(am_private_t *para, am_packet_t *pkt)
+@@ -961,6 +967,116 @@ static int hevc_write_header(am_private_
      return ret;
  }
  
@@ -153,7 +138,7 @@ index cd59480..9fb6a88 100644
  static int wmv3_write_header(am_private_t *para, am_packet_t *pkt)
  {
      CLog::Log(LOGDEBUG, "wmv3_write_header");
-@@ -1373,6 +1489,9 @@ int set_header_info(am_private_t *para)
+@@ -1374,6 +1490,9 @@ int set_header_info(am_private_t *para)
              pkt->hdr->size = 4;
              pkt->newflag = 1;
          }
@@ -163,24 +148,23 @@ index cd59480..9fb6a88 100644
      }
    }
    return PLAYER_SUCCESS;
-@@ -1599,6 +1718,12 @@ bool CAMLCodec::OpenDecoder(CDVDStreamInfo &hints)
+@@ -1610,6 +1729,12 @@ bool CAMLCodec::OpenDecoder(CDVDStreamIn
+       am_private->gcodec.param  = (void*)EXTERNAL_PTS;
        if (m_hints.ptsinvalid)
          am_private->gcodec.param = (void*)(EXTERNAL_PTS | SYNC_OUTSIDE);
-       break;
++      break;
 +    case VFORMAT_VP9:
 +      am_private->gcodec.format = VIDEO_DEC_FORMAT_VP9;
 +      am_private->gcodec.param  = (void*)EXTERNAL_PTS;
 +      if (m_hints.ptsinvalid)
 +        am_private->gcodec.param = (void*)(EXTERNAL_PTS | SYNC_OUTSIDE);
-+      break;
+       break;
    }
    am_private->gcodec.param = (void *)((std::uintptr_t)am_private->gcodec.param | (am_private->video_rotation_degree << 16));
- 
-diff --git a/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp b/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp
-index 271e6d4..28a425f 100644
---- a/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp
-+++ b/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp
-@@ -190,6 +190,13 @@ bool CDVDVideoCodecAmlogic::Open(CDVDStreamInfo &hints, CDVDCodecOptions &option
+diff -Naurp kodi-17.0-beta7-b9fe8e9/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp kodi-17.0-beta7-b9fe8e9-patch/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp
+--- kodi-17.0-beta7-b9fe8e9/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp	2016-12-01 12:29:44.000000000 +0200
++++ kodi-17.0-beta7-b9fe8e9-patch/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp	2016-12-01 13:02:38.000000000 +0200
+@@ -190,6 +190,13 @@ bool CDVDVideoCodecAmlogic::Open(CDVDStr
      case AV_CODEC_ID_CAVS:
        m_pFormatName = "am-avs";
        break;
@@ -194,11 +178,10 @@ index 271e6d4..28a425f 100644
      case AV_CODEC_ID_HEVC:
        if (aml_support_hevc()) {
          if (!aml_support_hevc_4k2k() && ((m_hints.width > 1920) || (m_hints.height > 1088)))
-diff --git a/xbmc/utils/AMLUtils.cpp b/xbmc/utils/AMLUtils.cpp
-index 9ac293c..1f36129 100644
---- a/xbmc/utils/AMLUtils.cpp
-+++ b/xbmc/utils/AMLUtils.cpp
-@@ -227,6 +227,23 @@ int aml_support_h264_4k2k()
+diff -Naurp kodi-17.0-beta7-b9fe8e9/xbmc/utils/AMLUtils.cpp kodi-17.0-beta7-b9fe8e9-patch/xbmc/utils/AMLUtils.cpp
+--- kodi-17.0-beta7-b9fe8e9/xbmc/utils/AMLUtils.cpp	2016-12-01 12:29:44.000000000 +0200
++++ kodi-17.0-beta7-b9fe8e9-patch/xbmc/utils/AMLUtils.cpp	2016-12-01 13:03:52.000000000 +0200
+@@ -235,6 +235,23 @@ AML_SUPPORT_H264_4K2K aml_support_h264_4
    return has_h264_4k2k;
  }
  
@@ -222,18 +205,14 @@ index 9ac293c..1f36129 100644
  void aml_set_audio_passthrough(bool passthrough)
  {
    SysfsUtils::SetInt("/sys/class/audiodsp/digital_raw", passthrough ? 2:0);
-diff --git a/xbmc/utils/AMLUtils.h b/xbmc/utils/AMLUtils.h
-index de1053f..0267915 100644
---- a/xbmc/utils/AMLUtils.h
-+++ b/xbmc/utils/AMLUtils.h
-@@ -49,6 +49,7 @@ bool aml_support_hevc();
+diff -Naurp kodi-17.0-beta7-b9fe8e9/xbmc/utils/AMLUtils.h kodi-17.0-beta7-b9fe8e9-patch/xbmc/utils/AMLUtils.h
+--- kodi-17.0-beta7-b9fe8e9/xbmc/utils/AMLUtils.h	2016-12-01 11:20:47.000000000 +0200
++++ kodi-17.0-beta7-b9fe8e9-patch/xbmc/utils/AMLUtils.h	2016-12-01 13:04:38.000000000 +0200
+@@ -57,6 +57,7 @@ bool aml_support_hevc();
  bool aml_support_hevc_4k2k();
  bool aml_support_hevc_10bit();
- int  aml_support_h264_4k2k();
+ AML_SUPPORT_H264_4K2K aml_support_h264_4k2k();
 +bool aml_support_vp9();
  void aml_set_audio_passthrough(bool passthrough);
  bool aml_IsHdmiConnected();
  bool aml_mode_to_resolution(const char *mode, RESOLUTION_INFO *res);
--- 
-1.8.3.1
-

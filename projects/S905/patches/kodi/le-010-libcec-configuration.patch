@@ -1,7 +1,6 @@
-diff --git a/system/peripherals.xml b/system/peripherals.xml
-index 67f6b7a..017b179 100644
---- a/system/peripherals.xml
-+++ b/system/peripherals.xml
+diff -Naurp kodi-17.0-beta7-b9fe8e9/system/peripherals.xml kodi-17.0-beta7-b9fe8e9-patch/system/peripherals.xml
+--- kodi-17.0-beta7-b9fe8e9/system/peripherals.xml	2016-12-01 12:29:44.000000000 +0200
++++ kodi-17.0-beta7-b9fe8e9-patch/system/peripherals.xml	2016-12-01 12:35:16.000000000 +0200
 @@ -11,13 +11,13 @@
    <peripheral bus="cec" name="CEC Adapter" mapTo="cec">
      <setting key="enabled" type="bool" value="1" label="305" order="1" />
@@ -13,10 +12,10 @@ index 67f6b7a..017b179 100644
      <setting key="send_inactive_source" type="bool" value="1" label="36025" order="5" />
      <setting key="cec_standby_screensaver" type="bool" value="0" label="36009" order="6" />
 -    <setting key="cec_wake_screensaver" type="bool" value="1" label="36010" order="7" />
--    <setting key="standby_pc_on_tv_standby" type="enum" value="13011" label="36029" order="8" lvalues="36028|13005|13011" />
+-    <setting key="standby_pc_on_tv_standby" type="enum" value="13011" label="36029" order="8" lvalues="36028|13005|13011|13009|36044|36046" />
 -    <setting key="standby_tv_on_pc_standby" type="bool" value="1" label="36026" order="9" />
 +    <setting key="cec_wake_screensaver" type="bool" value="0" label="36010" order="7" />
-+    <setting key="standby_pc_on_tv_standby" type="enum" value="36028" label="36029" order="8" lvalues="36028|13005|13011" />
++    <setting key="standby_pc_on_tv_standby" type="enum" value="36028" label="36029" order="8" lvalues="36028|13005|13011|13009|36044|36046" />
 +    <setting key="standby_tv_on_pc_standby" type="bool" value="0" label="36026" order="9" />
      <setting key="use_tv_menu_language" type="bool" value="0" label="36018" order="10" />
      <setting key="pause_playback_on_deactivate" type="bool" value="1" label="36033" configurable="0" />
