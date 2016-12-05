@@ -33,7 +33,7 @@ post_install() {
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET vdr-all wicard"
 
 # tools
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET ImageMagick mc aml-vnc scan-s2 scan-m3u serviceref"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET ImageMagick mc aml-vnc scan-s2 scan-m3u serviceref ioctl"
 
 # 32bit libs
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET 32bit-libs"
+  #PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET 32bit-libs"

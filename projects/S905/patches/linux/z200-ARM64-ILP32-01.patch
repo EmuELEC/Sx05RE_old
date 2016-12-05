@@ -1,0 +1,405 @@
+diff -Naurp linux-linaro/arch/arm64/include/asm/arch_timer.h linux-linaro-patch/arch/arm64/include/asm/arch_timer.h
+--- linux-linaro/arch/arm64/include/asm/arch_timer.h	2016-12-04 12:00:31.257200817 +0200
++++ linux-linaro-patch/arch/arm64/include/asm/arch_timer.h	2016-12-04 11:51:29.821208071 +0200
+@@ -130,7 +130,7 @@ static inline void arch_timer_evtstrm_en
+ 			| ARCH_TIMER_VIRT_EVT_EN;
+ 	arch_timer_set_cntkctl(cntkctl);
+ 	elf_hwcap |= HWCAP_EVTSTRM;
+-#ifdef CONFIG_COMPAT
++#ifdef CONFIG_AARCH32_EL0
+ 	compat_elf_hwcap |= COMPAT_HWCAP_EVTSTRM;
+ #endif
+ }
+diff -Naurp linux-linaro/arch/arm64/include/asm/compat.h linux-linaro-patch/arch/arm64/include/asm/compat.h
+--- linux-linaro/arch/arm64/include/asm/compat.h	2016-12-04 12:00:31.257200817 +0200
++++ linux-linaro-patch/arch/arm64/include/asm/compat.h	2016-12-04 11:51:29.821208071 +0200
+@@ -76,6 +76,9 @@ struct compat_timeval {
+ 	s32		tv_usec;
+ };
+ 
++/* ILP32 uses 64bit time_t and not the above compat structures */
++#define COMPAT_USE_64BIT_TIME !is_a32_compat_task()
++
+ struct compat_stat {
+ #ifdef __AARCH64EB__
+ 	short		st_dev;
+@@ -208,6 +211,9 @@ typedef struct compat_siginfo {
+ 	} _sifields;
+ } compat_siginfo_t;
+ 
++/* ILP32 uses the native siginfo and not the compat struct */
++#define COMPAT_USE_NATIVE_SIGINFO	!is_a32_compat_task()
++
+ #define COMPAT_OFF_T_MAX	0x7fffffff
+ #define COMPAT_LOFF_T_MAX	0x7fffffffffffffffL
+ 
+@@ -293,23 +299,81 @@ struct compat_shmid64_ds {
+ 	compat_ulong_t __unused5;
+ };
+ 
+-static inline int is_compat_task(void)
++#ifdef CONFIG_AARCH32_EL0
++static inline int is_a32_compat_task(void)
+ {
+ 	return test_thread_flag(TIF_32BIT);
+ }
+-
+-static inline int is_compat_thread(struct thread_info *thread)
++static inline int is_a32_compat_thread(struct thread_info *thread)
+ {
+ 	return test_ti_thread_flag(thread, TIF_32BIT);
+ }
++#else
++static inline int is_a32_compat_task(void)
++{
++	return 0;
++}
++static inline int is_a32_compat_thread(struct thread_info *thread)
++{
++	return 0;
++}
++#endif
++
++#ifdef CONFIG_ARM64_ILP32
++static inline int is_ilp32_compat_task(void)
++{
++	return test_thread_flag(TIF_32BIT_AARCH64);
++}
++static inline int is_ilp32_compat_thread(struct thread_info *thread)
++{
++	return test_ti_thread_flag(thread, TIF_32BIT_AARCH64);
++}
++#else
++static inline int is_ilp32_compat_task(void)
++{
++	return 0;
++}
++static inline int is_ilp32_compat_thread(struct thread_info *thread)
++{
++	return 0;
++}
++#endif
++
++/* In the !CONFIG_COMPAT case include/linux/compat.h is used for the
++ * definition of is_compat_task() - see commit fd92d4a54a06.
++ * That's why is_compat_task() here is left inside #ifdef CONFIG_COMPAT. */
++static inline int is_compat_task(void)
++{
++	return is_a32_compat_task() || is_ilp32_compat_task();
++}
+ 
+ #else /* !CONFIG_COMPAT */
+ 
+-static inline int is_compat_thread(struct thread_info *thread)
++static inline int is_a32_compat_task(void)
++{
++	return 0;
++}
++
++static inline int is_a32_compat_thread(struct thread_info *thread)
++{
++	return 0;
++}
++
++static inline int is_ilp32_compat_task(void)
++{
++	return 0;
++}
++static inline int is_ilp32_compat_thread(struct thread_info *thread)
+ {
+ 	return 0;
+ }
+ 
+ #endif /* CONFIG_COMPAT */
++
++static inline int is_compat_thread(struct thread_info *thread)
++{
++	return is_a32_compat_thread(thread) || is_ilp32_compat_thread(thread);
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* __ASM_COMPAT_H */
+diff -Naurp linux-linaro/arch/arm64/include/asm/elf.h linux-linaro-patch/arch/arm64/include/asm/elf.h
+--- linux-linaro/arch/arm64/include/asm/elf.h	2016-12-04 12:00:31.261200817 +0200
++++ linux-linaro-patch/arch/arm64/include/asm/elf.h	2016-12-04 11:51:29.821208071 +0200
+@@ -135,7 +135,11 @@ extern unsigned long randomize_et_dyn(un
+  */
+ #define ELF_PLAT_INIT(_r, load_addr)	(_r)->regs[0] = 0
+ 
+-#define SET_PERSONALITY(ex)		clear_thread_flag(TIF_32BIT);
++#define SET_PERSONALITY(ex)			\
++do {						\
++	clear_thread_flag(TIF_32BIT_AARCH64);	\
++	clear_thread_flag(TIF_32BIT);		\
++} while (0)
+ 
+ #define ARCH_DLINFO							\
+ do {									\
+@@ -150,7 +154,7 @@ extern int arch_setup_additional_pages(s
+ 
+ /* 1GB of VA */
+ #ifdef CONFIG_COMPAT
+-#define STACK_RND_MASK			(test_thread_flag(TIF_32BIT) ? \
++#define STACK_RND_MASK			(is_compat_task() ? \
+ 						0x7ff >> (PAGE_SHIFT - 12) : \
+ 						0x3ffff >> (PAGE_SHIFT - 12))
+ #else
+@@ -171,23 +175,100 @@ extern unsigned long arch_randomize_brk(
+ 
+ #define COMPAT_ELF_ET_DYN_BASE		(randomize_et_dyn(2 * TASK_SIZE_32 / 3))
+ 
++
++#ifdef CONFIG_AARCH32_EL0
++
+ /* AArch32 registers. */
+-#define COMPAT_ELF_NGREG		18
+-typedef unsigned int			compat_elf_greg_t;
+-typedef compat_elf_greg_t		compat_elf_gregset_t[COMPAT_ELF_NGREG];
++#define COMPAT_A32_ELF_NGREG		18
++typedef unsigned int			compat_a32_elf_greg_t;
++typedef compat_a32_elf_greg_t		compat_a32_elf_gregset_t[COMPAT_A32_ELF_NGREG];
+ 
+ /* AArch32 EABI. */
+ #define EF_ARM_EABI_MASK		0xff000000
+-#define compat_elf_check_arch(x)	(((x)->e_machine == EM_ARM) && \
++#define compat_a32_elf_check_arch(x)	(((x)->e_machine == EM_ARM) && \
+ 					 ((x)->e_flags & EF_ARM_EABI_MASK))
+ 
+ #define compat_start_thread		compat_start_thread
+-#define COMPAT_SET_PERSONALITY(ex)	set_thread_flag(TIF_32BIT);
+-#define COMPAT_ARCH_DLINFO
++#define COMPAT_A32_SET_PERSONALITY(ex)		\
++do {						\
++	clear_thread_flag(TIF_32BIT_AARCH64);	\
++	set_thread_flag(TIF_32BIT);		\
++} while (0)
++#define COMPAT_A32_ARCH_DLINFO		do {} while (0)
++
++
+ extern int aarch32_setup_vectors_page(struct linux_binprm *bprm,
+ 				      int uses_interp);
+-#define compat_arch_setup_additional_pages \
+-					aarch32_setup_vectors_page
++
++#else
++typedef elf_greg_t			compat_elf_greg_t;
++typedef elf_gregset_t			compat_elf_gregset_t;
++#define compat_a32_elf_check_arch(x)	0
++#define COMPAT_A32_SET_PERSONALITY(ex)	do {} while (0)
++#define COMPAT_A32_ARCH_DLINFO		do {} while (0)
++#define aarch32_setup_vectors_page(x, y) -EINVAL
++#endif
++
++
++
++/* If ILP32 is turned on, we want to define the compat_elf_greg_t to the non compat
++   one and define PR_REG_SIZE/PRSTATUS_SIZE/SET_PR_FPVALID so we pick up the correct
++   ones for AARCH32. Note also the definition of the macros have to be correct for
++   LP64 as this file is included in the standard binfmt_elf.c. */
++#ifdef CONFIG_ARM64_ILP32
++typedef elf_greg_t			compat_elf_greg_t;
++typedef elf_gregset_t			compat_elf_gregset_t;
++#define PR_REG_SIZE(S)			(is_a32_compat_task() ? 72 : 272)
++#define PRSTATUS_SIZE(S)		(is_a32_compat_task() ? 124 : (is_ilp32_compat_task() ? 352 : 392))
++#define SET_PR_FPVALID(S, V)							\
++do {										\
++	*(int *) (((void *) &((S)->pr_reg)) + PR_REG_SIZE((S)->pr_reg)) = (V);	\
++} while (0)
++#else
++typedef compat_a32_elf_greg_t compat_elf_greg_t;
++typedef compat_a32_elf_gregset_t compat_elf_gregset_t;
++#endif
++
++#ifdef CONFIG_ARM64_ILP32
++#define compat_ilp32_elf_check_arch(x) ((x)->e_machine == EM_AARCH64)
++#define COMPAT_ILP32_SET_PERSONALITY(ex)	\
++do {						\
++	set_thread_flag(TIF_32BIT_AARCH64);	\
++	clear_thread_flag(TIF_32BIT);		\
++} while (0)
++#define COMPAT_ILP32_ARCH_DLINFO					\
++do {									\
++	NEW_AUX_ENT(AT_SYSINFO_EHDR,					\
++		    (elf_addr_t)(long)current->mm->context.vdso);	\
++} while (0)
++#else
++#define compat_ilp32_elf_check_arch(x) 0
++#define COMPAT_ILP32_SET_PERSONALITY(ex)	do {} while (0)
++#define COMPAT_ILP32_ARCH_DLINFO		do {} while (0)
++#endif
++
++#define compat_elf_check_arch(x)	(compat_a32_elf_check_arch(x) || compat_ilp32_elf_check_arch(x))
++#define COMPAT_SET_PERSONALITY(ex)			\
++do {							\
++	if (compat_a32_elf_check_arch(&ex))		\
++		COMPAT_A32_SET_PERSONALITY(ex);		\
++	else						\
++		COMPAT_ILP32_SET_PERSONALITY(ex);	\
++} while (0)
++
++/* ILP32 uses the "LP64-like" vdso pages */
++#define compat_arch_setup_additional_pages	\
++	(is_a32_compat_task()			\
++	 ? &aarch32_setup_vectors_page		\
++	 : &(arch_setup_additional_pages))
++
++#define COMPAT_ARCH_DLINFO			\
++do {						\
++	if (is_a32_compat_task())		\
++		COMPAT_A32_ARCH_DLINFO;		\
++	else					\
++		COMPAT_ILP32_ARCH_DLINFO;	\
++} while (0)
+ 
+ #endif /* CONFIG_COMPAT */
+ 
+diff -Naurp linux-linaro/arch/arm64/include/asm/fpsimd.h linux-linaro-patch/arch/arm64/include/asm/fpsimd.h
+--- linux-linaro/arch/arm64/include/asm/fpsimd.h	2016-12-04 12:00:31.261200817 +0200
++++ linux-linaro-patch/arch/arm64/include/asm/fpsimd.h	2016-12-04 11:51:29.821208071 +0200
+@@ -52,7 +52,7 @@ struct fpsimd_partial_state {
+ };
+ 
+ 
+-#if defined(__KERNEL__) && defined(CONFIG_COMPAT)
++#if defined(__KERNEL__) && defined(CONFIG_AARCH32_EL0)
+ /* Masks for extracting the FPSR and FPCR from the FPSCR */
+ #define VFP_FPSCR_STAT_MASK	0xf800009f
+ #define VFP_FPSCR_CTRL_MASK	0x07f79f00
+diff -Naurp linux-linaro/arch/arm64/include/asm/hwcap.h linux-linaro-patch/arch/arm64/include/asm/hwcap.h
+--- linux-linaro/arch/arm64/include/asm/hwcap.h	2016-12-04 12:00:31.261200817 +0200
++++ linux-linaro-patch/arch/arm64/include/asm/hwcap.h	2016-12-04 11:51:29.825208071 +0200
+@@ -46,9 +46,17 @@
+ #define ELF_HWCAP		(elf_hwcap)
+ 
+ #ifdef CONFIG_COMPAT
+-#define COMPAT_ELF_HWCAP	(compat_elf_hwcap)
+-#define COMPAT_ELF_HWCAP2	(compat_elf_hwcap2)
+ extern unsigned int compat_elf_hwcap, compat_elf_hwcap2;
++#define COMPAT_ELF_HWCAP	\
++	(is_a32_compat_task()	\
++	  ? compat_elf_hwcap	\
++	  : elf_hwcap)
++
++#define COMPAT_ELF_HWCAP2	\
++	(is_a32_compat_task()	\
++	  ? compat_elf_hwcap2	\
++	  : 0)
++
+ #endif
+ 
+ extern unsigned long elf_hwcap;
+diff -Naurp linux-linaro/arch/arm64/include/asm/memory.h linux-linaro-patch/arch/arm64/include/asm/memory.h
+--- linux-linaro/arch/arm64/include/asm/memory.h	2016-12-04 12:00:31.261200817 +0200
++++ linux-linaro-patch/arch/arm64/include/asm/memory.h	2016-12-04 11:51:29.825208071 +0200
+@@ -54,7 +54,7 @@
+ 
+ #ifdef CONFIG_COMPAT
+ #define TASK_SIZE_32		UL(0x100000000)
+-#define TASK_SIZE		(test_thread_flag(TIF_32BIT) ? \
++#define TASK_SIZE		(is_compat_task() ?		\
+ 				TASK_SIZE_32 : TASK_SIZE_64)
+ #else
+ #define TASK_SIZE		TASK_SIZE_64
+diff -Naurp linux-linaro/arch/arm64/include/asm/processor.h linux-linaro-patch/arch/arm64/include/asm/processor.h
+--- linux-linaro/arch/arm64/include/asm/processor.h	2016-12-04 12:00:31.261200817 +0200
++++ linux-linaro-patch/arch/arm64/include/asm/processor.h	2016-12-04 11:51:29.825208071 +0200
+@@ -38,7 +38,7 @@
+ #define STACK_TOP_MAX		TASK_SIZE_64
+ #ifdef CONFIG_COMPAT
+ #define AARCH32_VECTORS_BASE	0xffff0000
+-#define STACK_TOP		(test_thread_flag(TIF_32BIT) ? \
++#define STACK_TOP		(is_compat_task() ? \
+ 				AARCH32_VECTORS_BASE : STACK_TOP_MAX)
+ #else
+ #define STACK_TOP		STACK_TOP_MAX
+@@ -104,6 +104,15 @@ static inline void start_thread(struct p
+ static inline void compat_start_thread(struct pt_regs *regs, unsigned long pc,
+ 				       unsigned long sp)
+ {
++#ifdef CONFIG_ARM64_ILP32
++	/* ILP32 thread are started the same way as LP64 threads.
++	   Note we cannot use is_ilp32_compat_task here as that
++	   would introduce a header depency issue.  */
++	if (test_thread_flag(TIF_32BIT_AARCH64)) {
++		start_thread(regs, pc, sp);
++		return;
++	}
++#endif
+ 	start_thread_common(regs, pc);
+ 	regs->pstate = COMPAT_PSR_MODE_USR;
+ 	if (pc & 1)
+diff -Naurp linux-linaro/arch/arm64/include/asm/ptrace.h linux-linaro-patch/arch/arm64/include/asm/ptrace.h
+--- linux-linaro/arch/arm64/include/asm/ptrace.h	2016-12-04 12:00:31.261200817 +0200
++++ linux-linaro-patch/arch/arm64/include/asm/ptrace.h	2016-12-04 11:51:29.825208071 +0200
+@@ -109,7 +109,7 @@ struct pt_regs {
+ 
+ #define arch_has_single_step()	(1)
+ 
+-#ifdef CONFIG_COMPAT
++#ifdef CONFIG_AARCH32_EL0
+ #define compat_thumb_mode(regs) \
+ 	(((regs)->pstate & COMPAT_PSR_T_BIT))
+ #else
+diff -Naurp linux-linaro/arch/arm64/include/asm/signal32.h linux-linaro-patch/arch/arm64/include/asm/signal32.h
+--- linux-linaro/arch/arm64/include/asm/signal32.h	2016-12-04 12:00:31.261200817 +0200
++++ linux-linaro-patch/arch/arm64/include/asm/signal32.h	2016-12-04 11:51:29.825208071 +0200
+@@ -20,6 +20,7 @@
+ #ifdef CONFIG_COMPAT
+ #include <linux/compat.h>
+ 
++#ifdef CONFIG_AARCH32_EL0
+ #define AARCH32_KERN_SIGRET_CODE_OFFSET	0x500
+ 
+ extern const compat_ulong_t aarch32_sigret_code[6];
+@@ -48,6 +49,7 @@ static inline int compat_setup_rt_frame(
+ static inline void compat_setup_restart_syscall(struct pt_regs *regs)
+ {
+ }
++#endif /* CONFIG_AARCH32_EL0 */
+ #endif /* CONFIG_COMPAT */
+ #endif /* __KERNEL__ */
+ #endif /* __ASM_SIGNAL32_H */
+diff -Naurp linux-linaro/arch/arm64/include/asm/stat.h linux-linaro-patch/arch/arm64/include/asm/stat.h
+--- linux-linaro/arch/arm64/include/asm/stat.h	2016-12-04 12:00:31.261200817 +0200
++++ linux-linaro-patch/arch/arm64/include/asm/stat.h	2016-12-04 11:51:29.825208071 +0200
+@@ -22,6 +22,7 @@
+ 
+ #include <asm/compat.h>
+ 
++#ifdef CONFIG_AARCH32_EL0
+ /*
+  * struct stat64 is needed for compat tasks only. Its definition is different
+  * from the generic struct stat64.
+@@ -59,3 +60,4 @@ struct stat64 {
+ 
+ #endif
+ #endif
++#endif
+diff -Naurp linux-linaro/arch/arm64/include/asm/syscalls.h linux-linaro-patch/arch/arm64/include/asm/syscalls.h
+--- linux-linaro/arch/arm64/include/asm/syscalls.h	2016-12-04 12:00:31.261200817 +0200
++++ linux-linaro-patch/arch/arm64/include/asm/syscalls.h	2016-12-04 11:51:29.825208071 +0200
+@@ -25,6 +25,10 @@
+  */
+ asmlinkage long sys_rt_sigreturn_wrapper(void);
+ 
++#ifdef CONFIG_ARM64_ILP32
++long ilp32_sys_sigaltstack(const stack_t __user *, stack_t __user *);
++#endif
++
+ #include <asm-generic/syscalls.h>
+ 
+ #endif	/* __ASM_SYSCALLS_H */
+diff -Naurp linux-linaro/arch/arm64/include/asm/thread_info.h linux-linaro-patch/arch/arm64/include/asm/thread_info.h
+--- linux-linaro/arch/arm64/include/asm/thread_info.h	2016-12-04 12:00:31.261200817 +0200
++++ linux-linaro-patch/arch/arm64/include/asm/thread_info.h	2016-12-04 11:51:29.825208071 +0200
+@@ -111,8 +111,9 @@ static inline struct thread_info *curren
+ #define TIF_FREEZE		19
+ #define TIF_RESTORE_SIGMASK	20
+ #define TIF_SINGLESTEP		21
+-#define TIF_32BIT		22	/* 32bit process */
++#define TIF_32BIT		22	/* AARCH32 process */
+ #define TIF_SWITCH_MM		23	/* deferred switch_mm */
++#define TIF_32BIT_AARCH64	24	/* 32 bit process on AArch64(ILP32) */
+ 
+ #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
+ #define _TIF_NEED_RESCHED	(1 << TIF_NEED_RESCHED)

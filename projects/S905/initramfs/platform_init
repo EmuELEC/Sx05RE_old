@@ -80,9 +80,5 @@ done
 # Attempt to fix MPEG-TS stream lost packet (HDMI-CEC irq issue)
 echo 2 > /proc/irq/231/smp_affinity
 
-# USB
-echo 4 > /proc/irq/61/smp_affinity
-echo 8 > /proc/irq/62/smp_affinity
-
 # Keep at least 64M RAM free
 echo 65535 > /proc/sys/vm/extra_free_kbytes

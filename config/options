@@ -27,8 +27,7 @@ fi
 
 # determines TARGET_ARCH, if not forced by user (arm, aarch64)
 if [ -z "$ARCH" ]; then
-  [ "$PROJECT" = "S805" -o "$PROJECT" = "S812" ] && TARGET_ARCH="arm"
-  [ "$PROJECT" = "S905" ] && TARGET_ARCH="aarch64"
+  TARGET_ARCH="arm"
 else
   TARGET_ARCH="$ARCH"
 fi
