@@ -1,0 +1,1841 @@
+diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dmxdev.c linux-ffa3f8c-patch/drivers/media/dvb-core/dmxdev.c
+--- linux-ffa3f8c/drivers/media/dvb-core/dmxdev.c	2016-11-25 09:36:30.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/dvb-core/dmxdev.c	2016-11-25 09:48:38.000000000 +0200
+@@ -1110,8 +1110,8 @@ static unsigned int dvb_demux_poll(struc
+ 	struct dmxdev_filter *dmxdevfilter = file->private_data;
+ 	unsigned int mask = 0;
+ 
+-	if (!dmxdevfilter)
+-		return -EINVAL;
++	if ((!dmxdevfilter) || dmxdevfilter->dev->exit)
++		return POLLERR;
+ 
+ 	poll_wait(file, &dmxdevfilter->buffer.queue, wait);
+ 
+@@ -1161,10 +1161,13 @@ static const struct file_operations dvb_
+ 	.llseek = default_llseek,
+ };
+ 
+-static struct dvb_device dvbdev_demux = {
++static const struct dvb_device dvbdev_demux = {
+ 	.priv = NULL,
+ 	.users = 1,
+ 	.writers = 1,
++#if defined(CONFIG_MEDIA_CONTROLLER_DVB)
++	.name = "dvb-demux",
++#endif
+ 	.fops = &dvb_demux_fops
+ };
+ 
+@@ -1206,6 +1209,9 @@ static unsigned int dvb_dvr_poll(struct
+ 
+ 	dprintk("function : %s\n", __func__);
+ 
++	if (dmxdev->exit)
++		return POLLERR;
++
+ 	poll_wait(file, &dmxdev->dvr_buffer.queue, wait);
+ 
+ 	if ((file->f_flags & O_ACCMODE) == O_RDONLY) {
+@@ -1231,10 +1237,13 @@ static const struct file_operations dvb_
+ 	.llseek = default_llseek,
+ };
+ 
+-static struct dvb_device dvbdev_dvr = {
++static const struct dvb_device dvbdev_dvr = {
+ 	.priv = NULL,
+ 	.readers = 1,
+ 	.users = 1,
++#if defined(CONFIG_MEDIA_CONTROLLER_DVB)
++	.name = "dvb-dvr",
++#endif
+ 	.fops = &dvb_dvr_fops
+ };
+ 
+diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_ca_en50221.c linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_ca_en50221.c
+--- linux-ffa3f8c/drivers/media/dvb-core/dvb_ca_en50221.c	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_ca_en50221.c	2016-11-25 09:52:55.000000000 +0200
+@@ -1638,11 +1638,14 @@ static const struct file_operations dvb_
+ 	.llseek = noop_llseek,
+ };
+ 
+-static struct dvb_device dvbdev_ca = {
++static const struct dvb_device dvbdev_ca = {
+ 	.priv = NULL,
+ 	.users = 1,
+ 	.readers = 1,
+ 	.writers = 1,
++#if defined(CONFIG_MEDIA_CONTROLLER_DVB)
++	.name = "dvb-ca-en50221",
++#endif
+ 	.fops = &dvb_ca_fops,
+ };
+ 
+diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvbdev.c linux-ffa3f8c-patch/drivers/media/dvb-core/dvbdev.c
+--- linux-ffa3f8c/drivers/media/dvb-core/dvbdev.c	2016-11-25 09:36:30.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/dvb-core/dvbdev.c	2016-11-25 11:09:25.000000000 +0200
+@@ -187,6 +187,93 @@ skip:
+ 	return -ENFILE;
+ }
+ 
++static void dvb_register_media_device(struct dvb_device *dvbdev,
++				      int type, int minor)
++{
++#if defined(CONFIG_MEDIA_CONTROLLER_DVB)
++	int ret = 0, npads;
++
++	if (!dvbdev->adapter->mdev)
++		return;
++
++	dvbdev->entity = kzalloc(sizeof(*dvbdev->entity), GFP_KERNEL);
++	if (!dvbdev->entity)
++		return;
++
++	dvbdev->entity->info.dev.major = DVB_MAJOR;
++	dvbdev->entity->info.dev.minor = minor;
++	dvbdev->entity->name = dvbdev->name;
++
++	switch (type) {
++	case DVB_DEVICE_CA:
++	case DVB_DEVICE_DEMUX:
++	case DVB_DEVICE_FRONTEND:
++		npads = 2;
++		break;
++	case DVB_DEVICE_NET:
++		npads = 0;
++		break;
++	default:
++		npads = 1;
++	}
++
++	if (npads) {
++		dvbdev->pads = kcalloc(npads, sizeof(*dvbdev->pads),
++				       GFP_KERNEL);
++		if (!dvbdev->pads) {
++			kfree(dvbdev->entity);
++			return;
++		}
++	}
++
++	switch (type) {
++	case DVB_DEVICE_FRONTEND:
++		dvbdev->entity->type = MEDIA_ENT_T_DEVNODE_DVB_FE;
++		dvbdev->pads[0].flags = MEDIA_PAD_FL_SINK;
++		dvbdev->pads[1].flags = MEDIA_PAD_FL_SOURCE;
++		break;
++	case DVB_DEVICE_DEMUX:
++		dvbdev->entity->type = MEDIA_ENT_T_DEVNODE_DVB_DEMUX;
++		dvbdev->pads[0].flags = MEDIA_PAD_FL_SINK;
++		dvbdev->pads[1].flags = MEDIA_PAD_FL_SOURCE;
++		break;
++	case DVB_DEVICE_DVR:
++		dvbdev->entity->type = MEDIA_ENT_T_DEVNODE_DVB_DVR;
++		dvbdev->pads[0].flags = MEDIA_PAD_FL_SINK;
++		break;
++	case DVB_DEVICE_CA:
++		dvbdev->entity->type = MEDIA_ENT_T_DEVNODE_DVB_CA;
++		dvbdev->pads[0].flags = MEDIA_PAD_FL_SINK;
++		dvbdev->pads[1].flags = MEDIA_PAD_FL_SOURCE;
++		break;
++	case DVB_DEVICE_NET:
++		dvbdev->entity->type = MEDIA_ENT_T_DEVNODE_DVB_NET;
++		break;
++	default:
++		kfree(dvbdev->entity);
++		dvbdev->entity = NULL;
++		return;
++	}
++
++	if (npads)
++		ret = media_entity_init(dvbdev->entity, npads, dvbdev->pads, 0);
++	if (!ret)
++		ret = media_device_register_entity(dvbdev->adapter->mdev,
++						   dvbdev->entity);
++	if (ret < 0) {
++		printk(KERN_ERR
++			"%s: media_device_register_entity failed for %s\n",
++			__func__, dvbdev->entity->name);
++		kfree(dvbdev->pads);
++		kfree(dvbdev->entity);
++		dvbdev->entity = NULL;
++		return;
++	}
++
++	printk(KERN_DEBUG "%s: media device '%s' registered.\n",
++		__func__, dvbdev->entity->name);
++#endif
++}
+ 
+ int dvb_register_device(struct dvb_adapter *adap, struct dvb_device **pdvbdev,
+ 			const struct dvb_device *template, void *priv, int type)
+@@ -269,6 +356,8 @@ int dvb_register_device(struct dvb_adapt
+ 	dprintk(KERN_DEBUG "DVB: register adapter%d/%s%d @ minor: %i (0x%02x)\n",
+ 		adap->num, dnames[type], id, minor, minor);
+ 
++	dvb_register_media_device(dvbdev, type, minor);
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL(dvb_register_device);
+@@ -285,12 +374,65 @@ void dvb_unregister_device(struct dvb_de
+ 
+ 	device_destroy(dvb_class, MKDEV(DVB_MAJOR, dvbdev->minor));
+ 
++#if defined(CONFIG_MEDIA_CONTROLLER_DVB)
++	if (dvbdev->entity) {
++		media_device_unregister_entity(dvbdev->entity);
++		kfree(dvbdev->entity);
++		kfree(dvbdev->pads);
++	}
++#endif
++
+ 	list_del (&dvbdev->list_head);
+ 	kfree (dvbdev->fops);
+ 	kfree (dvbdev);
+ }
+ EXPORT_SYMBOL(dvb_unregister_device);
+ 
++#ifdef CONFIG_MEDIA_CONTROLLER_DVB
++void dvb_create_media_graph(struct dvb_adapter *adap)
++{
++	struct media_device *mdev = adap->mdev;
++	struct media_entity *entity, *tuner = NULL, *fe = NULL;
++	struct media_entity *demux = NULL, *dvr = NULL, *ca = NULL;
++
++	if (!mdev)
++		return;
++
++	media_device_for_each_entity(entity, mdev) {
++		switch (entity->type) {
++		case MEDIA_ENT_T_V4L2_SUBDEV_TUNER:
++			tuner = entity;
++			break;
++		case MEDIA_ENT_T_DEVNODE_DVB_FE:
++			fe = entity;
++			break;
++		case MEDIA_ENT_T_DEVNODE_DVB_DEMUX:
++			demux = entity;
++			break;
++		case MEDIA_ENT_T_DEVNODE_DVB_DVR:
++			dvr = entity;
++			break;
++		case MEDIA_ENT_T_DEVNODE_DVB_CA:
++			ca = entity;
++			break;
++		}
++	}
++
++	if (tuner && fe)
++		media_entity_create_link(tuner, 0, fe, 0, 0);
++
++	if (fe && demux)
++		media_entity_create_link(fe, 1, demux, 0, MEDIA_LNK_FL_ENABLED);
++
++	if (demux && dvr)
++		media_entity_create_link(demux, 1, dvr, 0, MEDIA_LNK_FL_ENABLED);
++
++	if (demux && ca)
++		media_entity_create_link(demux, 1, ca, 0, MEDIA_LNK_FL_ENABLED);
++}
++EXPORT_SYMBOL_GPL(dvb_create_media_graph);
++#endif
++
+ static int dvbdev_check_free_adapter_num(int num)
+ {
+ 	struct list_head *entry;
+diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvbdev.h linux-ffa3f8c-patch/drivers/media/dvb-core/dvbdev.h
+--- linux-ffa3f8c/drivers/media/dvb-core/dvbdev.h	2016-11-25 09:36:30.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/dvb-core/dvbdev.h	2016-11-25 11:13:24.000000000 +0200
+@@ -27,6 +27,7 @@
+ #include <linux/poll.h>
+ #include <linux/fs.h>
+ #include <linux/list.h>
++#include <media/media-device.h>
+ 
+ #define DVB_MAJOR 212
+ 
+@@ -71,6 +72,10 @@ struct dvb_adapter {
+ 	int mfe_shared;			/* indicates mutually exclusive frontends */
+ 	struct dvb_device *mfe_dvbdev;	/* frontend device in use */
+ 	struct mutex mfe_lock;		/* access lock for thread creation */
++
++#if defined(CONFIG_MEDIA_CONTROLLER_DVB)
++	struct media_device *mdev;
++#endif
+ };
+ 
+ 
+@@ -92,6 +97,15 @@ struct dvb_device {
+ 	/* don't really need those !? -- FIXME: use video_usercopy  */
+ 	int (*kernel_ioctl)(struct file *file, unsigned int cmd, void *arg);
+ 
++	/* Needed for media controller register/unregister */
++#if defined(CONFIG_MEDIA_CONTROLLER_DVB)
++	const char *name;
++
++	/* Allocated and filled inside dvbdev.c */
++	struct media_entity *entity;
++	struct media_pad *pads;
++#endif
++
+ 	void *priv;
+ };
+ 
+@@ -109,6 +123,19 @@ extern int dvb_register_device (struct d
+ 
+ extern void dvb_unregister_device (struct dvb_device *dvbdev);
+ 
++#ifdef CONFIG_MEDIA_CONTROLLER_DVB
++void dvb_create_media_graph(struct dvb_adapter *adap);
++static inline void dvb_register_media_controller(struct dvb_adapter *adap,
++						 struct media_device *mdev)
++{
++	adap->mdev = mdev;
++}
++
++#else
++static inline void dvb_create_media_graph(struct dvb_adapter *adap) {}
++#define dvb_register_media_controller(a, b) {}
++#endif
++
+ extern int dvb_generic_open (struct inode *inode, struct file *file);
+ extern int dvb_generic_release (struct inode *inode, struct file *file);
+ extern long dvb_generic_ioctl (struct file *file,
+@@ -136,11 +163,22 @@ extern int dvb_usercopy(struct file *fil
+ 	__r; \
+ })
+ 
++#define dvb_detach(FUNC)	symbol_put_addr(FUNC)
++
+ #else
+ #define dvb_attach(FUNCTION, ARGS...) ({ \
+ 	FUNCTION(ARGS); \
+ })
+ 
++#define dvb_detach(FUNC)	{}
++
+ #endif
+ 
++#define replace_fops(f, fops) \
++	do {	\
++		struct file *__file = (f); \
++		fops_put(__file->f_op); \
++		BUG_ON(!(__file->f_op = (fops))); \
++	} while(0)
++
+ #endif /* #ifndef _DVBDEV_H_ */
+diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.c linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_frontend.c
+--- linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.c	2016-11-25 09:36:30.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_frontend.c	2016-11-25 10:23:52.000000000 +0200
+@@ -96,10 +96,6 @@ MODULE_PARM_DESC(dvb_mfe_wait_time, "Wai
+  * FESTATE_LOSTLOCK. When the lock has been lost, and we're searching it again.
+  */
+ 
+-#define DVB_FE_NO_EXIT	0
+-#define DVB_FE_NORMAL_EXIT	1
+-#define DVB_FE_DEVICE_REMOVED	2
+-
+ static DEFINE_MUTEX(frontend_mutex);
+ 
+ struct dvb_frontend_private {
+@@ -112,7 +108,6 @@ struct dvb_frontend_private {
+ 	wait_queue_head_t wait_queue;
+ 	struct task_struct *thread;
+ 	unsigned long release_jiffies;
+-	unsigned int exit;
+ 	unsigned int wakeup;
+ 	fe_status_t status;
+ 	unsigned long tune_mode_flags;
+@@ -135,6 +130,11 @@ struct dvb_frontend_private {
+ 	int quality;
+ 	unsigned int check_wrapped;
+ 	enum dvbfe_search algo_status;
++
++#if defined(CONFIG_MEDIA_CONTROLLER_DVB)
++	struct media_pipeline pipe;
++	struct media_entity *pipe_start_entity;
++#endif
+ };
+ 
+ static void dvb_frontend_wakeup(struct dvb_frontend *fe);
+@@ -563,7 +563,7 @@ static int dvb_frontend_is_exiting(struc
+ {
+ 	struct dvb_frontend_private *fepriv = fe->frontend_priv;
+ 
+-	if (fepriv->exit != DVB_FE_NO_EXIT)
++	if (fe->exit != DVB_FE_NO_EXIT)
+ 		return 1;
+ 
+ 	if (fepriv->dvbdev->writers == 1)
+@@ -593,12 +593,106 @@ static void dvb_frontend_wakeup(struct d
+ 	wake_up_interruptible(&fepriv->wait_queue);
+ }
+ 
++/**
++ * dvb_enable_media_tuner() - tries to enable the DVB tuner
++ *
++ * @fe:		struct dvb_frontend pointer
++ *
++ * This function ensures that just one media tuner is enabled for a given
++ * frontend. It has two different behaviors:
++ * - For trivial devices with just one tuner:
++ *   it just enables the existing tuner->fe link
++ * - For devices with more than one tuner:
++ *   It is up to the driver to implement the logic that will enable one tuner
++ *   and disable the other ones. However, if more than one tuner is enabled for
++ *   the same frontend, it will print an error message and return -EINVAL.
++ *
++ * At return, it will return the error code returned by media_entity_setup_link,
++ * or 0 if everything is OK, if no tuner is linked to the frontend or if the
++ * mdev is NULL.
++ */
++#ifdef CONFIG_MEDIA_CONTROLLER_DVB
++static int dvb_enable_media_tuner(struct dvb_frontend *fe)
++{
++	struct dvb_frontend_private *fepriv = fe->frontend_priv;
++	struct dvb_adapter *adapter = fe->dvb;
++	struct media_device *mdev = adapter->mdev;
++	struct media_entity  *entity, *source;
++	struct media_link *link, *found_link = NULL;
++	int i, ret, n_links = 0, active_links = 0;
++
++	fepriv->pipe_start_entity = NULL;
++
++	if (!mdev)
++		return 0;
++
++	entity = fepriv->dvbdev->entity;
++	fepriv->pipe_start_entity = entity;
++
++	for (i = 0; i < entity->num_links; i++) {
++		link = &entity->links[i];
++		if (link->sink->entity == entity) {
++			found_link = link;
++			n_links++;
++			if (link->flags & MEDIA_LNK_FL_ENABLED)
++				active_links++;
++		}
++	}
++
++	if (!n_links || active_links == 1 || !found_link)
++		return 0;
++
++	/*
++	 * If a frontend has more than one tuner linked, it is up to the driver
++	 * to select with one will be the active one, as the frontend core can't
++	 * guess. If the driver doesn't do that, it is a bug.
++	 */
++	if (n_links > 1 && active_links != 1) {
++		dev_err(fe->dvb->device,
++			"WARNING: there are %d active links among %d tuners. This is a driver's bug!\n",
++			active_links, n_links);
++		return -EINVAL;
++	}
++
++	source = found_link->source->entity;
++	fepriv->pipe_start_entity = source;
++	for (i = 0; i < source->num_links; i++) {
++		struct media_entity *sink;
++		int flags = 0;
++
++		link = &source->links[i];
++		sink = link->sink->entity;
++
++		if (sink == entity)
++			flags = MEDIA_LNK_FL_ENABLED;
++
++		ret = media_entity_setup_link(link, flags);
++		if (ret) {
++			dev_err(fe->dvb->device,
++				"Couldn't change link %s->%s to %s. Error %d\n",
++				source->name, sink->name,
++				flags ? "enabled" : "disabled",
++				ret);
++			return ret;
++		} else
++			dev_dbg(fe->dvb->device,
++				"link %s->%s was %s\n",
++				source->name, sink->name,
++				flags ? "ENABLED" : "disabled");
++	}
++	return 0;
++}
++#endif
++
+ static int dvb_frontend_thread(void *data)
+ {
+ 	struct dvb_frontend *fe = data;
+ 	struct dvb_frontend_private *fepriv = fe->frontend_priv;
+ 	fe_status_t s;
+ 	enum dvbfe_algo algo;
++#ifdef CONFIG_MEDIA_CONTROLLER_DVB
++	int ret;
++#endif
+ 
+ 	bool re_tune = false;
+ 	bool semheld = false;
+@@ -612,6 +706,20 @@ static int dvb_frontend_thread(void *dat
+ 	fepriv->wakeup = 0;
+ 	fepriv->reinitialise = 0;
+ 
++#ifdef CONFIG_MEDIA_CONTROLLER_DVB
++	ret = dvb_enable_media_tuner(fe);
++	if (ret) {
++		/* FIXME: return an error if it fails */
++		dev_info(fe->dvb->device,
++			"proceeding with FE task\n");
++	} else if (fepriv->pipe_start_entity) {
++		ret = media_entity_pipeline_start(fepriv->pipe_start_entity,
++						  &fepriv->pipe);
++		if (ret)
++			return ret;
++	}
++#endif
++
+ 	dvb_frontend_init(fe);
+ 
+ 	set_freezable();
+@@ -627,7 +735,7 @@ restart:
+ 			/* got signal or quitting */
+ 			if (!down_interruptible(&fepriv->sem))
+ 				semheld = true;
+-			fepriv->exit = DVB_FE_NORMAL_EXIT;
++			fe->exit = DVB_FE_NORMAL_EXIT;
+ 			break;
+ 		}
+ 
+@@ -722,6 +830,12 @@ restart:
+ 		}
+ 	}
+ 
++#ifdef CONFIG_MEDIA_CONTROLLER_DVB
++	if (fepriv->pipe_start_entity)
++		media_entity_pipeline_stop(fepriv->pipe_start_entity);
++	fepriv->pipe_start_entity = NULL;
++#endif
++
+ 	if (dvb_powerdown_on_sleep) {
+ 		if (fe->ops.set_voltage)
+ 			fe->ops.set_voltage(fe, SEC_VOLTAGE_OFF);
+@@ -738,9 +852,9 @@ restart:
+ 
+ 	fepriv->thread = NULL;
+ 	if (kthread_should_stop())
+-		fepriv->exit = DVB_FE_DEVICE_REMOVED;
++		fe->exit = DVB_FE_DEVICE_REMOVED;
+ 	else
+-		fepriv->exit = DVB_FE_NO_EXIT;
++		fe->exit = DVB_FE_NO_EXIT;
+ 	mb();
+ 
+ 	if (semheld)
+@@ -755,7 +869,8 @@ static void dvb_frontend_stop(struct dvb
+ 
+ 	dev_dbg(fe->dvb->device, "%s:\n", __func__);
+ 
+-	fepriv->exit = DVB_FE_NORMAL_EXIT;
++	if (fe->exit != DVB_FE_DEVICE_REMOVED)
++		fe->exit = DVB_FE_NORMAL_EXIT;
+ 	mb();
+ 
+ 	if (!fepriv->thread)
+@@ -825,7 +940,7 @@ static int dvb_frontend_start(struct dvb
+ 	dev_dbg(fe->dvb->device, "%s:\n", __func__);
+ 
+ 	if (fepriv->thread) {
+-		if (fepriv->exit == DVB_FE_NO_EXIT)
++		if (fe->exit == DVB_FE_NO_EXIT)
+ 			return 0;
+ 		else
+ 			dvb_frontend_stop (fe);
+@@ -837,7 +952,7 @@ static int dvb_frontend_start(struct dvb
+ 		return -EINTR;
+ 
+ 	fepriv->state = FESTATE_IDLE;
+-	fepriv->exit = DVB_FE_NO_EXIT;
++	fe->exit = DVB_FE_NO_EXIT;
+ 	fepriv->thread = NULL;
+ 	mb();
+ 
+@@ -965,6 +1080,11 @@ static int dvb_frontend_clear_cache(stru
+ 	case SYS_ATSC:
+ 		c->modulation = VSB_8;
+ 		break;
++	case SYS_ISDBS:
++		c->symbol_rate = 28860000;
++		c->rolloff = ROLLOFF_35;
++		c->bandwidth_hz = c->symbol_rate / 100 * 135;
++		break;
+ 	default:
+ 		c->modulation = QAM_AUTO;
+ 		break;
+@@ -1903,7 +2023,7 @@ static int dvb_frontend_ioctl(struct fil
+ 	if (down_interruptible(&fepriv->sem))
+ 		return -ERESTARTSYS;
+ 
+-	if (fepriv->exit != DVB_FE_NO_EXIT) {
++	if (fe->exit != DVB_FE_NO_EXIT) {
+ 		up(&fepriv->sem);
+ 		return -ENODEV;
+ 	}
+@@ -1935,15 +2055,13 @@ static int dvb_frontend_ioctl_properties
+ 	struct dtv_frontend_properties *c = &fe->dtv_property_cache;
+ 	int err = 0;
+ 
+-	struct dtv_properties *tvps = NULL;
++	struct dtv_properties *tvps = parg;
+ 	struct dtv_property *tvp = NULL;
+ 	int i;
+ 
+ 	dev_dbg(fe->dvb->device, "%s:\n", __func__);
+ 
+-	if(cmd == FE_SET_PROPERTY) {
+-		tvps = (struct dtv_properties __user *)parg;
+-
++	if (cmd == FE_SET_PROPERTY) {
+ 		dev_dbg(fe->dvb->device, "%s: properties.num = %d\n", __func__, tvps->num);
+ 		dev_dbg(fe->dvb->device, "%s: properties.props = %p\n", __func__, tvps->props);
+ 
+@@ -1957,18 +2075,13 @@ static int dvb_frontend_ioctl_properties
+ 			err = -ENOMEM;
+ 			goto out;
+ 		}
+-#ifdef CONFIG_COMPAT
+-		if (copy_from_user(tvp, compat_ptr((unsigned long)tvps->props),
+-				tvps->num * sizeof(struct dtv_property))) {
+-			err = -EFAULT;
+-			goto out;
+-		}
+-#else
+-		if (copy_from_user(tvp, tvps->props, tvps->num * sizeof(struct dtv_property))) {
++
++		if (copy_from_user(tvp, (void __user *)tvps->props,
++				   tvps->num * sizeof(struct dtv_property))) {
+ 			err = -EFAULT;
+ 			goto out;
+ 		}
+-#endif
++
+ 		for (i = 0; i < tvps->num; i++) {
+ 			err = dtv_property_process_set(fe, tvp + i, file);
+ 			if (err < 0)
+@@ -1979,10 +2092,7 @@ static int dvb_frontend_ioctl_properties
+ 		if (c->state == DTV_TUNE)
+ 			dev_dbg(fe->dvb->device, "%s: Property cache is full, tuning\n", __func__);
+ 
+-	} else
+-	if(cmd == FE_GET_PROPERTY) {
+-		tvps = (struct dtv_properties __user *)parg;
+-
++	} else if (cmd == FE_GET_PROPERTY) {
+ 		dev_dbg(fe->dvb->device, "%s: properties.num = %d\n", __func__, tvps->num);
+ 		dev_dbg(fe->dvb->device, "%s: properties.props = %p\n", __func__, tvps->props);
+ 
+@@ -1996,18 +2106,13 @@ static int dvb_frontend_ioctl_properties
+ 			err = -ENOMEM;
+ 			goto out;
+ 		}
+-#ifdef CONFIG_COMPAT
+-		if (copy_from_user(tvp, compat_ptr((unsigned long)tvps->props),
+-				tvps->num * sizeof(struct dtv_property))) {
+-			err = -EFAULT;
+-			goto out;
+-		}
+-#else
+-		if (copy_from_user(tvp, tvps->props, tvps->num * sizeof(struct dtv_property))) {
++
++		if (copy_from_user(tvp, (void __user *)tvps->props,
++				   tvps->num * sizeof(struct dtv_property))) {
+ 			err = -EFAULT;
+ 			goto out;
+ 		}
+-#endif
++
+ 		/*
+ 		 * Fills the cache out struct with the cache contents, plus
+ 		 * the data retrieved from get_frontend, if the frontend
+@@ -2024,18 +2129,12 @@ static int dvb_frontend_ioctl_properties
+ 				goto out;
+ 			(tvp + i)->result = err;
+ 		}
+-#ifdef CONFIG_COMPAT
+-		if (copy_to_user(compat_ptr((unsigned long)tvps->props), tvp,
+-				tvps->num * sizeof(struct dtv_property))) {
+-			err = -EFAULT;
+-			goto out;
+-		}
+-#else
+-		if (copy_to_user(tvps->props, tvp, tvps->num * sizeof(struct dtv_property))) {
++
++		if (copy_to_user((void __user *)tvps->props, tvp,
++				 tvps->num * sizeof(struct dtv_property))) {
+ 			err = -EFAULT;
+ 			goto out;
+ 		}
+-#endif
+ 
+ 	} else
+ 		err = -EOPNOTSUPP;
+@@ -2092,6 +2191,24 @@ static int dtv_set_frontend(struct dvb_f
+ 	case SYS_DVBC_ANNEX_C:
+ 		rolloff = 113;
+ 		break;
++	case SYS_DVBS:
++	case SYS_TURBO:
++	case SYS_ISDBS:
++		rolloff = 135;
++		break;
++	case SYS_DVBS2:
++		switch (c->rolloff) {
++		case ROLLOFF_20:
++			rolloff = 120;
++			break;
++		case ROLLOFF_25:
++			rolloff = 125;
++			break;
++		default:
++		case ROLLOFF_35:
++			rolloff = 135;
++		}
++		break;
+ 	default:
+ 		break;
+ 	}
+@@ -2440,7 +2557,7 @@ static int dvb_frontend_open(struct inod
+ 	int ret;
+ 
+ 	dev_dbg(fe->dvb->device, "%s:\n", __func__);
+-	if (fepriv->exit == DVB_FE_DEVICE_REMOVED)
++	if (fe->exit == DVB_FE_DEVICE_REMOVED)
+ 		return -ENODEV;
+ 
+ 	if (adapter->mfe_shared) {
+@@ -2545,7 +2662,7 @@ static int dvb_frontend_release(struct i
+ 
+ 	if (dvbdev->users == -1) {
+ 		wake_up(&fepriv->wait_queue);
+-		if (fepriv->exit != DVB_FE_NO_EXIT)
++		if (fe->exit != DVB_FE_NO_EXIT)
+ 			wake_up(&dvbdev->wait_queue);
+ 		if (fe->ops.ts_bus_ctrl)
+ 			fe->ops.ts_bus_ctrl(fe, 0);
+@@ -2570,7 +2687,9 @@ int dvb_frontend_suspend(struct dvb_fron
+ 	dev_dbg(fe->dvb->device, "%s: adap=%d fe=%d\n", __func__, fe->dvb->num,
+ 			fe->id);
+ 
+-	if (fe->ops.tuner_ops.sleep)
++	if (fe->ops.tuner_ops.suspend)
++		ret = fe->ops.tuner_ops.suspend(fe);
++	else if (fe->ops.tuner_ops.sleep)
+ 		ret = fe->ops.tuner_ops.sleep(fe);
+ 
+ 	if (fe->ops.sleep)
+@@ -2588,12 +2707,16 @@ int dvb_frontend_resume(struct dvb_front
+ 	dev_dbg(fe->dvb->device, "%s: adap=%d fe=%d\n", __func__, fe->dvb->num,
+ 			fe->id);
+ 
++	fe->exit = DVB_FE_DEVICE_RESUME;
+ 	if (fe->ops.init)
+ 		ret = fe->ops.init(fe);
+ 
+-	if (fe->ops.tuner_ops.init)
++	if (fe->ops.tuner_ops.resume)
++		ret = fe->ops.tuner_ops.resume(fe);
++	else if (fe->ops.tuner_ops.init)
+ 		ret = fe->ops.tuner_ops.init(fe);
+ 
++	fe->exit = DVB_FE_NO_EXIT;
+ 	fepriv->state = FESTATE_RETUNE;
+ 	dvb_frontend_wakeup(fe);
+ 
+@@ -2605,11 +2728,14 @@ int dvb_register_frontend(struct dvb_ada
+ 			  struct dvb_frontend* fe)
+ {
+ 	struct dvb_frontend_private *fepriv;
+-	static const struct dvb_device dvbdev_template = {
++	const struct dvb_device dvbdev_template = {
+ 		.users = ~0,
+ 		.writers = 1,
+ 		.readers = (~0)-1,
+ 		.fops = &dvb_frontend_fops,
++#if defined(CONFIG_MEDIA_CONTROLLER_DVB)
++		.name = fe->ops.info.name,
++#endif
+ 		.kernel_ioctl = dvb_frontend_ioctl
+ 	};
+ 
+@@ -2682,20 +2808,20 @@ void dvb_frontend_detach(struct dvb_fron
+ 
+ 	if (fe->ops.release_sec) {
+ 		fe->ops.release_sec(fe);
+-		symbol_put_addr(fe->ops.release_sec);
++		dvb_detach(fe->ops.release_sec);
+ 	}
+ 	if (fe->ops.tuner_ops.release) {
+ 		fe->ops.tuner_ops.release(fe);
+-		symbol_put_addr(fe->ops.tuner_ops.release);
++		dvb_detach(fe->ops.tuner_ops.release);
+ 	}
+ 	if (fe->ops.analog_ops.release) {
+ 		fe->ops.analog_ops.release(fe);
+-		symbol_put_addr(fe->ops.analog_ops.release);
++		dvb_detach(fe->ops.analog_ops.release);
+ 	}
+ 	ptr = (void*)fe->ops.release;
+ 	if (ptr) {
+ 		fe->ops.release(fe);
+-		symbol_put_addr(ptr);
++		dvb_detach(ptr);
+ 	}
+ }
+ #else
+diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.h linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_frontend.h
+--- linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.h	2016-11-25 09:36:30.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_frontend.h	2016-11-25 10:26:03.000000000 +0200
+@@ -201,6 +201,8 @@ struct dvb_tuner_ops {
+ 	int (*release)(struct dvb_frontend *fe);
+ 	int (*init)(struct dvb_frontend *fe);
+ 	int (*sleep)(struct dvb_frontend *fe);
++	int (*suspend)(struct dvb_frontend *fe);
++	int (*resume)(struct dvb_frontend *fe);
+ 
+ 	/** This is for simple PLLs - set all parameters in one go. */
+ 	int (*set_params)(struct dvb_frontend *fe);
+@@ -404,6 +406,11 @@ struct dtv_frontend_properties {
+ 	struct dtv_fe_stats	block_count;
+ };
+ 
++#define DVB_FE_NO_EXIT  0
++#define DVB_FE_NORMAL_EXIT      1
++#define DVB_FE_DEVICE_REMOVED   2
++#define DVB_FE_DEVICE_RESUME    3
++
+ struct dvb_frontend {
+ 	struct dvb_frontend_ops ops;
+ 	struct dvb_adapter *dvb;
+@@ -417,6 +424,7 @@ struct dvb_frontend {
+ #define DVB_FRONTEND_COMPONENT_DEMOD 1
+ 	int (*callback)(void *adapter_priv, int component, int cmd, int arg);
+ 	int id;
++	unsigned int exit;
+ };
+ 
+ extern int dvb_register_frontend(struct dvb_adapter *dvb,
+diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_net.c linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_net.c
+--- linux-ffa3f8c/drivers/media/dvb-core/dvb_net.c	2016-11-25 09:36:30.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_net.c	2016-11-25 10:44:25.000000000 +0200
+@@ -68,13 +68,6 @@
+ #include "dvb_demux.h"
+ #include "dvb_net.h"
+ 
+-static int dvb_net_debug;
+-module_param(dvb_net_debug, int, 0444);
+-MODULE_PARM_DESC(dvb_net_debug, "enable debug messages");
+-
+-#define dprintk(x...) do { if (dvb_net_debug) printk(x); } while (0)
+-
+-
+ static inline __u32 iov_crc32( __u32 c, struct kvec *iov, unsigned int cnt )
+ {
+ 	unsigned int j;
+@@ -90,36 +83,9 @@ static inline __u32 iov_crc32( __u32 c,
+ 
+ #ifdef ULE_DEBUG
+ 
+-#define MAC_ADDR_PRINTFMT "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
+-#define MAX_ADDR_PRINTFMT_ARGS(macap) (macap)[0],(macap)[1],(macap)[2],(macap)[3],(macap)[4],(macap)[5]
+-
+-#define isprint(c)	((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+-
+-static void hexdump( const unsigned char *buf, unsigned short len )
++static void hexdump(const unsigned char *buf, unsigned short len)
+ {
+-	char str[80], octet[10];
+-	int ofs, i, l;
+-
+-	for (ofs = 0; ofs < len; ofs += 16) {
+-		sprintf( str, "%03d: ", ofs );
+-
+-		for (i = 0; i < 16; i++) {
+-			if ((i + ofs) < len)
+-				sprintf( octet, "%02x ", buf[ofs + i] );
+-			else
+-				strcpy( octet, "   " );
+-
+-			strcat( str, octet );
+-		}
+-		strcat( str, "  " );
+-		l = strlen( str );
+-
+-		for (i = 0; (i < 16) && ((i + ofs) < len); i++)
+-			str[l++] = isprint( buf[ofs + i] ) ? buf[ofs + i] : '.';
+-
+-		str[l] = '\0';
+-		printk( KERN_WARNING "%s\n", str );
+-	}
++	print_hex_dump_debug("", DUMP_PREFIX_OFFSET, 16, 1, buf, len, true);
+ }
+ 
+ #endif
+@@ -315,9 +281,9 @@ static int handle_ule_extensions( struct
+ 			return l;	/* Stop extension header processing and discard SNDU. */
+ 		total_ext_len += l;
+ #ifdef ULE_DEBUG
+-		dprintk("handle_ule_extensions: ule_next_hdr=%p, ule_sndu_type=%i, "
+-			"l=%i, total_ext_len=%i\n", p->ule_next_hdr,
+-			(int) p->ule_sndu_type, l, total_ext_len);
++		pr_debug("ule_next_hdr=%p, ule_sndu_type=%i, l=%i, total_ext_len=%i\n",
++			 p->ule_next_hdr, (int)p->ule_sndu_type,
++			 l, total_ext_len);
+ #endif
+ 
+ 	} while (p->ule_sndu_type < ETH_P_802_3_MIN);
+@@ -379,7 +345,9 @@ static void dvb_net_ule( struct net_devi
+ 			/* Check TS error conditions: sync_byte, transport_error_indicator, scrambling_control . */
+ 			if ((ts[0] != TS_SYNC) || (ts[1] & TS_TEI) || ((ts[3] & TS_SC) != 0)) {
+ 				printk(KERN_WARNING "%lu: Invalid TS cell: SYNC %#x, TEI %u, SC %#x.\n",
+-				       priv->ts_count, ts[0], ts[1] & TS_TEI >> 7, ts[3] & 0xC0 >> 6);
++				       priv->ts_count, ts[0],
++				       (ts[1] & TS_TEI) >> 7,
++				       (ts[3] & TS_SC) >> 6);
+ 
+ 				/* Drop partly decoded SNDU, reset state, resync on PUSI. */
+ 				if (priv->ule_skb) {
+@@ -696,8 +664,8 @@ static void dvb_net_ule( struct net_devi
+ 
+ 					if (drop) {
+ #ifdef ULE_DEBUG
+-						dprintk("Dropping SNDU: MAC destination address does not match: dest addr: "MAC_ADDR_PRINTFMT", dev addr: "MAC_ADDR_PRINTFMT"\n",
+-							MAX_ADDR_PRINTFMT_ARGS(priv->ule_skb->data), MAX_ADDR_PRINTFMT_ARGS(dev->dev_addr));
++						netdev_dbg(dev, "Dropping SNDU: MAC destination address does not match: dest addr: %pM, dev addr: %pM\n",
++							   priv->ule_skb->data, dev->dev_addr);
+ #endif
+ 						dev_kfree_skb(priv->ule_skb);
+ 						goto sndu_done;
+@@ -960,8 +928,7 @@ static int dvb_net_filter_sec_set(struct
+ 	(*secfilter)->filter_mask[10] = mac_mask[1];
+ 	(*secfilter)->filter_mask[11]=mac_mask[0];
+ 
+-	dprintk("%s: filter mac=%pM\n", dev->name, mac);
+-	dprintk("%s: filter mask=%pM\n", dev->name, mac_mask);
++	netdev_dbg(dev, "filter mac=%pM mask=%pM\n", mac, mac_mask);
+ 
+ 	return 0;
+ }
+@@ -973,7 +940,7 @@ static int dvb_net_feed_start(struct net
+ 	struct dmx_demux *demux = priv->demux;
+ 	unsigned char *mac = (unsigned char *) dev->dev_addr;
+ 
+-	dprintk("%s: rx_mode %i\n", __func__, priv->rx_mode);
++	netdev_dbg(dev, "rx_mode %i\n", priv->rx_mode);
+ 	mutex_lock(&priv->mutex);
+ 	if (priv->tsfeed || priv->secfeed || priv->secfilter || priv->multi_secfilter[0])
+ 		printk("%s: BUG %d\n", __func__, __LINE__);
+@@ -983,7 +950,7 @@ static int dvb_net_feed_start(struct net
+ 	priv->tsfeed = NULL;
+ 
+ 	if (priv->feedtype == DVB_NET_FEEDTYPE_MPE) {
+-		dprintk("%s: alloc secfeed\n", __func__);
++		netdev_dbg(dev, "alloc secfeed\n");
+ 		ret=demux->allocate_section_feed(demux, &priv->secfeed,
+ 					 dvb_net_sec_callback);
+ 		if (ret<0) {
+@@ -1001,38 +968,38 @@ static int dvb_net_feed_start(struct net
+ 		}
+ 
+ 		if (priv->rx_mode != RX_MODE_PROMISC) {
+-			dprintk("%s: set secfilter\n", __func__);
++			netdev_dbg(dev, "set secfilter\n");
+ 			dvb_net_filter_sec_set(dev, &priv->secfilter, mac, mask_normal);
+ 		}
+ 
+ 		switch (priv->rx_mode) {
+ 		case RX_MODE_MULTI:
+ 			for (i = 0; i < priv->multi_num; i++) {
+-				dprintk("%s: set multi_secfilter[%d]\n", __func__, i);
++				netdev_dbg(dev, "set multi_secfilter[%d]\n", i);
+ 				dvb_net_filter_sec_set(dev, &priv->multi_secfilter[i],
+ 						       priv->multi_macs[i], mask_normal);
+ 			}
+ 			break;
+ 		case RX_MODE_ALL_MULTI:
+ 			priv->multi_num=1;
+-			dprintk("%s: set multi_secfilter[0]\n", __func__);
++			netdev_dbg(dev, "set multi_secfilter[0]\n");
+ 			dvb_net_filter_sec_set(dev, &priv->multi_secfilter[0],
+ 					       mac_allmulti, mask_allmulti);
+ 			break;
+ 		case RX_MODE_PROMISC:
+ 			priv->multi_num=0;
+-			dprintk("%s: set secfilter\n", __func__);
++			netdev_dbg(dev, "set secfilter\n");
+ 			dvb_net_filter_sec_set(dev, &priv->secfilter, mac, mask_promisc);
+ 			break;
+ 		}
+ 
+-		dprintk("%s: start filtering\n", __func__);
++		netdev_dbg(dev, "start filtering\n");
+ 		priv->secfeed->start_filtering(priv->secfeed);
+ 	} else if (priv->feedtype == DVB_NET_FEEDTYPE_ULE) {
+ 		struct timespec timeout = { 0, 10000000 }; // 10 msec
+ 
+ 		/* we have payloads encapsulated in TS */
+-		dprintk("%s: alloc tsfeed\n", __func__);
++		netdev_dbg(dev, "alloc tsfeed\n");
+ 		ret = demux->allocate_ts_feed(demux, &priv->tsfeed, dvb_net_ts_callback);
+ 		if (ret < 0) {
+ 			printk("%s: could not allocate ts feed\n", dev->name);
+@@ -1056,7 +1023,7 @@ static int dvb_net_feed_start(struct net
+ 			goto error;
+ 		}
+ 
+-		dprintk("%s: start filtering\n", __func__);
++		netdev_dbg(dev, "start filtering\n");
+ 		priv->tsfeed->start_filtering(priv->tsfeed);
+ 	} else
+ 		ret = -EINVAL;
+@@ -1071,17 +1038,16 @@ static int dvb_net_feed_stop(struct net_
+ 	struct dvb_net_priv *priv = netdev_priv(dev);
+ 	int i, ret = 0;
+ 
+-	dprintk("%s\n", __func__);
+ 	mutex_lock(&priv->mutex);
+ 	if (priv->feedtype == DVB_NET_FEEDTYPE_MPE) {
+ 		if (priv->secfeed) {
+ 			if (priv->secfeed->is_filtering) {
+-				dprintk("%s: stop secfeed\n", __func__);
++				netdev_dbg(dev, "stop secfeed\n");
+ 				priv->secfeed->stop_filtering(priv->secfeed);
+ 			}
+ 
+ 			if (priv->secfilter) {
+-				dprintk("%s: release secfilter\n", __func__);
++				netdev_dbg(dev, "release secfilter\n");
+ 				priv->secfeed->release_filter(priv->secfeed,
+ 							      priv->secfilter);
+ 				priv->secfilter=NULL;
+@@ -1089,8 +1055,8 @@ static int dvb_net_feed_stop(struct net_
+ 
+ 			for (i=0; i<priv->multi_num; i++) {
+ 				if (priv->multi_secfilter[i]) {
+-					dprintk("%s: release multi_filter[%d]\n",
+-						__func__, i);
++					netdev_dbg(dev, "release multi_filter[%d]\n",
++						   i);
+ 					priv->secfeed->release_filter(priv->secfeed,
+ 								      priv->multi_secfilter[i]);
+ 					priv->multi_secfilter[i] = NULL;
+@@ -1104,7 +1070,7 @@ static int dvb_net_feed_stop(struct net_
+ 	} else if (priv->feedtype == DVB_NET_FEEDTYPE_ULE) {
+ 		if (priv->tsfeed) {
+ 			if (priv->tsfeed->is_filtering) {
+-				dprintk("%s: stop tsfeed\n", __func__);
++				netdev_dbg(dev, "stop tsfeed\n");
+ 				priv->tsfeed->stop_filtering(priv->tsfeed);
+ 			}
+ 			priv->demux->release_ts_feed(priv->demux, priv->tsfeed);
+@@ -1144,16 +1110,16 @@ static void wq_set_multicast_list (struc
+ 	netif_addr_lock_bh(dev);
+ 
+ 	if (dev->flags & IFF_PROMISC) {
+-		dprintk("%s: promiscuous mode\n", dev->name);
++		netdev_dbg(dev, "promiscuous mode\n");
+ 		priv->rx_mode = RX_MODE_PROMISC;
+ 	} else if ((dev->flags & IFF_ALLMULTI)) {
+-		dprintk("%s: allmulti mode\n", dev->name);
++		netdev_dbg(dev, "allmulti mode\n");
+ 		priv->rx_mode = RX_MODE_ALL_MULTI;
+ 	} else if (!netdev_mc_empty(dev)) {
+ 		struct netdev_hw_addr *ha;
+ 
+-		dprintk("%s: set_mc_list, %d entries\n",
+-			dev->name, netdev_mc_count(dev));
++		netdev_dbg(dev, "set_mc_list, %d entries\n",
++			   netdev_mc_count(dev));
+ 
+ 		priv->rx_mode = RX_MODE_MULTI;
+ 		priv->multi_num = 0;
+@@ -1493,10 +1459,13 @@ static const struct file_operations dvb_
+ 	.llseek = noop_llseek,
+ };
+ 
+-static struct dvb_device dvbdev_net = {
++static const struct dvb_device dvbdev_net = {
+ 	.priv = NULL,
+ 	.users = 1,
+ 	.writers = 1,
++#if defined(CONFIG_MEDIA_CONTROLLER_DVB)
++	.name = "dvb-net",
++#endif
+ 	.fops = &dvb_net_fops,
+ };
+ 
+diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_ringbuffer.c linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_ringbuffer.c
+--- linux-ffa3f8c/drivers/media/dvb-core/dvb_ringbuffer.c	2016-11-25 09:36:30.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_ringbuffer.c	2016-11-25 10:46:17.000000000 +0200
+@@ -167,6 +167,31 @@ ssize_t dvb_ringbuffer_write(struct dvb_
+ 	return len;
+ }
+ 
++ssize_t dvb_ringbuffer_write_user(struct dvb_ringbuffer *rbuf,
++				  const u8 __user *buf, size_t len)
++{
++	int status;
++	size_t todo = len;
++	size_t split;
++
++	split = (rbuf->pwrite + len > rbuf->size) ? rbuf->size - rbuf->pwrite : 0;
++
++	if (split > 0) {
++		status = copy_from_user(rbuf->data+rbuf->pwrite, buf, split);
++		if (status)
++			return len - todo;
++		buf += split;
++		todo -= split;
++		rbuf->pwrite = 0;
++	}
++	status = copy_from_user(rbuf->data+rbuf->pwrite, buf, todo);
++	if (status)
++		return len - todo;
++	rbuf->pwrite = (rbuf->pwrite + todo) % rbuf->size;
++
++	return len;
++}
++
+ ssize_t dvb_ringbuffer_pkt_write(struct dvb_ringbuffer *rbuf, u8* buf, size_t len)
+ {
+ 	int status;
+@@ -298,3 +323,4 @@ EXPORT_SYMBOL(dvb_ringbuffer_flush_spinl
+ EXPORT_SYMBOL(dvb_ringbuffer_read_user);
+ EXPORT_SYMBOL(dvb_ringbuffer_read);
+ EXPORT_SYMBOL(dvb_ringbuffer_write);
++EXPORT_SYMBOL(dvb_ringbuffer_write_user);
+diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_ringbuffer.h linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_ringbuffer.h
+--- linux-ffa3f8c/drivers/media/dvb-core/dvb_ringbuffer.h	2016-11-25 09:36:30.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_ringbuffer.h	2016-11-25 10:47:15.000000000 +0200
+@@ -134,7 +134,8 @@ extern void dvb_ringbuffer_read(struct d
+ */
+ extern ssize_t dvb_ringbuffer_write(struct dvb_ringbuffer *rbuf, const u8 *buf,
+ 				    size_t len);
+-
++extern ssize_t dvb_ringbuffer_write_user(struct dvb_ringbuffer *rbuf,
++				         const u8 __user *buf, size_t len);
+ 
+ /**
+  * Write a packet into the ringbuffer.
+diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb-usb-ids.h linux-ffa3f8c-patch/drivers/media/dvb-core/dvb-usb-ids.h
+--- linux-ffa3f8c/drivers/media/dvb-core/dvb-usb-ids.h	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/dvb-core/dvb-usb-ids.h	2016-11-25 09:51:53.000000000 +0200
+@@ -144,6 +144,7 @@
+ #define USB_PID_ITETECH_IT9135				0x9135
+ #define USB_PID_ITETECH_IT9135_9005			0x9005
+ #define USB_PID_ITETECH_IT9135_9006			0x9006
++#define USB_PID_ITETECH_IT9303				0x9306
+ #define USB_PID_KWORLD_399U				0xe399
+ #define USB_PID_KWORLD_399U_2				0xe400
+ #define USB_PID_KWORLD_395U				0xe396
+@@ -244,6 +245,8 @@
+ #define USB_PID_TECHNOTREND_CONNECT_S2400               0x3006
+ #define USB_PID_TECHNOTREND_CONNECT_S2400_8KEEPROM	0x3009
+ #define USB_PID_TECHNOTREND_CONNECT_CT3650		0x300d
++#define USB_PID_TECHNOTREND_CONNECT_CT2_4650_CI		0x3012
++#define USB_PID_TECHNOTREND_TVSTICK_CT2_4400		0x3014
+ #define USB_PID_TERRATEC_CINERGY_DT_XS_DIVERSITY	0x005a
+ #define USB_PID_TERRATEC_CINERGY_DT_XS_DIVERSITY_2	0x0081
+ #define USB_PID_TERRATEC_CINERGY_HT_USB_XE		0x0058
+@@ -353,17 +356,20 @@
+ #define USB_PID_MSI_DIGI_VOX_MINI_III                   0x8807
+ #define USB_PID_SONY_PLAYTV				0x0003
+ #define USB_PID_MYGICA_D689				0xd811
++#define USB_PID_MYGICA_T230				0xc688
+ #define USB_PID_ELGATO_EYETV_DIVERSITY			0x0011
+ #define USB_PID_ELGATO_EYETV_DTT			0x0021
+ #define USB_PID_ELGATO_EYETV_DTT_2			0x003f
+ #define USB_PID_ELGATO_EYETV_DTT_Dlx			0x0020
+ #define USB_PID_ELGATO_EYETV_SAT			0x002a
++#define USB_PID_ELGATO_EYETV_SAT_V2			0x0025
+ #define USB_PID_DVB_T_USB_STICK_HIGH_SPEED_COLD		0x5000
+ #define USB_PID_DVB_T_USB_STICK_HIGH_SPEED_WARM		0x5001
+ #define USB_PID_FRIIO_WHITE				0x0001
+ #define USB_PID_TVWAY_PLUS				0x0002
+ #define USB_PID_SVEON_STV20				0xe39d
+ #define USB_PID_SVEON_STV20_RTL2832U			0xd39d
++#define USB_PID_SVEON_STV21				0xd3b0
+ #define USB_PID_SVEON_STV22				0xe401
+ #define USB_PID_SVEON_STV22_IT9137			0xe411
+ #define USB_PID_AZUREWAVE_AZ6027			0x3275
+@@ -374,6 +380,7 @@
+ #define USB_PID_TECHNISAT_USB2_CABLESTAR_HDCI		0x0003
+ #define USB_PID_TECHNISAT_AIRSTAR_TELESTICK_2		0x0004
+ #define USB_PID_TECHNISAT_USB2_DVB_S2			0x0500
++#define USB_PID_ALCOR_0					0xd803
+ #define USB_PID_CPYTO_REDI_PC50A			0xa803
+ #define USB_PID_CTVDIGDUAL_V2				0xe410
+ #define USB_PID_PCTV_2002E                              0x025c
+diff -Naurp linux-ffa3f8c/drivers/media/dvb-frontends/Kconfig linux-ffa3f8c-patch/drivers/media/dvb-frontends/Kconfig
+--- linux-ffa3f8c/drivers/media/dvb-frontends/Kconfig	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/dvb-frontends/Kconfig	2016-11-25 11:16:04.000000000 +0200
+@@ -446,6 +446,27 @@ config DVB_RTL2832
+ 	help
+ 	  Say Y when you want to support this frontend.
+ 
++config DVB_RTL2832_SDR
++	tristate "Realtek RTL2832 SDR"
++	depends on DVB_CORE && I2C && I2C_MUX && VIDEO_V4L2 && MEDIA_SDR_SUPPORT && USB
++	select DVB_RTL2832
++	select VIDEOBUF2_VMALLOC
++	default m if !MEDIA_SUBDRV_AUTOSELECT
++	help
++	  Say Y when you want to support this SDR module.
++
++config DVB_SI2168
++	tristate "Silicon Labs Si2168"
++	depends on DVB_CORE && I2C && I2C_MUX
++	default m if !MEDIA_SUBDRV_AUTOSELECT
++	help
++	  Say Y when you want to support this frontend.
++
++config DVB_AS102_FE
++	tristate
++	depends on DVB_CORE
++	default DVB_AS102
++
+ comment "DVB-C (cable) frontends"
+ 	depends on DVB_CORE
+ 
+@@ -693,6 +714,13 @@ config DVB_A8293
+ 	depends on DVB_CORE && I2C
+ 	default m if !MEDIA_SUBDRV_AUTOSELECT
+ 
++config DVB_SP2
++	tristate "CIMaX SP2"
++	depends on DVB_CORE && I2C
++	default m if !MEDIA_SUBDRV_AUTOSELECT
++	help
++	  CIMaX SP2/SP2HF Common Interface module.
++
+ config DVB_LGS8GL5
+ 	tristate "Silicon Legend LGS-8GL5 demodulator (OFDM)"
+ 	depends on DVB_CORE && I2C
+diff -Naurp linux-ffa3f8c/drivers/media/dvb-frontends/m88ds3103.h linux-ffa3f8c-patch/drivers/media/dvb-frontends/m88ds3103.h
+--- linux-ffa3f8c/drivers/media/dvb-frontends/m88ds3103.h	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/dvb-frontends/m88ds3103.h	2016-11-25 11:20:16.000000000 +0200
+@@ -52,9 +52,23 @@ struct m88ds3103_config {
+ #define M88DS3103_TS_PARALLEL_16        4 /* 16 MHz */
+ #define M88DS3103_TS_PARALLEL_19_2      5 /* 19.2 MHz */
+ #define M88DS3103_TS_CI                 6 /* 6 MHz */
++#define M88DS3103_TS_PARALLEL           2 /* TS Parallel mode */
++#define M88DS3103_TS_CI                 3 /* TS CI Mode */
+ 	u8 ts_mode;
+ 
+ 	/*
++	 * TS clk in KHz
++	 * Default: 0.
++	 */
++	u32 ts_clk;
++
++	/*
++	 * TS clk polarity.
++	 * Default: 0. 1-active at falling edge; 0-active at rising edge.
++	 */
++	u8 ts_clk_pol:1;
++
++	/*
+ 	 * spectrum inversion
+ 	 * Default: 0
+ 	 */
+@@ -86,6 +100,22 @@ struct m88ds3103_config {
+ 	 * Default: none, must set
+ 	 */
+ 	u8 agc;
++
++	/*
++	 * LNB H/V pin polarity
++	 * Default: 0.
++	 * 1: pin high set to VOLTAGE_13, pin low to set VOLTAGE_18.
++	 * 0: pin high set to VOLTAGE_18, pin low to set VOLTAGE_13.
++	 */
++	u8 lnb_hv_pol:1;
++
++	/*
++	 * LNB enable pin polarity
++	 * Default: 0.
++	 * 1: pin high to enable, pin low to disable.
++	 * 0: pin high to disable, pin low to enable.
++	 */
++	u8 lnb_en_pol:1;
+ };
+ 
+ /*
+diff -Naurp linux-ffa3f8c/drivers/media/dvb-frontends/m88ds3103_priv.h linux-ffa3f8c-patch/drivers/media/dvb-frontends/m88ds3103_priv.h
+--- linux-ffa3f8c/drivers/media/dvb-frontends/m88ds3103_priv.h	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/dvb-frontends/m88ds3103_priv.h	2016-11-25 11:27:19.000000000 +0200
+@@ -22,9 +22,13 @@
+ #include "dvb_math.h"
+ #include <linux/firmware.h>
+ #include <linux/i2c-mux.h>
++#include <linux/math64.h>
+ 
+ #define M88DS3103_FIRMWARE "dvb-demod-m88ds3103.fw"
++#define M88RS6000_FIRMWARE "dvb-demod-m88rs6000.fw"
+ #define M88DS3103_MCLK_KHZ 96000
++#define M88RS6000_CHIP_ID 0x74
++#define M88DS3103_CHIP_ID 0x70
+ 
+ struct m88ds3103_priv {
+ 	struct i2c_adapter *i2c;
+@@ -34,8 +38,13 @@ struct m88ds3103_priv {
+ 	struct dvb_frontend fe;
+ 	fe_delivery_system_t delivery_system;
+ 	fe_status_t fe_status;
++	u32 ber;
+ 	bool warm; /* FW running */
+ 	struct i2c_adapter *i2c_adapter;
++	/* auto detect chip id to do different config */
++	u8 chip_id;
++	/* main mclk is calculated for M88RS6000 dynamically */
++	u32 mclk_khz;
+ };
+ 
+ struct m88ds3103_reg_val {
+@@ -212,4 +221,178 @@ static const struct m88ds3103_reg_val m8
+ 	{0xb8, 0x00},
+ };
+ 
++static const struct m88ds3103_reg_val m88rs6000_dvbs_init_reg_vals[] = {
++	{0x23, 0x07},
++	{0x08, 0x03},
++	{0x0c, 0x02},
++	{0x20, 0x00},
++	{0x21, 0x54},
++	{0x25, 0x82},
++	{0x27, 0x31},
++	{0x30, 0x08},
++	{0x31, 0x40},
++	{0x32, 0x32},
++	{0x33, 0x35},
++	{0x35, 0xff},
++	{0x3a, 0x00},
++	{0x37, 0x10},
++	{0x38, 0x10},
++	{0x39, 0x02},
++	{0x42, 0x60},
++	{0x4a, 0x80},
++	{0x4b, 0x04},
++	{0x4d, 0x91},
++	{0x5d, 0xc8},
++	{0x50, 0x36},
++	{0x51, 0x36},
++	{0x52, 0x36},
++	{0x53, 0x36},
++	{0x63, 0x0f},
++	{0x64, 0x30},
++	{0x65, 0x40},
++	{0x68, 0x26},
++	{0x69, 0x4c},
++	{0x70, 0x20},
++	{0x71, 0x70},
++	{0x72, 0x04},
++	{0x73, 0x00},
++	{0x70, 0x40},
++	{0x71, 0x70},
++	{0x72, 0x04},
++	{0x73, 0x00},
++	{0x70, 0x60},
++	{0x71, 0x70},
++	{0x72, 0x04},
++	{0x73, 0x00},
++	{0x70, 0x80},
++	{0x71, 0x70},
++	{0x72, 0x04},
++	{0x73, 0x00},
++	{0x70, 0xa0},
++	{0x71, 0x70},
++	{0x72, 0x04},
++	{0x73, 0x00},
++	{0x70, 0x1f},
++	{0x76, 0x38},
++	{0x77, 0xa6},
++	{0x78, 0x0c},
++	{0x79, 0x80},
++	{0x7f, 0x14},
++	{0x7c, 0x00},
++	{0xae, 0x82},
++	{0x80, 0x64},
++	{0x81, 0x66},
++	{0x82, 0x44},
++	{0x85, 0x04},
++	{0xcd, 0xf4},
++	{0x90, 0x33},
++	{0xa0, 0x44},
++	{0xbe, 0x00},
++	{0xc0, 0x08},
++	{0xc3, 0x10},
++	{0xc4, 0x08},
++	{0xc5, 0xf0},
++	{0xc6, 0xff},
++	{0xc7, 0x00},
++	{0xc8, 0x1a},
++	{0xc9, 0x80},
++	{0xe0, 0xf8},
++	{0xe6, 0x8b},
++	{0xd0, 0x40},
++	{0xf8, 0x20},
++	{0xfa, 0x0f},
++	{0x00, 0x00},
++	{0xbd, 0x01},
++	{0xb8, 0x00},
++	{0x29, 0x11},
++};
++
++static const struct m88ds3103_reg_val m88rs6000_dvbs2_init_reg_vals[] = {
++	{0x23, 0x07},
++	{0x08, 0x07},
++	{0x0c, 0x02},
++	{0x20, 0x00},
++	{0x21, 0x54},
++	{0x25, 0x82},
++	{0x27, 0x31},
++	{0x30, 0x08},
++	{0x32, 0x32},
++	{0x33, 0x35},
++	{0x35, 0xff},
++	{0x3a, 0x00},
++	{0x37, 0x10},
++	{0x38, 0x10},
++	{0x39, 0x02},
++	{0x42, 0x60},
++	{0x4a, 0x80},
++	{0x4b, 0x04},
++	{0x4d, 0x91},
++	{0x5d, 0xc8},
++	{0x50, 0x36},
++	{0x51, 0x36},
++	{0x52, 0x36},
++	{0x53, 0x36},
++	{0x63, 0x0f},
++	{0x64, 0x10},
++	{0x65, 0x20},
++	{0x68, 0x46},
++	{0x69, 0xcd},
++	{0x70, 0x20},
++	{0x71, 0x70},
++	{0x72, 0x04},
++	{0x73, 0x00},
++	{0x70, 0x40},
++	{0x71, 0x70},
++	{0x72, 0x04},
++	{0x73, 0x00},
++	{0x70, 0x60},
++	{0x71, 0x70},
++	{0x72, 0x04},
++	{0x73, 0x00},
++	{0x70, 0x80},
++	{0x71, 0x70},
++	{0x72, 0x04},
++	{0x73, 0x00},
++	{0x70, 0xa0},
++	{0x71, 0x70},
++	{0x72, 0x04},
++	{0x73, 0x00},
++	{0x70, 0x1f},
++	{0x76, 0x38},
++	{0x77, 0xa6},
++	{0x78, 0x0c},
++	{0x79, 0x80},
++	{0x7f, 0x14},
++	{0x85, 0x08},
++	{0xcd, 0xf4},
++	{0x90, 0x33},
++	{0x86, 0x00},
++	{0x87, 0x0f},
++	{0x89, 0x00},
++	{0x8b, 0x44},
++	{0x8c, 0x66},
++	{0x9d, 0xc1},
++	{0x8a, 0x10},
++	{0xad, 0x40},
++	{0xa0, 0x44},
++	{0xbe, 0x00},
++	{0xc0, 0x08},
++	{0xc1, 0x10},
++	{0xc2, 0x08},
++	{0xc3, 0x10},
++	{0xc4, 0x08},
++	{0xc5, 0xf0},
++	{0xc6, 0xff},
++	{0xc7, 0x00},
++	{0xc8, 0x1a},
++	{0xc9, 0x80},
++	{0xca, 0x23},
++	{0xcb, 0x24},
++	{0xcc, 0xf4},
++	{0xce, 0x74},
++	{0x00, 0x00},
++	{0xbd, 0x01},
++	{0xb8, 0x00},
++	{0x29, 0x01},
++};
+ #endif
+diff -Naurp linux-ffa3f8c/drivers/media/dvb-frontends/Makefile linux-ffa3f8c-patch/drivers/media/dvb-frontends/Makefile
+--- linux-ffa3f8c/drivers/media/dvb-frontends/Makefile	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/dvb-frontends/Makefile	2016-11-25 11:17:25.000000000 +0200
+@@ -78,6 +78,7 @@ obj-$(CONFIG_DVB_AF9013) += af9013.o
+ obj-$(CONFIG_DVB_CX24116) += cx24116.o
+ obj-$(CONFIG_DVB_CX24117) += cx24117.o
+ obj-$(CONFIG_DVB_SI21XX) += si21xx.o
++obj-$(CONFIG_DVB_SI2168) += si2168.o
+ obj-$(CONFIG_DVB_STV0288) += stv0288.o
+ obj-$(CONFIG_DVB_STB6000) += stb6000.o
+ obj-$(CONFIG_DVB_S921) += s921.o
+@@ -100,6 +101,7 @@ obj-$(CONFIG_DVB_DRXK) += drxk.o
+ obj-$(CONFIG_DVB_TDA18271C2DD) += tda18271c2dd.o
+ obj-$(CONFIG_DVB_IT913X_FE) += it913x-fe.o
+ obj-$(CONFIG_DVB_A8293) += a8293.o
++obj-$(CONFIG_DVB_SP2) += sp2.o
+ obj-$(CONFIG_DVB_TDA10071) += tda10071.o
+ obj-$(CONFIG_DVB_RTL2830) += rtl2830.o
+ obj-$(CONFIG_DVB_RTL2832) += rtl2832.o
+diff -Naurp linux-ffa3f8c/drivers/media/Kconfig linux-ffa3f8c-patch/drivers/media/Kconfig
+--- linux-ffa3f8c/drivers/media/Kconfig	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/Kconfig	2016-11-25 09:43:59.000000000 +0200
+@@ -80,13 +80,21 @@ config MEDIA_RC_SUPPORT
+ 
+ config MEDIA_CONTROLLER
+ 	bool "Media Controller API"
+-	depends on MEDIA_CAMERA_SUPPORT
++	depends on MEDIA_CAMERA_SUPPORT || MEDIA_ANALOG_TV_SUPPORT || MEDIA_DIGITAL_TV_SUPPORT
+ 	---help---
+ 	  Enable the media controller API used to query media devices internal
+ 	  topology and configure it dynamically.
+ 
+ 	  This API is mostly used by camera interfaces in embedded platforms.
+ 
++config MEDIA_CONTROLLER_DVB
++	bool "Enable Media controller for DVB"
++	depends on MEDIA_CONTROLLER
++	---help---
++	  Enable the media controller API support for DVB.
++
++	  This is currently experimental.
++
+ #
+ # Video4Linux support
+ #	Only enables if one of the V4L2 types (ATV, webcam, radio) is selected
+@@ -95,7 +103,7 @@ config MEDIA_CONTROLLER
+ config VIDEO_DEV
+ 	tristate
+ 	depends on MEDIA_SUPPORT
+-	depends on MEDIA_CAMERA_SUPPORT || MEDIA_ANALOG_TV_SUPPORT || MEDIA_RADIO_SUPPORT
++	depends on MEDIA_CAMERA_SUPPORT || MEDIA_ANALOG_TV_SUPPORT || MEDIA_RADIO_SUPPORT || MEDIA_SDR_SUPPORT
+ 	default y
+ 
+ config VIDEO_V4L2_SUBDEV_API
+@@ -171,7 +179,7 @@ comment "Media ancillary drivers (tuners
+ 
+ config MEDIA_SUBDRV_AUTOSELECT
+ 	bool "Autoselect ancillary drivers (tuners, sensors, i2c, frontends)"
+-	depends on MEDIA_ANALOG_TV_SUPPORT || MEDIA_DIGITAL_TV_SUPPORT || MEDIA_CAMERA_SUPPORT
++	depends on MEDIA_ANALOG_TV_SUPPORT || MEDIA_DIGITAL_TV_SUPPORT || MEDIA_CAMERA_SUPPORT || MEDIA_SDR_SUPPORT
+ 	depends on HAS_IOMEM
+ 	select I2C
+ 	select I2C_MUX
+diff -Naurp linux-ffa3f8c/drivers/media/tuners/Kconfig linux-ffa3f8c-patch/drivers/media/tuners/Kconfig
+--- linux-ffa3f8c/drivers/media/tuners/Kconfig	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/tuners/Kconfig	2016-11-25 11:33:35.000000000 +0200
+@@ -1,7 +1,7 @@
+ # Analog TV tuners, auto-loaded via tuner.ko
+ config MEDIA_TUNER
+ 	tristate
+-	depends on (MEDIA_ANALOG_TV_SUPPORT || MEDIA_RADIO_SUPPORT) && I2C
++	depends on (MEDIA_ANALOG_TV_SUPPORT || MEDIA_DIGITAL_TV_SUPPORT || MEDIA_RADIO_SUPPORT || MEDIA_SDR_SUPPORT) && I2C
+ 	default y
+ 	select MEDIA_TUNER_XC2028 if MEDIA_SUBDRV_AUTOSELECT
+ 	select MEDIA_TUNER_XC5000 if MEDIA_SUBDRV_AUTOSELECT
+@@ -16,7 +16,7 @@ config MEDIA_TUNER
+ 
+ menu "Customize TV tuners"
+ 	visible if !MEDIA_SUBDRV_AUTOSELECT
+-	depends on MEDIA_ANALOG_TV_SUPPORT || MEDIA_DIGITAL_TV_SUPPORT || MEDIA_RADIO_SUPPORT
++	depends on MEDIA_ANALOG_TV_SUPPORT || MEDIA_DIGITAL_TV_SUPPORT || MEDIA_RADIO_SUPPORT || MEDIA_SDR_SUPPORT
+ 
+ config MEDIA_TUNER_SIMPLE
+ 	tristate "Simple tuner support"
+@@ -218,10 +218,19 @@ config MEDIA_TUNER_FC2580
+ config MEDIA_TUNER_M88TS2022
+ 	tristate "Montage M88TS2022 silicon tuner"
+ 	depends on MEDIA_SUPPORT && I2C
++	select REGMAP_I2C
+ 	default m if !MEDIA_SUBDRV_AUTOSELECT
+ 	help
+ 	  Montage M88TS2022 silicon tuner driver.
+ 
++config MEDIA_TUNER_M88RS6000T
++	tristate "Montage M88RS6000 internal tuner"
++	depends on MEDIA_SUPPORT && I2C
++	select REGMAP_I2C
++	default m if !MEDIA_SUBDRV_AUTOSELECT
++	help
++	  Montage M88RS6000 internal tuner.
++
+ config MEDIA_TUNER_TUA9001
+ 	tristate "Infineon TUA 9001 silicon tuner"
+ 	depends on MEDIA_SUPPORT && I2C
+@@ -229,6 +238,13 @@ config MEDIA_TUNER_TUA9001
+ 	help
+ 	  Infineon TUA 9001 silicon tuner driver.
+ 
++config MEDIA_TUNER_SI2157
++	tristate "Silicon Labs Si2157 silicon tuner"
++	depends on MEDIA_SUPPORT && I2C
++	default m if !MEDIA_SUBDRV_AUTOSELECT
++	help
++	  Silicon Labs Si2157 silicon tuner driver.
++
+ config MEDIA_TUNER_IT913X
+ 	tristate "ITE Tech IT913x silicon tuner"
+ 	depends on MEDIA_SUPPORT && I2C
+diff -Naurp linux-ffa3f8c/drivers/media/tuners/m88ts2022_priv.h linux-ffa3f8c-patch/drivers/media/tuners/m88ts2022_priv.h
+--- linux-ffa3f8c/drivers/media/tuners/m88ts2022_priv.h	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/tuners/m88ts2022_priv.h	2016-11-25 11:35:22.000000000 +0200
+@@ -18,11 +18,12 @@
+ #define M88TS2022_PRIV_H
+ 
+ #include "m88ts2022.h"
++#include <linux/regmap.h>
+ 
+-struct m88ts2022_priv {
++struct m88ts2022_dev {
+ 	struct m88ts2022_config cfg;
+ 	struct i2c_client *client;
+-	struct dvb_frontend *fe;
++	struct regmap *regmap;
+ 	u32 frequency_khz;
+ };
+ 
+diff -Naurp linux-ffa3f8c/drivers/media/tuners/Makefile linux-ffa3f8c-patch/drivers/media/tuners/Makefile
+--- linux-ffa3f8c/drivers/media/tuners/Makefile	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/tuners/Makefile	2016-11-25 11:34:20.000000000 +0200
+@@ -31,6 +31,7 @@ obj-$(CONFIG_MEDIA_TUNER_TDA18212) += td
+ obj-$(CONFIG_MEDIA_TUNER_E4000) += e4000.o
+ obj-$(CONFIG_MEDIA_TUNER_FC2580) += fc2580.o
+ obj-$(CONFIG_MEDIA_TUNER_TUA9001) += tua9001.o
++obj-$(CONFIG_MEDIA_TUNER_SI2157) += si2157.o
+ obj-$(CONFIG_MEDIA_TUNER_M88TS2022) += m88ts2022.o
+ obj-$(CONFIG_MEDIA_TUNER_FC0011) += fc0011.o
+ obj-$(CONFIG_MEDIA_TUNER_FC0012) += fc0012.o
+diff -Naurp linux-ffa3f8c/drivers/media/usb/dvb-usb-v2/dvb_usb_core.c linux-ffa3f8c-patch/drivers/media/usb/dvb-usb-v2/dvb_usb_core.c
+--- linux-ffa3f8c/drivers/media/usb/dvb-usb-v2/dvb_usb_core.c	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/usb/dvb-usb-v2/dvb_usb_core.c	2016-11-25 11:48:40.000000000 +0200
+@@ -21,7 +21,7 @@
+ 
+ #include "dvb_usb_common.h"
+ 
+-int dvb_usbv2_disable_rc_polling;
++static int dvb_usbv2_disable_rc_polling;
+ module_param_named(disable_rc_polling, dvb_usbv2_disable_rc_polling, int, 0644);
+ MODULE_PARM_DESC(disable_rc_polling,
+ 		"disable remote control polling (default: 0)");
+@@ -273,8 +273,7 @@ static int dvb_usb_start_feed(struct dvb
+ 			dvbdmxfeed->pid, dvbdmxfeed->index);
+ 
+ 	/* wait init is done */
+-	wait_on_bit(&adap->state_bits, ADAP_INIT, wait_schedule,
+-			TASK_UNINTERRUPTIBLE);
++	wait_on_bit(&adap->state_bits, ADAP_INIT, wait_schedule, TASK_UNINTERRUPTIBLE);
+ 
+ 	if (adap->active_fe == -1)
+ 		return -EINVAL;
+@@ -568,8 +567,8 @@ static int dvb_usb_fe_sleep(struct dvb_f
+ 
+ 	if (!adap->suspend_resume_active) {
+ 		set_bit(ADAP_SLEEP, &adap->state_bits);
+-		wait_on_bit(&adap->state_bits, ADAP_STREAMING, wait_schedule,
+-				TASK_UNINTERRUPTIBLE);
++		wait_on_bit(&adap->state_bits, ADAP_STREAMING,
++				wait_schedule, TASK_UNINTERRUPTIBLE);
+ 	}
+ 
+ 	if (adap->fe_sleep[fe->id]) {
+@@ -672,9 +671,10 @@ err:
+ 
+ static int dvb_usbv2_adapter_frontend_exit(struct dvb_usb_adapter *adap)
+ {
+-	int i;
+-	dev_dbg(&adap_to_d(adap)->udev->dev, "%s: adap=%d\n", __func__,
+-			adap->id);
++	int ret, i;
++	struct dvb_usb_device *d = adap_to_d(adap);
++
++	dev_dbg(&d->udev->dev, "%s: adap=%d\n", __func__, adap->id);
+ 
+ 	for (i = MAX_NO_OF_FE_PER_ADAP - 1; i >= 0; i--) {
+ 		if (adap->fe[i]) {
+@@ -683,6 +683,23 @@ static int dvb_usbv2_adapter_frontend_ex
+ 		}
+ 	}
+ 
++	if (d->props->tuner_detach) {
++		ret = d->props->tuner_detach(adap);
++		if (ret < 0) {
++			dev_dbg(&d->udev->dev, "%s: tuner_detach() failed=%d\n",
++					__func__, ret);
++		}
++	}
++
++	if (d->props->frontend_detach) {
++		ret = d->props->frontend_detach(adap);
++		if (ret < 0) {
++			dev_dbg(&d->udev->dev,
++					"%s: frontend_detach() failed=%d\n",
++					__func__, ret);
++		}
++	}
++
+ 	return 0;
+ }
+ 
+@@ -770,9 +787,9 @@ static int dvb_usbv2_adapter_exit(struct
+ 
+ 	for (i = MAX_NO_OF_ADAPTER_PER_DEVICE - 1; i >= 0; i--) {
+ 		if (d->adapter[i].props) {
+-			dvb_usbv2_adapter_frontend_exit(&d->adapter[i]);
+ 			dvb_usbv2_adapter_dvb_exit(&d->adapter[i]);
+ 			dvb_usbv2_adapter_stream_exit(&d->adapter[i]);
++			dvb_usbv2_adapter_frontend_exit(&d->adapter[i]);
+ 		}
+ 	}
+ 
+diff -Naurp linux-ffa3f8c/drivers/media/usb/dvb-usb-v2/dvb_usb.h linux-ffa3f8c-patch/drivers/media/usb/dvb-usb-v2/dvb_usb.h
+--- linux-ffa3f8c/drivers/media/usb/dvb-usb-v2/dvb_usb.h	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/usb/dvb-usb-v2/dvb_usb.h	2016-11-25 11:41:31.000000000 +0200
+@@ -25,6 +25,7 @@
+ #include <linux/usb/input.h>
+ #include <linux/firmware.h>
+ #include <media/rc-core.h>
++#include <media/media-device.h>
+ 
+ #include "dvb_frontend.h"
+ #include "dvb_demux.h"
+@@ -214,6 +215,7 @@ struct dvb_usb_adapter_properties {
+  * @read_config: called to resolve device configuration
+  * @read_mac_address: called to resolve adapter mac-address
+  * @frontend_attach: called to attach the possible frontends
++ * @frontend_detach: called to detach the possible frontends
+  * @tuner_attach: called to attach the possible tuners
+  * @frontend_ctrl: called to power on/off active frontend
+  * @streaming_ctrl: called to start/stop the usb streaming of adapter
+@@ -254,7 +256,9 @@ struct dvb_usb_device_properties {
+ 	int (*read_config) (struct dvb_usb_device *d);
+ 	int (*read_mac_address) (struct dvb_usb_adapter *, u8 []);
+ 	int (*frontend_attach) (struct dvb_usb_adapter *);
++	int (*frontend_detach)(struct dvb_usb_adapter *);
+ 	int (*tuner_attach) (struct dvb_usb_adapter *);
++	int (*tuner_detach)(struct dvb_usb_adapter *);
+ 	int (*frontend_ctrl) (struct dvb_frontend *, int);
+ 	int (*streaming_ctrl) (struct dvb_frontend *, int);
+ 	int (*init) (struct dvb_usb_device *);
+@@ -351,6 +355,7 @@ struct dvb_usb_adapter {
+  * @name: device name
+  * @rc_map: name of rc codes table
+  * @rc_polling_active: set when RC polling is active
++ * @intf: pointer to the device's struct usb_interface
+  * @udev: pointer to the device's struct usb_device
+  * @rc: remote controller configuration
+  * @powered: indicated whether the device is power or not
+diff -Naurp linux-ffa3f8c/drivers/media/usb/dvb-usb-v2/Kconfig linux-ffa3f8c-patch/drivers/media/usb/dvb-usb-v2/Kconfig
+--- linux-ffa3f8c/drivers/media/usb/dvb-usb-v2/Kconfig	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/usb/dvb-usb-v2/Kconfig	2016-11-25 11:38:17.000000000 +0200
+@@ -147,3 +147,13 @@ config DVB_USB_RTL28XXU
+ 	help
+ 	  Say Y here to support the Realtek RTL28xxU DVB USB receiver.
+ 
++config DVB_USB_DVBSKY
++	tristate "DVBSky USB support"
++	depends on DVB_USB_V2
++	select DVB_M88DS3103 if MEDIA_SUBDRV_AUTOSELECT
++	select DVB_SI2168 if MEDIA_SUBDRV_AUTOSELECT
++	select MEDIA_TUNER_M88TS2022 if MEDIA_SUBDRV_AUTOSELECT
++	select MEDIA_TUNER_SI2157 if MEDIA_SUBDRV_AUTOSELECT
++	select DVB_SP2 if MEDIA_SUBDRV_AUTOSELECT
++	help
++	  Say Y here to support the USB receivers from DVBSky.
+diff -Naurp linux-ffa3f8c/drivers/media/usb/dvb-usb-v2/Makefile linux-ffa3f8c-patch/drivers/media/usb/dvb-usb-v2/Makefile
+--- linux-ffa3f8c/drivers/media/usb/dvb-usb-v2/Makefile	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/usb/dvb-usb-v2/Makefile	2016-11-25 11:38:51.000000000 +0200
+@@ -40,6 +40,9 @@ obj-$(CONFIG_DVB_USB_MXL111SF) += mxl111
+ dvb-usb-rtl28xxu-objs := rtl28xxu.o
+ obj-$(CONFIG_DVB_USB_RTL28XXU) += dvb-usb-rtl28xxu.o
+ 
++dvb-usb-dvbsky-objs := dvbsky.o
++obj-$(CONFIG_DVB_USB_DVBSKY) += dvb-usb-dvbsky.o
++
+ ccflags-y += -I$(srctree)/drivers/media/dvb-core
+ ccflags-y += -I$(srctree)/drivers/media/dvb-frontends
+ ccflags-y += -I$(srctree)/drivers/media/tuners
+diff -Naurp linux-ffa3f8c/drivers/media/usb/em28xx/em28xx-dvb.c linux-ffa3f8c-patch/drivers/media/usb/em28xx/em28xx-dvb.c
+--- linux-ffa3f8c/drivers/media/usb/em28xx/em28xx-dvb.c	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/drivers/media/usb/em28xx/em28xx-dvb.c	2016-11-25 11:55:47.000000000 +0200
+@@ -814,7 +814,7 @@ static const struct m88ds3103_config pct
+ 	.clock = 27000000,
+ 	.i2c_wr_max = 33,
+ 	.clock_out = 0,
+-	.ts_mode = M88DS3103_TS_PARALLEL_16,
++	.ts_mode = M88DS3103_TS_PARALLEL,
+ 	.agc = 0x99,
+ };
+ 
+diff -Naurp linux-ffa3f8c/include/media/media-entity.h linux-ffa3f8c-patch/include/media/media-entity.h
+--- linux-ffa3f8c/include/media/media-entity.h	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/include/media/media-entity.h	2016-11-25 11:51:11.000000000 +0200
+@@ -97,6 +97,10 @@ struct media_entity {
+ 			u32 device;
+ 			u32 subdevice;
+ 		} alsa;
++		struct {
++			u32 major;
++			u32 minor;
++		} dev;
+ 		int dvb;
+ 
+ 		/* Sub-device specifications */
+diff -Naurp linux-ffa3f8c/include/media/rc-map.h linux-ffa3f8c-patch/include/media/rc-map.h
+--- linux-ffa3f8c/include/media/rc-map.h	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/include/media/rc-map.h	2016-11-25 11:52:07.000000000 +0200
+@@ -119,6 +119,7 @@ void rc_map_init(void);
+ #define RC_MAP_DM1105_NEC                "rc-dm1105-nec"
+ #define RC_MAP_DNTV_LIVE_DVBT_PRO        "rc-dntv-live-dvbt-pro"
+ #define RC_MAP_DNTV_LIVE_DVB_T           "rc-dntv-live-dvb-t"
++#define RC_MAP_DVBSKY                    "rc-dvbsky"
+ #define RC_MAP_EMPTY                     "rc-empty"
+ #define RC_MAP_EM_TERRATEC               "rc-em-terratec"
+ #define RC_MAP_ENCORE_ENLTV2             "rc-encore-enltv2"
+diff -Naurp linux-ffa3f8c/include/uapi/linux/media.h linux-ffa3f8c-patch/include/uapi/linux/media.h
+--- linux-ffa3f8c/include/uapi/linux/media.h	2016-11-04 20:38:09.000000000 +0200
++++ linux-ffa3f8c-patch/include/uapi/linux/media.h	2016-11-25 11:54:28.000000000 +0200
+@@ -50,7 +50,15 @@ struct media_device_info {
+ #define MEDIA_ENT_T_DEVNODE_V4L		(MEDIA_ENT_T_DEVNODE + 1)
+ #define MEDIA_ENT_T_DEVNODE_FB		(MEDIA_ENT_T_DEVNODE + 2)
+ #define MEDIA_ENT_T_DEVNODE_ALSA	(MEDIA_ENT_T_DEVNODE + 3)
+-#define MEDIA_ENT_T_DEVNODE_DVB		(MEDIA_ENT_T_DEVNODE + 4)
++
++#define MEDIA_ENT_T_DEVNODE_DVB_FE	(MEDIA_ENT_T_DEVNODE + 4)
++#define MEDIA_ENT_T_DEVNODE_DVB_DEMUX	(MEDIA_ENT_T_DEVNODE + 5)
++#define MEDIA_ENT_T_DEVNODE_DVB_DVR	(MEDIA_ENT_T_DEVNODE + 6)
++#define MEDIA_ENT_T_DEVNODE_DVB_CA	(MEDIA_ENT_T_DEVNODE + 7)
++#define MEDIA_ENT_T_DEVNODE_DVB_NET	(MEDIA_ENT_T_DEVNODE + 8)
++
++/* Legacy symbol. Use it to avoid userspace compilation breakages */
++#define MEDIA_ENT_T_DEVNODE_DVB		MEDIA_ENT_T_DEVNODE_DVB_FE
+ 
+ #define MEDIA_ENT_T_V4L2_SUBDEV		(2 << MEDIA_ENT_TYPE_SHIFT)
+ #define MEDIA_ENT_T_V4L2_SUBDEV_SENSOR	(MEDIA_ENT_T_V4L2_SUBDEV + 1)
+@@ -59,6 +67,8 @@ struct media_device_info {
+ /* A converter of analogue video to its digital representation. */
+ #define MEDIA_ENT_T_V4L2_SUBDEV_DECODER	(MEDIA_ENT_T_V4L2_SUBDEV + 4)
+ 
++#define MEDIA_ENT_T_V4L2_SUBDEV_TUNER	(MEDIA_ENT_T_V4L2_SUBDEV + 5)
++
+ #define MEDIA_ENT_FL_DEFAULT		(1 << 0)
+ 
+ struct media_entity_desc {

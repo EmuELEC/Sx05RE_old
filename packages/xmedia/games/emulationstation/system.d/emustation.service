@@ -10,7 +10,6 @@ Environment=FB_MULTI_BUFFER=2
 Environment=HOME=/storage
 ExecStartPre=-/usr/bin/remotecfg /storage/.config/amremote/remote-games.conf
 ExecStartPre=/usr/bin/emustation-config
-Environment=LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib32:/lib32:/usr/lib/pulseaudio:/usr/lib32/pulseaudio
 ExecStart=/usr/bin/emulationstation --no-splash
 KillMode=process
 TimeoutStopSec=3

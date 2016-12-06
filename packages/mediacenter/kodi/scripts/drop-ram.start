@@ -20,12 +20,16 @@ clear_ram () {
 }
 
 [ -f "$SERVICE_DIR/ramclear.conf" ] && . $SERVICE_DIR/ramclear.conf
-[ -z "$RAMCLEAR_TIME" ] && RAMCLEAR_TIME="60"
+[ -z "$RAMCLEAR_TIME" ] && RAMCLEAR_TIME="5"
 
+(
 if [ $RAMCLEAR_TIME -ge 1 ]; then
+  sleep 60
+  clear_ram
   while [ true ] ; do
+      logger -t memory "Next clear memory after $RAMCLEAR_TIME min."
       sleep ${RAMCLEAR_TIME}m
       clear_ram
-      logger -t memory "Next clear memory after $RAMCLEAR_TIME min."
-  done &
+  done
 fi
+) &

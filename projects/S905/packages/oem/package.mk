@@ -35,5 +35,20 @@ post_install() {
 # tools
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET ImageMagick mc aml-vnc scan-s2 scan-m3u serviceref ioctl"
 
-# 32bit libs
-  #PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET 32bit-libs"
+if [ "$TARGET_ARCH" = "aarch64" ]; then
+  # 32bit libs
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET 32bit-libs"
+else
+  # games
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET emulationstation retroarch"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-mupen64plus"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-ppsspp"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-pcsx_rearmed"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-genesis-plus-gx"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-snes9x2010"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-mame2003"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-fbalpha"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-fuse"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-nestopia"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-picodrive"
+fi

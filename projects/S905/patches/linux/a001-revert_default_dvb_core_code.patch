@@ -1,6 +1,6 @@
-diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/demux.h linux-ffa3f8c-patch/drivers/media/dvb-core/demux.h
---- linux-ffa3f8c/drivers/media/dvb-core/demux.h	2016-11-04 20:38:09.000000000 +0200
-+++ linux-ffa3f8c-patch/drivers/media/dvb-core/demux.h	2016-11-24 19:17:17.000000000 +0200
+diff -Naurp linux-d7e124d/drivers/media/dvb-core/demux.h linux-d7e124d-patch/drivers/media/dvb-core/demux.h
+--- linux-d7e124d/drivers/media/dvb-core/demux.h	2016-11-30 16:43:57.000000000 +0200
++++ linux-d7e124d-patch/drivers/media/dvb-core/demux.h	2016-12-05 18:34:58.000000000 +0200
 @@ -83,46 +83,6 @@ enum dmx_success {
  #define TS_DEMUX        8   /* in case TS_PACKET is set, send the TS to
  			       the demux device, not to the dvr device */
@@ -108,9 +108,9 @@ diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/demux.h linux-ffa3f8c-patch/dri
  			u64 *stc, unsigned int *base);
  };
  
-diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dmxdev.c linux-ffa3f8c-patch/drivers/media/dvb-core/dmxdev.c
---- linux-ffa3f8c/drivers/media/dvb-core/dmxdev.c	2016-11-04 20:38:09.000000000 +0200
-+++ linux-ffa3f8c-patch/drivers/media/dvb-core/dmxdev.c	2016-11-24 19:23:43.000000000 +0200
+diff -Naurp linux-d7e124d/drivers/media/dvb-core/dmxdev.c linux-d7e124d-patch/drivers/media/dvb-core/dmxdev.c
+--- linux-d7e124d/drivers/media/dvb-core/dmxdev.c	2016-11-30 16:43:57.000000000 +0200
++++ linux-d7e124d-patch/drivers/media/dvb-core/dmxdev.c	2016-12-05 18:34:58.000000000 +0200
 @@ -51,7 +51,6 @@ static int dvb_dmxdev_buffer_write(struc
  	free = dvb_ringbuffer_free(buf);
  	if (len > free) {
@@ -137,66 +137,9 @@ diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dmxdev.c linux-ffa3f8c-patch/dr
  {
  	int i;
  
-@@ -1131,17 +1130,6 @@ static int dvb_demux_release(struct inod
- 	return ret;
- }
- 
--#ifdef CONFIG_COMPAT
--static long dvb_demux_compat_ioctl(struct file *filp,
--			unsigned int cmd, unsigned long args)
--{
--	unsigned long ret;
--	args = (unsigned long)compat_ptr(args);
--	ret = dvb_demux_ioctl(filp, cmd, args);
--	return ret;
--}
--#endif
--
- static const struct file_operations dvb_demux_fops = {
- 	.owner = THIS_MODULE,
- 	.read = dvb_demux_read,
-@@ -1150,9 +1138,6 @@ static const struct file_operations dvb_
- 	.release = dvb_demux_release,
- 	.poll = dvb_demux_poll,
- 	.llseek = default_llseek,
--#ifdef CONFIG_COMPAT
--	.compat_ioctl	= dvb_demux_compat_ioctl,
--#endif
- };
- 
- static struct dvb_device dvbdev_demux = {
-@@ -1214,18 +1199,6 @@ static unsigned int dvb_dvr_poll(struct
- 	return mask;
- }
- 
--#ifdef CONFIG_COMPAT
--static long dvb_dvr_compat_ioctl(struct file *filp,
--			unsigned int cmd, unsigned long args)
--{
--	unsigned long ret;
--
--	args = (unsigned long)compat_ptr(args);
--	ret = dvb_dvr_ioctl(filp, cmd, args);
--	return ret;
--}
--#endif
--
- static const struct file_operations dvb_dvr_fops = {
- 	.owner = THIS_MODULE,
- 	.read = dvb_dvr_read,
-@@ -1235,9 +1208,6 @@ static const struct file_operations dvb_
- 	.release = dvb_dvr_release,
- 	.poll = dvb_dvr_poll,
- 	.llseek = default_llseek,
--#ifdef CONFIG_COMPAT
--	.compat_ioctl	= dvb_dvr_compat_ioctl,
--#endif
- };
- 
- static struct dvb_device dvbdev_dvr = {
-diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvbdev.c linux-ffa3f8c-patch/drivers/media/dvb-core/dvbdev.c
---- linux-ffa3f8c/drivers/media/dvb-core/dvbdev.c	2016-11-04 20:38:09.000000000 +0200
-+++ linux-ffa3f8c-patch/drivers/media/dvb-core/dvbdev.c	2016-11-24 19:24:50.000000000 +0200
+diff -Naurp linux-d7e124d/drivers/media/dvb-core/dvbdev.c linux-d7e124d-patch/drivers/media/dvb-core/dvbdev.c
+--- linux-d7e124d/drivers/media/dvb-core/dvbdev.c	2016-11-30 16:43:57.000000000 +0200
++++ linux-d7e124d-patch/drivers/media/dvb-core/dvbdev.c	2016-12-05 18:34:58.000000000 +0200
 @@ -47,7 +47,7 @@ static DEFINE_MUTEX(dvbdev_register_lock
  
  static const char * const dnames[] = {
@@ -206,9 +149,9 @@ diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvbdev.c linux-ffa3f8c-patch/dr
  };
  
  #ifdef CONFIG_DVB_DYNAMIC_MINORS
-diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvbdev.h linux-ffa3f8c-patch/drivers/media/dvb-core/dvbdev.h
---- linux-ffa3f8c/drivers/media/dvb-core/dvbdev.h	2016-11-04 20:38:09.000000000 +0200
-+++ linux-ffa3f8c-patch/drivers/media/dvb-core/dvbdev.h	2016-11-24 19:26:27.000000000 +0200
+diff -Naurp linux-d7e124d/drivers/media/dvb-core/dvbdev.h linux-d7e124d-patch/drivers/media/dvb-core/dvbdev.h
+--- linux-d7e124d/drivers/media/dvb-core/dvbdev.h	2016-11-30 16:43:57.000000000 +0200
++++ linux-d7e124d-patch/drivers/media/dvb-core/dvbdev.h	2016-12-05 18:34:58.000000000 +0200
 @@ -47,7 +47,6 @@
  #define DVB_DEVICE_CA         6
  #define DVB_DEVICE_NET        7
@@ -217,9 +160,9 @@ diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvbdev.h linux-ffa3f8c-patch/dr
  
  #define DVB_DEFINE_MOD_OPT_ADAPTER_NR(adapter_nr) \
  	static short adapter_nr[] = \
-diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.c linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_frontend.c
---- linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.c	2016-11-04 20:38:09.000000000 +0200
-+++ linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_frontend.c	2016-11-24 20:43:17.000000000 +0200
+diff -Naurp linux-d7e124d/drivers/media/dvb-core/dvb_frontend.c linux-d7e124d-patch/drivers/media/dvb-core/dvb_frontend.c
+--- linux-d7e124d/drivers/media/dvb-core/dvb_frontend.c	2016-11-30 16:43:57.000000000 +0200
++++ linux-d7e124d-patch/drivers/media/dvb-core/dvb_frontend.c	2016-12-05 18:34:58.000000000 +0200
 @@ -52,10 +52,6 @@ static int dvb_force_auto_inversion;
  static int dvb_override_tune_delay;
  static int dvb_powerdown_on_sleep = 1;
@@ -668,8 +611,8 @@ diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.c linux-ffa3f8c-pa
 -		}
 -
 -	}
--
  
+-
 -#endif
 -#if 1
 -	/*signal_detec dtmb   201512-rsj*/
@@ -1390,37 +1333,15 @@ diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.c linux-ffa3f8c-pa
  	}
  
  	if (adapter->mfe_shared)
-@@ -3286,18 +2554,6 @@ static int dvb_frontend_release(struct i
- 	return ret;
- }
- 
--#ifdef CONFIG_COMPAT
--static long dvb_frontend_compat_ioctl(struct file *filp,
--			unsigned int cmd, unsigned long args)
--{
--	unsigned long ret;
--
--	args = (unsigned long)compat_ptr(args);
--	ret = dvb_generic_ioctl(filp, cmd, args);
--	return ret;
--}
--#endif
--
- static const struct file_operations dvb_frontend_fops = {
- 	.owner		= THIS_MODULE,
- 	.unlocked_ioctl	= dvb_generic_ioctl,
-@@ -3305,10 +2561,6 @@ static const struct file_operations dvb_
- 	.open		= dvb_frontend_open,
- 	.release	= dvb_frontend_release,
- 	.llseek		= noop_llseek,
--#ifdef CONFIG_COMPAT
--	.compat_ioctl	= dvb_frontend_compat_ioctl,
--#endif
+@@ -3308,7 +2576,6 @@ static const struct file_operations dvb_
+ #ifdef CONFIG_COMPAT
+ 	.compat_ioctl	= dvb_frontend_compat_ioctl,
+ #endif
 -
  };
  
  int dvb_frontend_suspend(struct dvb_frontend *fe)
-@@ -3349,31 +2601,6 @@ int dvb_frontend_resume(struct dvb_front
+@@ -3349,31 +2616,6 @@ int dvb_frontend_resume(struct dvb_front
  }
  EXPORT_SYMBOL(dvb_frontend_resume);
  
@@ -1452,7 +1373,7 @@ diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.c linux-ffa3f8c-pa
  int dvb_register_frontend(struct dvb_adapter* dvb,
  			  struct dvb_frontend* fe)
  {
-@@ -3386,7 +2613,6 @@ int dvb_register_frontend(struct dvb_ada
+@@ -3386,7 +2628,6 @@ int dvb_register_frontend(struct dvb_ada
  		.kernel_ioctl = dvb_frontend_ioctl
  	};
  
@@ -1460,7 +1381,7 @@ diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.c linux-ffa3f8c-pa
  	dev_dbg(dvb->device, "%s:\n", __func__);
  
  	if (mutex_lock_interruptible(&frontend_mutex))
-@@ -3400,44 +2626,19 @@ int dvb_register_frontend(struct dvb_ada
+@@ -3400,44 +2641,19 @@ int dvb_register_frontend(struct dvb_ada
  	fepriv = fe->frontend_priv;
  
  	sema_init(&fepriv->sem, 1);
@@ -1508,7 +1429,7 @@ diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.c linux-ffa3f8c-pa
  	/*
  	 * Initialize the cache to the proper values according with the
  	 * first supported delivery system (ops->delsys[0])
-@@ -3466,8 +2667,6 @@ int dvb_unregister_frontend(struct dvb_f
+@@ -3466,8 +2682,6 @@ int dvb_unregister_frontend(struct dvb_f
  
  	mutex_lock(&frontend_mutex);
  	dvb_unregister_device (fepriv->dvbdev);
@@ -1517,9 +1438,9 @@ diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.c linux-ffa3f8c-pa
  
  	/* fe is invalid now */
  	kfree(fepriv);
-diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.h linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_frontend.h
---- linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.h	2016-11-04 20:38:09.000000000 +0200
-+++ linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_frontend.h	2016-11-24 20:54:53.000000000 +0200
+diff -Naurp linux-d7e124d/drivers/media/dvb-core/dvb_frontend.h linux-d7e124d-patch/drivers/media/dvb-core/dvb_frontend.h
+--- linux-d7e124d/drivers/media/dvb-core/dvb_frontend.h	2016-11-30 16:43:57.000000000 +0200
++++ linux-d7e124d-patch/drivers/media/dvb-core/dvb_frontend.h	2016-12-05 18:34:58.000000000 +0200
 @@ -38,7 +38,6 @@
  #include <linux/mutex.h>
  #include <linux/slab.h>
@@ -1781,9 +1702,9 @@ diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_frontend.h linux-ffa3f8c-pa
  	/* ATSC-MH specifics */
  	u8			atscmh_fic_ver;
  	u8			atscmh_parade_id;
-diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_net.c linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_net.c
---- linux-ffa3f8c/drivers/media/dvb-core/dvb_net.c	2016-11-04 20:38:09.000000000 +0200
-+++ linux-ffa3f8c-patch/drivers/media/dvb-core/dvb_net.c	2016-11-24 20:57:07.000000000 +0200
+diff -Naurp linux-d7e124d/drivers/media/dvb-core/dvb_net.c linux-d7e124d-patch/drivers/media/dvb-core/dvb_net.c
+--- linux-d7e124d/drivers/media/dvb-core/dvb_net.c	2016-11-30 16:43:57.000000000 +0200
++++ linux-d7e124d-patch/drivers/media/dvb-core/dvb_net.c	2016-12-05 18:34:58.000000000 +0200
 @@ -179,7 +179,7 @@ static __be16 dvb_net_eth_type_trans(str
  	eth = eth_hdr(skb);
  
@@ -1818,9 +1739,9 @@ diff -Naurp linux-ffa3f8c/drivers/media/dvb-core/dvb_net.c linux-ffa3f8c-patch/d
  							drop = 1;
  						/* else: destination address matches the MAC address of our receiver device */
  					}
-diff -Naurp linux-ffa3f8c/include/uapi/linux/dvb/aml_demod.h linux-ffa3f8c-patch/include/uapi/linux/dvb/aml_demod.h
---- linux-ffa3f8c/include/uapi/linux/dvb/aml_demod.h	2016-11-04 20:38:09.000000000 +0200
-+++ linux-ffa3f8c-patch/include/uapi/linux/dvb/aml_demod.h	1970-01-01 03:00:00.000000000 +0300
+diff -Naurp linux-d7e124d/include/uapi/linux/dvb/aml_demod.h linux-d7e124d-patch/include/uapi/linux/dvb/aml_demod.h
+--- linux-d7e124d/include/uapi/linux/dvb/aml_demod.h	2016-11-30 16:43:57.000000000 +0200
++++ linux-d7e124d-patch/include/uapi/linux/dvb/aml_demod.h	1970-01-01 03:00:00.000000000 +0300
 @@ -1,214 +0,0 @@
 -#ifndef AML_DEMOD_H
 -#define AML_DEMOD_H
@@ -2036,9 +1957,9 @@ diff -Naurp linux-ffa3f8c/include/uapi/linux/dvb/aml_demod.h linux-ffa3f8c-patch
 -int cap_adc_data(struct aml_cap_data *cap);
 -
 -#endif				/* AML_DEMOD_H */
-diff -Naurp linux-ffa3f8c/include/uapi/linux/dvb/dmx.h linux-ffa3f8c-patch/include/uapi/linux/dvb/dmx.h
---- linux-ffa3f8c/include/uapi/linux/dvb/dmx.h	2016-11-04 20:38:09.000000000 +0200
-+++ linux-ffa3f8c-patch/include/uapi/linux/dvb/dmx.h	2016-11-24 21:04:22.000000000 +0200
+diff -Naurp linux-d7e124d/include/uapi/linux/dvb/dmx.h linux-d7e124d-patch/include/uapi/linux/dvb/dmx.h
+--- linux-d7e124d/include/uapi/linux/dvb/dmx.h	2016-11-30 16:43:57.000000000 +0200
++++ linux-d7e124d-patch/include/uapi/linux/dvb/dmx.h	2016-12-05 18:34:58.000000000 +0200
 @@ -31,23 +31,26 @@
  
  #define DMX_FILTER_SIZE 16
@@ -2175,9 +2096,9 @@ diff -Naurp linux-ffa3f8c/include/uapi/linux/dvb/dmx.h linux-ffa3f8c-patch/inclu
  #define DMX_GET_STC              _IOWR('o', 50, struct dmx_stc)
  #define DMX_ADD_PID              _IOW('o', 51, __u16)
  #define DMX_REMOVE_PID           _IOW('o', 52, __u16)
-diff -Naurp linux-ffa3f8c/include/uapi/linux/dvb/frontend.h linux-ffa3f8c-patch/include/uapi/linux/dvb/frontend.h
---- linux-ffa3f8c/include/uapi/linux/dvb/frontend.h	2016-11-04 20:38:09.000000000 +0200
-+++ linux-ffa3f8c-patch/include/uapi/linux/dvb/frontend.h	2016-11-24 21:30:21.000000000 +0200
+diff -Naurp linux-d7e124d/include/uapi/linux/dvb/frontend.h linux-d7e124d-patch/include/uapi/linux/dvb/frontend.h
+--- linux-d7e124d/include/uapi/linux/dvb/frontend.h	2016-11-30 16:43:57.000000000 +0200
++++ linux-d7e124d-patch/include/uapi/linux/dvb/frontend.h	2016-12-05 18:34:58.000000000 +0200
 @@ -27,81 +27,60 @@
  #define _DVBFRONTEND_H_
  

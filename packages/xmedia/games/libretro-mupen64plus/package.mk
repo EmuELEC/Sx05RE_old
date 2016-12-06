@@ -23,11 +23,6 @@ pre_configure_target() {
 }
 
 make_target() {
-  #CFLAGS="$CFLAGS -DGL_BGRA_EXT=0x80E1" # Fix build for platforms where GL_BGRA_EXT is not defined
-  make platform="armv gles cortexa5 neon hardfloat"
-}
-
-make_target() {
   case $PROJECT in
     RPi2)
       make platform=rpi2
@@ -45,6 +40,9 @@ make_target() {
       ;;
     S812)
       make platform=armv7-neon-gles-hardfloat-cortex-a9
+      ;;
+    S905)
+      make platform=rpi3
       ;;
   esac
 }

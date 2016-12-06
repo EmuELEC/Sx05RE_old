@@ -61,7 +61,7 @@ diff -Naurp emulationstation-76c1538/es-core/src/platform.cpp emulationstation-7
 -#else
 -	return system("sudo shutdown -h now");
 -#endif
-+	return system("systemctl suspend");
++	return system("systemctl poweroff");
  }
  
  int runRestartCommand()

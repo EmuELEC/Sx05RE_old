@@ -8,7 +8,7 @@ PKG_VERSION="0.1"
 PKG_REV="1"
 PKG_ARCH="aarch64"
 PKG_LICENSE="OSS"
-PKG_SITE="https://github.com/kszaq/my-addons"
+PKG_SITE="http://www.alexelec.in.ua"
 PKG_URL=""
 PKG_DEPENDS_TARGET="toolchain"
 PKG_SECTION="tools"
@@ -60,6 +60,9 @@ makeinstall_target() {
 }
 
 post_install() {
+  # fix emustation.service
+  cp -f $ROOT/$PKG_DIR/system.d.opt/emustation.service $INSTALL/usr/lib/systemd/system/emustation.service
+
   enable_service tmp-assets.mount
   enable_service tmp-cores.mount
   enable_service tmp-database.mount

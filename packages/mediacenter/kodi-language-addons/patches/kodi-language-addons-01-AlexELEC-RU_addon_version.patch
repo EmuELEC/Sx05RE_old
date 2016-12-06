@@ -24,23 +24,6 @@ diff -Naurp kodi-language-addons-2ca2dfd/resource.language.ru_ru/resources/strin
  
  msgctxt "#12600"
  msgid "Weather"
-@@ -4410,12 +4410,12 @@ msgid "Quit"
- msgstr "Выход"
- 
- msgctxt "#13010"
--msgid "Hibernate"
--msgstr "Спящий режим"
-+msgid "Games"
-+msgstr "Игры"
- 
- msgctxt "#13011"
--msgid "Suspend"
--msgstr "Ждущий режим"
-+msgid "Switch to Android"
-+msgstr "Переключить в Android"
- 
- msgctxt "#13012"
- msgid "Exit"
 @@ -9018,8 +9018,8 @@ msgid "Custom shutdown timer"
  msgstr "Выключение по таймеру"
  
