@@ -8,4 +8,4 @@
   ADDON_VERSION="2.0"
 
 # ALEXELEC_BUILD: devel or release
-  ALEXELEC_BUILD="devel"
+  ALEXELEC_BUILD="release"
