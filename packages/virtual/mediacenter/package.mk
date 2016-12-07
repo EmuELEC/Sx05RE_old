@@ -46,6 +46,10 @@ PKG_AUTORECONF="no"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET pvr.vuplus"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET pvr.stalker"
 
+# kodi-binary-addons inputstream
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET inputstream.rtmp"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET inputstream.adaptive"
+
 # kodi-binary-addons visualization
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET visualization.spectrum"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET visualization.waveform"
