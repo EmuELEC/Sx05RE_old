@@ -53,6 +53,7 @@ else
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-picodrive"
 fi
 
-# tv services
+# dvb drivers
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET media_build"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET media_build_cc"
-  #PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET media_build"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET s2-liplianin"
