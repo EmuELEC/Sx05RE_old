@@ -1,6 +1,6 @@
 diff -Naurp aceproxy-26e79d1/aceproxy/aceconfig.py aceproxy-26e79d1-patch/aceproxy/aceconfig.py
 --- aceproxy-26e79d1/aceproxy/aceconfig.py	2016-08-23 13:29:03.000000000 +0300
-+++ aceproxy-26e79d1-patch/aceproxy/aceconfig.py	2016-10-18 13:26:35.000000000 +0300
++++ aceproxy-26e79d1-patch/aceproxy/aceconfig.py	2016-12-09 10:42:45.000000000 +0200
 @@ -30,7 +30,7 @@ class AceConfig(acedefconfig.AceDefConfi
      aceport = 62062
      # Ace Stream age parameter (LT_13, 13_17, 18_24, 25_34, 35_44, 45_54,
@@ -19,16 +19,22 @@ diff -Naurp aceproxy-26e79d1/aceproxy/aceconfig.py aceproxy-26e79d1-patch/acepro
      # VLC spawn timeout
      # Adjust this if you get error 'Cannot spawn VLC!'
      vlcspawntimeout = 5
-@@ -170,7 +170,7 @@ class AceConfig(acedefconfig.AceDefConfi
+@@ -165,12 +165,12 @@ class AceConfig(acedefconfig.AceDefConfi
+     # video stream delay.
+     # Set it to 30 or so.
+     # Works only with the newest versions of AceEngine!
+-    videoseekback = 0
++    videoseekback = 30
+     # Delay before closing Ace Stream connection when client disconnects
      # In seconds.
      videodestroydelay = 0
      # Pre-buffering timeout. In seconds.
 -    videotimeout = 40
-+    videotimeout = 120
++    videotimeout = 100
      #
      # Some video players (mostly STBs and Smart TVs) can generate dummy requests
      # to detect MIME-type or something before playing which Ace Stream handles badly.
-@@ -188,13 +188,13 @@ class AceConfig(acedefconfig.AceDefConfi
+@@ -188,14 +188,14 @@ class AceConfig(acedefconfig.AceDefConfi
      # Logging configuration
      #
      # Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
@@ -40,7 +46,9 @@ diff -Naurp aceproxy-26e79d1/aceproxy/aceconfig.py aceproxy-26e79d1-patch/acepro
      logdatefmt='%d.%m %H:%M:%S'
      # Full path to a log file
 -    logfile = None 
+-    
 +    logfile = '/var/log/aceproxy.log'
-     
++
      # This method is used to detect fake requests. Some players send such 
      # requests in order to detect the MIME type and/or check the stream availability.
+     @staticmethod
