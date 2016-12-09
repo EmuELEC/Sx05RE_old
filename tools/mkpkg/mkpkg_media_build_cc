@@ -1,0 +1,32 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+echo "getting sources..."
+  if [ ! -d media_build_cc.git ]; then
+    git clone https://bitbucket.org/CrazyCat/media_build.git media_build_cc.git
+  fi
+
+  cd media_build_cc.git
+    git pull
+    GIT_REV=`date +%Y%m%d`
+
+    make -C linux/ download
+    make -C linux/ untar
+  cd ..
+
+echo "copying sources..."
+  rm -rf media_build_cc-$GIT_REV
+  cp -R media_build_cc.git media_build_cc-$GIT_REV
+
+echo "cleaning sources..."
+  rm -rf media_build_cc-$GIT_REV/.git
+
+echo "packing sources..."
+  tar cvJf media_build_cc-$GIT_REV.tar.xz media_build_cc-$GIT_REV
+
+echo "remove temporary sourcedir..."
+  rm -rf media_build_cc-$GIT_REV
+  rm -rf media_build_cc.git

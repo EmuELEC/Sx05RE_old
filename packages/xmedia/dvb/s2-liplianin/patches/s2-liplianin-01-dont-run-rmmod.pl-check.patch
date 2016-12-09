@@ -1,0 +1,13 @@
+diff -Naurp linux-s2-liplianin-29/v4l/Makefile linux-s2-liplianin-29-patch/v4l/Makefile
+--- linux-s2-liplianin-29/v4l/Makefile	2013-04-27 14:52:02.000000000 +0300
++++ linux-s2-liplianin-29-patch/v4l/Makefile	2014-04-21 15:34:02.580416000 +0300
+@@ -49,9 +49,7 @@ endif	# TOPDIR
+ 
+ default:: prepare firmware
+ 	@echo Kernel build directory is $(OUTDIR)
+-	$(MAKE) -C ../linux apply_patches
+ 	$(MAKE) -C $(OUTDIR) SUBDIRS=$(PWD) $(MYCFLAGS) modules
+-	./scripts/rmmod.pl check
+ #	$(MAKE) checkpatch
+ 
+ mismatch:: prepare firmware

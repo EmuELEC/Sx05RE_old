@@ -1,0 +1,92 @@
+diff -Naurp s2-liplianin-v39.40/linux/drivers/media/dvb-core/dmxdev.c s2-liplianin-v39.40-patch/linux/drivers/media/dvb-core/dmxdev.c
+--- s2-liplianin-v39.40/linux/drivers/media/dvb-core/dmxdev.c	2015-11-03 14:23:04.000000000 +0200
++++ s2-liplianin-v39.40-patch/linux/drivers/media/dvb-core/dmxdev.c	2016-12-09 09:07:44.000000000 +0200
+@@ -1134,6 +1134,17 @@ static int dvb_demux_release(struct inod
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_COMPAT
++static long dvb_demux_compat_ioctl(struct file *filp,
++			unsigned int cmd, unsigned long args)
++{
++	unsigned long ret;
++	args = (unsigned long)compat_ptr(args);
++	ret = dvb_demux_ioctl(filp, cmd, args);
++	return ret;
++}
++#endif
++
+ static const struct file_operations dvb_demux_fops = {
+ 	.owner = THIS_MODULE,
+ 	.read = dvb_demux_read,
+@@ -1142,6 +1153,9 @@ static const struct file_operations dvb_
+ 	.release = dvb_demux_release,
+ 	.poll = dvb_demux_poll,
+ 	.llseek = default_llseek,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= dvb_demux_compat_ioctl,
++#endif
+ };
+ 
+ static struct dvb_device dvbdev_demux = {
+@@ -1203,6 +1217,18 @@ static unsigned int dvb_dvr_poll(struct
+ 	return mask;
+ }
+ 
++#ifdef CONFIG_COMPAT
++static long dvb_dvr_compat_ioctl(struct file *filp,
++			unsigned int cmd, unsigned long args)
++{
++	unsigned long ret;
++
++	args = (unsigned long)compat_ptr(args);
++	ret = dvb_dvr_ioctl(filp, cmd, args);
++	return ret;
++}
++#endif
++
+ static const struct file_operations dvb_dvr_fops = {
+ 	.owner = THIS_MODULE,
+ 	.read = dvb_dvr_read,
+@@ -1212,6 +1238,9 @@ static const struct file_operations dvb_
+ 	.release = dvb_dvr_release,
+ 	.poll = dvb_dvr_poll,
+ 	.llseek = default_llseek,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= dvb_dvr_compat_ioctl,
++#endif
+ };
+ 
+ static struct dvb_device dvbdev_dvr = {
+diff -Naurp s2-liplianin-v39.40/linux/drivers/media/dvb-core/dvb_frontend.c s2-liplianin-v39.40-patch/linux/drivers/media/dvb-core/dvb_frontend.c
+--- s2-liplianin-v39.40/linux/drivers/media/dvb-core/dvb_frontend.c	2015-11-03 14:23:04.000000000 +0200
++++ s2-liplianin-v39.40-patch/linux/drivers/media/dvb-core/dvb_frontend.c	2016-12-09 09:08:59.000000000 +0200
+@@ -2539,6 +2539,18 @@ static int dvb_frontend_release(struct i
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_COMPAT
++static long dvb_frontend_compat_ioctl(struct file *filp,
++			unsigned int cmd, unsigned long args)
++{
++	unsigned long ret;
++
++	args = (unsigned long)compat_ptr(args);
++	ret = dvb_generic_ioctl(filp, cmd, args);
++	return ret;
++}
++#endif
++
+ static const struct file_operations dvb_frontend_fops = {
+ 	.owner		= THIS_MODULE,
+ 	.unlocked_ioctl	= dvb_generic_ioctl,
+@@ -2546,6 +2558,9 @@ static const struct file_operations dvb_
+ 	.open		= dvb_frontend_open,
+ 	.release	= dvb_frontend_release,
+ 	.llseek		= noop_llseek,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= dvb_frontend_compat_ioctl,
++#endif
+ };
+ 
+ int dvb_frontend_suspend(struct dvb_frontend *fe)

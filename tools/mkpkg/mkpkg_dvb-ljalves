@@ -1,0 +1,54 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+# remove old ljalves files
+echo "removing old sources ..."
+rm -rf ljalves
+rm -rf ljalves-*
+
+################################################################################
+
+# media_build dl
+echo "getting media_build sources ..."
+  if [ ! -d media_build.git ]; then
+    #git clone --depth=1 https://github.com/ljalves/media_build.git ljalves/media_build
+    git clone --depth=1 git://linuxtv.org/media_build.git ljalves/media_build
+  fi
+
+echo "cleaning media_build sources ..."
+  rm -rf ljalves/media_build/.git
+
+################################################################################
+
+# ljalves tbs drivers dl
+echo "getting ljalves sources ... !!! huge !!!"
+  if [ ! -d linux_media.git ]; then
+    git clone --depth=1 https://github.com/ljalves/linux_media.git -b latest ljalves/media
+  fi
+
+  cd ljalves/media
+    git pull
+    GIT_REV=`git log -n1 --pretty=format:"%ad" --date=short`
+
+# remove unnessecary files
+  rm -rf Documentation
+  cd ../..
+
+echo "copying ljalves sources ..."
+  rm -rf ljalves-$GIT_REV
+  cp -R ljalves ljalves-$GIT_REV
+
+echo "cleaning ljalves sources ..."
+  rm -rf ljalves-$GIT_REV/media/.git
+
+################################################################################
+
+echo "packing sources ..."
+tar cvJf ljalves-$GIT_REV.tar.xz ljalves-$GIT_REV
+
+echo "remove temporary sourcedir ..."
+  rm -rf ljalves-$GIT_REV
+  rm -rf ljalves

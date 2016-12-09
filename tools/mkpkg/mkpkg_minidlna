@@ -1,0 +1,30 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+echo "getting sources..."
+  if [ ! -d minidlna.git ]; then
+    git clone git://git.code.sf.net/p/minidlna/git minidlna.git
+  fi
+
+  cd minidlna.git
+    git pull
+    GIT_REV=`git log -n1 --format=%h`
+  cd ..
+
+echo "copying sources..."
+  rm -rf minidlna-$GIT_REV
+  cp -R minidlna.git minidlna-$GIT_REV
+
+echo "cleaning sources..."
+  rm -rf minidlna-$GIT_REV/.git
+  rm minidlna-$GIT_REV/.gitignore
+
+echo "packing sources..."
+  tar cvJf minidlna-$GIT_REV.tar.xz minidlna-$GIT_REV
+
+echo "remove temporary sourcedir..."
+  rm -rf minidlna-$GIT_REV
+  rm -rf minidlna.git
