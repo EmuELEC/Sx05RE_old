@@ -45,5 +45,5 @@ post_install() {
   cp -Pa $INSTALL/lib/modules/$MOD_VER $INSTALL/lib/modules/$MOD_VER-mb
   mkdir -p $INSTALL/lib/modules/$MOD_VER-mb/updates/mb
   find $ROOT/$PKG_BUILD/v4l/ -name \*.ko -exec cp {} $INSTALL/lib/modules/$MOD_VER-mb/updates/mb \;
-  echo "Media_Build drivers version: $MEDIA_BUILD_VERSION" > $INSTALL/lib/modules/$MOD_VER-mb/updates/mb-drivers.txt
+  echo "Media_Build drivers version: $PKG_VERSION" > $INSTALL/lib/modules/$MOD_VER-mb/updates/mb-drivers.txt
 }
