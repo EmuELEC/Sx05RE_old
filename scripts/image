@@ -164,10 +164,37 @@ if [ -n "$DEVICE" -a -d "$PROJECT_DIR/$PROJECT/devices/$DEVICE/filesystem" ]; th
 fi
 
 # run depmod
-MODVER=$(basename $(ls -d $INSTALL/lib/modules/*))
-find $INSTALL/lib/modules/$MODVER/ -name *.ko | \
-  sed -e "s,$INSTALL/lib/modules/$MODVER/,," > $INSTALL/lib/modules/$MODVER/modules.order
-$ROOT/$TOOLCHAIN/bin/depmod -b $INSTALL $MODVER 2> /dev/null
+MODVER=`ls $BUILD/linux-*/.install_pkg/lib/modules`
+
+# move original modules dir
+mv -f $INSTALL/lib/modules/$MODVER $INSTALL/lib/modules/$MODVER-core
+ln -sf /storage/.modules/$MODVER $INSTALL/lib/modules/$MODVER
+
+# Core
+find $INSTALL/lib/modules/$MODVER-core/ -name *.ko | \
+  sed -e "s,$INSTALL/lib/modules/$MODVER-core/,," > $INSTALL/lib/modules/$MODVER-core/modules.order
+$ROOT/$TOOLCHAIN/bin/depmod -b $INSTALL $MODVER-core 2> /dev/null
+
+# Media_Build
+if [ -d "$INSTALL/lib/modules/$MODVER-mb" ]; then
+  find $INSTALL/lib/modules/$MODVER-mb/ -name *.ko | \
+    sed -e "s,$INSTALL/lib/modules/$MODVER-mb/,," > $INSTALL/lib/modules/$MODVER-mb/modules.order
+  $ROOT/$TOOLCHAIN/bin/depmod -b $INSTALL $MODVER-mb 2> /dev/null
+fi
+
+# Media_Build_CrazyCat
+if [ -d "$INSTALL/lib/modules/$MODVER-mbcc" ]; then
+  find $INSTALL/lib/modules/$MODVER-mbcc/ -name *.ko | \
+    sed -e "s,$INSTALL/lib/modules/$MODVER-mbcc/,," > $INSTALL/lib/modules/$MODVER-mbcc/modules.order
+  $ROOT/$TOOLCHAIN/bin/depmod -b $INSTALL $MODVER-mbcc 2> /dev/null
+fi
+
+# S2-liplianin
+if [ -d "$INSTALL/lib/modules/$MODVER-s2" ]; then
+  find $INSTALL/lib/modules/$MODVER-s2/ -name *.ko | \
+    sed -e "s,$INSTALL/lib/modules/$MODVER-s2/,," > $INSTALL/lib/modules/$MODVER-s2/modules.order
+  $ROOT/$TOOLCHAIN/bin/depmod -b $INSTALL $MODVER-s2 2> /dev/null
+fi
 
 # strip kernel modules
 if [ "$TARGET_KERNEL_ARCH" = "arm64" -a "$TARGET_ARCH" = "arm" ]; then

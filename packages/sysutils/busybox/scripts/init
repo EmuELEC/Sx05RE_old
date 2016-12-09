@@ -904,6 +904,47 @@
     do_reboot
   }
 
+  select_drivers() {
+    progress "Loading DVB modules"
+    rm -rf /sysroot/storage/.modules &>/dev/null
+
+    [ -f "/sysroot/storage/.cache/services/dvb-driver.conf" ] && . /sysroot/storage/.cache/services/dvb-driver.conf
+    CORE_VER=$(uname -r)
+
+    case "$DVB_DRIVERS" in
+      "MEDIA")             # Media_Build drivers
+          DRIVER="mb"
+       ;;
+      "MEDIA-CC")          # Media_Build drivers CrazyCat
+          DRIVER="mbcc"
+       ;;
+      "S2")                # S2-liplianin drivers
+          DRIVER="s2"
+       ;;
+      *)                   # Default Linux drivers CORE 
+          DRIVER="core"
+       ;;
+    esac
+
+    for corename in /sysroot/lib/modules/$CORE_VER-*; do
+      corename="${corename%%/}"
+      CORE_NAME=${corename##*/$CORE_VER-}
+      [ "$CORE_NAME" = "$DRIVER" ] && break
+    done
+
+    mkdir -p /sysroot/storage/.modules
+    ln -s /lib/modules/${CORE_VER}-$CORE_NAME /sysroot/storage/.modules/$CORE_VER
+
+    if [ ! -h "/sysroot/lib/modules/$CORE_VER" ]; then
+      echo ""
+      echo "NEVER TOUCH boot= in extlinux.conf / cmdline.txt!"
+      echo "If you don't know what you are doing,"
+      echo "your installation is now broken."
+      echo ""
+      StartProgress countdown "Normal startup in 30s... " 30 "NOW"
+    fi
+  }
+
   prepare_sysroot() {
     progress "Preparing system"
 
@@ -917,14 +958,7 @@
     mount --move /flash /sysroot/flash
     mount --move /storage /sysroot/storage
 
-    if [ ! -d "/sysroot/lib/modules/$(uname -r)/" -a -f "/sysroot/usr/lib/systemd/systemd" ]; then
-      echo ""
-      echo "NEVER TOUCH boot= in extlinux.conf / cmdline.txt!"
-      echo "If you don't know what you are doing,"
-      echo "your installation is now broken."
-      echo ""
-      StartProgress countdown "Normal startup in 60s... " 60 "NOW"
-    fi
+    select_drivers
 
     [ -f "/sysroot/usr/lib/systemd/systemd" ] || error "final_check" "Could not find systemd!"
   }
