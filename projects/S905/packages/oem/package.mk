@@ -33,7 +33,7 @@ post_install() {
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET vdr-all wicard"
 
 # tools
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET ImageMagick mc aml-vnc scan-s2 scan-m3u serviceref ioctl"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET ImageMagick mc aml-vnc scan-s2 scan-m3u serviceref"
 
 if [ "$TARGET_ARCH" = "aarch64" ]; then
   # 32bit libs
