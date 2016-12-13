@@ -4,7 +4,7 @@
 ################################################################################
 
 PKG_NAME="acephproxy"
-PKG_VERSION="e6a1d76"
+PKG_VERSION="882379b"
 PKG_REV="2"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
@@ -23,6 +23,10 @@ make_target() {
 
 makeinstall_target() {
   DESTDIR=$INSTALL ./install
+    cp $PKG_DIR/config/acephp-list.conf $INSTALL/usr/config/acephproxy/
+
+  mkdir -p $INSTALL/usr/bin
+    cp $PKG_DIR/scripts/* $INSTALL/usr/bin
 }
 
 post_install() {

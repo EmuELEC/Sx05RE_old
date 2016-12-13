@@ -7,6 +7,7 @@ ConditionPathExists=/storage/.cache/services/acephproxy.conf
 
 [Service]
 ExecStart=/bin/sh -c '/usr/bin/php /storage/.config/acephproxy/acePHP.php 2>/var/log/acephproxy.log'
+ExecStartPost=-/usr/bin/acephp-list.start
 TimeoutStopSec=5
 Restart=always
 RestartSec=2
