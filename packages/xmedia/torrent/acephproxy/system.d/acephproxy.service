@@ -1,0 +1,16 @@
+[Unit]
+Description=AcePHProxy server
+Requires=network-online.target
+After=network-online.target acestream.service
+Before=kodi.service
+ConditionPathExists=/storage/.cache/services/acephproxy.conf
+
+[Service]
+ExecStart=/bin/sh -c '/usr/bin/php /storage/.config/acephproxy/acePHP.php 2>/var/log/acephproxy.log'
+TimeoutStopSec=5
+Restart=always
+RestartSec=2
+StartLimitInterval=0
+
+[Install]
+WantedBy=kodi.target
