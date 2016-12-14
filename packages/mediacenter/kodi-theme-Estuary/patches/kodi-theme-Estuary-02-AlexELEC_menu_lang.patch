@@ -1,0 +1,32 @@
+diff -Naurp kodi-theme-Estuary-17.0-beta7-ad7b27a/language/resource.language.en_gb/strings.po kodi-theme-Estuary-17.0-beta7-ad7b27a-patch/language/resource.language.en_gb/strings.po
+--- kodi-theme-Estuary-17.0-beta7-ad7b27a/language/resource.language.en_gb/strings.po	2016-12-14 11:34:45.000000000 +0200
++++ kodi-theme-Estuary-17.0-beta7-ad7b27a-patch/language/resource.language.en_gb/strings.po	2016-12-14 12:14:12.000000000 +0200
+@@ -720,3 +720,13 @@ msgstr ""
+ msgctxt "#31161"
+ msgid "Numeric pad"
+ msgstr ""
++
++#: /xml/Settings.xml
++msgctxt "#31201"
++msgid "System"
++msgstr ""
++
++#: /xml/Settings.xml
++msgctxt "#31202"
++msgid "Advanced"
++msgstr ""
+diff -Naurp kodi-theme-Estuary-17.0-beta7-ad7b27a/language/resource.language.ru_ru/strings.po kodi-theme-Estuary-17.0-beta7-ad7b27a-patch/language/resource.language.ru_ru/strings.po
+--- kodi-theme-Estuary-17.0-beta7-ad7b27a/language/resource.language.ru_ru/strings.po	2016-12-14 11:34:45.000000000 +0200
++++ kodi-theme-Estuary-17.0-beta7-ad7b27a-patch/language/resource.language.ru_ru/strings.po	2016-12-14 12:15:15.000000000 +0200
+@@ -467,3 +467,11 @@ msgstr "Категории"
+ msgctxt "#31150"
+ msgid "Repository"
+ msgstr "Репозиторий"
++
++msgctxt "#31201"
++msgid "System"
++msgstr "Системные"
++
++msgctxt "#31202"
++msgid "Advanced"
++msgstr "Расширенные"
