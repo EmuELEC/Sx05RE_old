@@ -4,7 +4,7 @@
 ################################################################################
 
 PKG_NAME="acephproxy"
-PKG_VERSION="882379b"
+PKG_VERSION="edee465"
 PKG_REV="2"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
