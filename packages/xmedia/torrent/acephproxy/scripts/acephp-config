@@ -11,4 +11,4 @@ CONF_FILE="/storage/.config/acephproxy/acephp-list.conf"
 DIR=$(echo $TORRENTS_IN_DIR | sed 's/\//\\\//g')
 
 SETUP_FILE="/storage/.config/acephproxy/res/.acePHProxy.settings"
-sed -i -e "s/\"basedir\": .*/\"basedir\": \"$DIR\/\",/" $SETUP_FILE
+sed -i -e "s/\"basedir\": .*/\"basedir\": \"$DIR\/\"/" $SETUP_FILE
