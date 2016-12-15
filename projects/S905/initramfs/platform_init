@@ -83,5 +83,5 @@ echo 2 > /proc/irq/231/smp_affinity
 # eth0 to CPU3
 echo 8 > /proc/irq/40/smp_affinity
 
-# Keep at least 64M RAM free
-echo 65535 > /proc/sys/vm/extra_free_kbytes
+# Keep at least 128M RAM free
+echo 131071 > /proc/sys/vm/extra_free_kbytes

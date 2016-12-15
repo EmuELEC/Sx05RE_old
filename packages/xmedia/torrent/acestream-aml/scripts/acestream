@@ -30,6 +30,17 @@ if [ -f $CHROOT_DIR/acestream-user.conf ]; then
   fi
 fi
 
+if [ "$ACE_CACHE_TYPE" == "memory" ]; then
+  CACHE_DIR="$CHROOT_DIR/media/acecache/.acestream_cache"
+  CLEAN_LOCK_FILE="/var/lock/aceclean.lock"
+  touch $CLEAN_LOCK_FILE
+  while true; do
+    [ ! -f "$CLEAN_LOCK_FILE" ] && break
+    sleep 60
+    rm -f $CACHE_DIR/*[^\.lock]
+  done &
+fi
+
 [ "$ACE_DEBUG" == "1" ] && ACE_ARG="$ACE_ARG --debug-profile --log-debug 1 --log-modules root:D"
 
 /usr/bin/acestream.start --client-console --cache-dir /media/acecache --state-dir /media/acecache $ACE_ARG

@@ -6,11 +6,14 @@
 
 SERVICE_DIR="/storage/.cache/services"
 CHROOT_DIR="/storage/.config/acestream"
+CLEAN_LOCK_FILE="/var/lock/aceclean.lock"
 
 [ -f $SERVICE_DIR/acestream.conf ] && . $SERVICE_DIR/acestream.conf
 
 pkill -9 -f "/system/data/data/org.acestream.engine/files/python/bin/python" &>/dev/null
 pkill -9 -f "/system/bin/acestream.sh" &>/dev/null
+
+rm -f $CLEAN_LOCK_FILE
 
 [ "$ACE_CLEAN_CACHE" == "1" ] && rm -fR $CHROOT_DIR/media/acecache &>/dev/null
 
