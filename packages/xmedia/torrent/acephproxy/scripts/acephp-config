@@ -1,0 +1,14 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+CONF_FILE="/storage/.config/acephproxy/acephp-list.conf"
+[ -f "$CONF_FILE" ] && . $CONF_FILE
+
+[ -z "$TORRENTS_IN_DIR" ] && TORRENTS_IN_DIR="/storage/torrents"
+DIR=$(echo $TORRENTS_IN_DIR | sed 's/\//\\\//g')
+
+SETUP_FILE="/storage/.config/acephproxy/res/.acePHProxy.settings"
+sed -i -e "s/\"basedir\": .*/\"basedir\": \"$DIR\/\",/" $SETUP_FILE
