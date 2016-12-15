@@ -37,7 +37,7 @@ if [ "$ACE_CACHE_TYPE" == "memory" ]; then
   while true; do
     [ ! -f "$CLEAN_LOCK_FILE" ] && break
     sleep 60
-    rm -f $CACHE_DIR/*[^\.lock]
+    find $CACHE_DIR ! -name '.lock' -type f -print0 | xargs rm -f
   done &
 fi
 
