@@ -1,0 +1,16 @@
+diff --git a/drivers/amlogic/video_dev/amlvideo.c b/drivers/amlogic/video_dev/amlvideo.c
+--- a/drivers/amlogic/video_dev/amlvideo.c	2016-12-13 14:12:38.512373437 +0100
++++ b/drivers/amlogic/video_dev/amlvideo.c	2016-12-13 14:14:21.752375375 +0100
+@@ -337,6 +337,12 @@
+ 						NULL);
+ 		}
+ 	}
++        else if (type == VFRAME_EVENT_PROVIDER_FR_HINT) {
++            vf_notify_receiver(PROVIDER_NAME,VFRAME_EVENT_PROVIDER_FR_HINT,data);
++        }
++        else if (type == VFRAME_EVENT_PROVIDER_FR_END_HINT) {
++            vf_notify_receiver(PROVIDER_NAME,VFRAME_EVENT_PROVIDER_FR_END_HINT,data);
++        }
+ 	return 0;
+ }
+ 
