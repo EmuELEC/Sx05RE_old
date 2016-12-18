@@ -1,0 +1,41 @@
+diff -Naurp aceproxy-26e79d1/aceproxy/aceconfig.py aceproxy-26e79d1-patch/aceproxy/aceconfig.py
+--- aceproxy-26e79d1/aceproxy/aceconfig.py	2016-12-18 09:20:04.000000000 +0200
++++ aceproxy-26e79d1-patch/aceproxy/aceconfig.py	2016-12-18 09:24:11.000000000 +0200
+@@ -146,31 +146,31 @@ class AceConfig(acedefconfig.AceDefConfi
+     # transcodecmd['default'] = 'ffmpeg -i - -c:a copy -c:v copy -f mpegts -'.split()
+     
+     # ----------------------------------------------------
+-    videodelay = 0
++    videodelay = 5
+     # Obey PAUSE and RESUME commands from Engine
+     # (stops sending data to client, should prevent annoying buffering)
+     # !!!
+     # PLEASE set this to False if you use VLC
+     # !!!
+-    videoobey = False
++    videoobey = True
+     # Stream send delay after PAUSE/RESUME commands (works only if option
+     # above is enabled)
+     # !!!
+     # PLEASE set this to 0 if you use VLC
+     # !!!
+-    videopausedelay = 0
++    videopausedelay = 3
+     # Seek back feature.
+     # Seeks stream back for specified amount of seconds.
+     # Greatly helps fighing AceSteam lags, but introduces
+     # video stream delay.
+     # Set it to 30 or so.
+     # Works only with the newest versions of AceEngine!
+-    videoseekback = 30
++    videoseekback = 60
+     # Delay before closing Ace Stream connection when client disconnects
+     # In seconds.
+-    videodestroydelay = 0
++    videodestroydelay = 1
+     # Pre-buffering timeout. In seconds.
+-    videotimeout = 100
++    videotimeout = 60
+     #
+     # Some video players (mostly STBs and Smart TVs) can generate dummy requests
+     # to detect MIME-type or something before playing which Ace Stream handles badly.
