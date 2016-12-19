@@ -35,4 +35,4 @@ echo "packing sources..."
 
 echo "remove temporary sourcedir..."
   rm -rf kodi-language-addons.git
-  rm -rf kodi-language-addons-$GIT_REV
+  #rm -rf kodi-language-addons-$GIT_REV

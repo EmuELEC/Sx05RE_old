@@ -5,8 +5,8 @@ diff -Naurp kodi-language-addons-2ca2dfd/resource.language.ru_ru/addon.xml kodi-
  <?xml version="1.0" encoding="UTF-8"?>
  <addon
    id="resource.language.ru_ru"
--  version="3.0.9"
-+  version="4.0.9"
+-  version="3.0.10"
++  version="4.0.10"
    name="Russian"
    provider-name="Team Kodi">
    <requires>
