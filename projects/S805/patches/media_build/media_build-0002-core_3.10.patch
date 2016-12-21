@@ -1,0 +1,24 @@
+diff -Naurp media_build-ef3357d/linux/drivers/media/i2c/s5c73m3/s5c73m3-spi.c media_build-ef3357d-patch/linux/drivers/media/i2c/s5c73m3/s5c73m3-spi.c
+--- media_build-ef3357d/linux/drivers/media/i2c/s5c73m3/s5c73m3-spi.c	2016-02-13 12:55:37.000000000 +0200
++++ media_build-ef3357d-patch/linux/drivers/media/i2c/s5c73m3/s5c73m3-spi.c	2016-04-06 10:19:14.000000000 +0300
+@@ -31,7 +31,7 @@ static const struct of_device_id s5c73m3
+ 	{ .compatible = "samsung,s5c73m3" },
+ 	{ }
+ };
+-MODULE_DEVICE_TABLE(of, s5c73m3_spi_ids);
++MODULE_DEVICE_TABLE(of_s5c73m3, s5c73m3_spi_ids);
+ 
+ enum spi_direction {
+ 	SPI_DIR_RX,
+diff -Naurp media_build-ef3357d/v4l/scripts/make_config_compat.pl media_build-ef3357d-patch/v4l/scripts/make_config_compat.pl
+--- media_build-ef3357d/v4l/scripts/make_config_compat.pl	2016-04-06 09:41:00.000000000 +0300
++++ media_build-ef3357d-patch/v4l/scripts/make_config_compat.pl	2016-04-06 10:34:52.000000000 +0300
+@@ -664,7 +664,7 @@ sub check_other_dependencies()
+ 	check_files_for_func("DMA_ATTR_SKIP_CPU_SYNC", "NEED_DMA_ATTR_SKIP_CPU_SYNC", "include/linux/dma-attrs.h");
+ 	check_files_for_func("sign_extend32", "NEED_SIGN_EXTEND32", "include/linux/bitops.h");
+ 	check_files_for_func("netdev_dbg", "NEED_NETDEV_DBG", "include/linux/netdevice.h");
+-	check_files_for_func("writel_relaxed", "NEED_WRITEL_RELAXED", "include/asm-generic/io.h");
++	check_files_for_func("writel_relaxed", "NEED_WRITEL_RELAXED", "arch/arm/include/asm/io.h");
+ 	check_files_for_func("get_user_pages_unlocked", "NEED_GET_USER_PAGES_UNLOCKED", "include/linux/mm.h");
+ 	check_files_for_func("pr_warn_once", "NEED_PR_WARN_ONCE", "include/linux/printk.h");
+ 	check_files_for_func("DIV_ROUND_CLOSEST_ULL", "NEED_DIV_ROUND_CLOSEST_ULL", "include/linux/kernel.h");

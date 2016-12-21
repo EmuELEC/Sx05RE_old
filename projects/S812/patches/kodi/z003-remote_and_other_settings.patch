@@ -1,17 +1,6 @@
 diff -Naurp kodi-17.0-beta5-e92818a/system/keymaps/keyboard.xml kodi-17.0-beta5-e92818a-patch/system/keymaps/keyboard.xml
 --- kodi-17.0-beta5-e92818a/system/keymaps/keyboard.xml	2016-11-03 10:25:41.000000000 +0200
 +++ kodi-17.0-beta5-e92818a-patch/system/keymaps/keyboard.xml	2016-11-03 10:47:20.000000000 +0200
-@@ -61,8 +61,8 @@
-       <c mod="longpress">Menu</c>
-       <space>Pause</space>
-       <x>Stop</x>
--      <period>SkipNext</period>
--      <comma>SkipPrevious</comma>
-+      <period>PageDown</period>
-+      <comma>PageUp</comma>
-       <tab>FullScreen</tab>
-       <printscreen>Screenshot</printscreen>
-       <s mod="ctrl">Screenshot</s>
 @@ -357,8 +357,8 @@
        <down mod="longpress">NextSubtitle</down>
        <left mod="alt">PlayerControl(tempodown)</left>

@@ -4,25 +4,42 @@
 #      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
 ################################################################################
 
-hdmimode=720p
+hdmimode="1080p50hz"
 
 # Parse command line arguments
 for arg in $(cat /proc/cmdline); do
-  case $arg in
+  case ${arg} in
     hdmitx=*)
-      hdmitx="${arg#*=}"
+      hdmitx=${arg#*=}
       ;;
     hdmimode=*)
-      hdmimode="${arg#*=}"
+      hdmimode=${arg#*=}
       ;;
-    bootfromsd*)
-      bootfromsd=1
+    bootfrom*)
+      bootfromext=1
       ;;
-    bootfromusb*)
-      bootfromusb=1
+    BOOT_IMAGE=*)
+      BOOT_IMAGE=${arg#*=}
+      ;;
+    boot=*)
+      boot=${arg#*=}
+      ;;
+    disk=*)
+      disk=${arg#*=}
       ;;
   esac
 done
+
+# Add information where to run AlexELEC from
+if [ -z "$BOOT_IMAGE" -o -z "$boot" -o -z "$disk" ]; then
+  cmdline=$(cat /proc/cmdline)
+  if [ -n "$bootfromext" ]; then
+    cmdline="$cmdline BOOT_IMAGE=kernel.img boot=LABEL=ALEXELEC disk=LABEL=ALEXELEC_DISK"
+  else
+    cmdline="$cmdline BOOT_IMAGE=/dev/boot boot=/dev/system disk=/dev/data"
+  fi
+  echo "$cmdline" > /proc/cmdline
+fi
 
 echo "$hdmimode" > /sys/class/display/mode
 
@@ -55,22 +72,9 @@ esac
 echo rm default > /sys/class/vfm/map
 echo add default decoder ppmgr deinterlace amvideo > /sys/class/vfm/map
 
-cmdline=$(cat /proc/cmdline)
-
-# Add information where to run AlexELEC from
-if [ -n "$bootfromsd" ]; then
-  cmdline="$cmdline BOOT_IMAGE=kernel.img boot=/dev/mmcblk0p1 disk=/dev/mmcblk0p2"
-elif [ -n "$bootfromusb" ]; then
-  cmdline="$cmdline BOOT_IMAGE=kernel.img boot=LABEL=ALEXELEC disk=LABEL=ALEXELEC_DISK"
-else
-  cmdline="$cmdline BOOT_IMAGE=/dev/boot boot=/dev/system disk=/dev/data"
-fi
-
-echo "$cmdline" > /proc/cmdline
-
 for part in /sys/block/*/queue/add_random; do
   echo 0 > "$part"
 done
 
-echo 1-2 > /proc/irq/62/smp_affinity_list
-echo 2-3 > /proc/irq/63/smp_affinity_list
+# eth0 to CPU3
+echo 8 > /proc/irq/40/smp_affinity
