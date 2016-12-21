@@ -75,6 +75,3 @@ echo add default decoder ppmgr deinterlace amvideo > /sys/class/vfm/map
 for part in /sys/block/*/queue/add_random; do
   echo 0 > "$part"
 done
-
-# eth0 to CPU3
-echo 8 > /proc/irq/40/smp_affinity
