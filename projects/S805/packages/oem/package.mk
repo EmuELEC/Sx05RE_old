@@ -26,11 +26,15 @@ post_install() {
 # services net
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET acestream-aml"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET aceproxy"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET acephproxy"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET transmission"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET minidlna"
 
 # tv services
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET vdr-all wicard"
+
+# tools
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET ImageMagick mc aml-vnc scan-s2 scan-m3u serviceref"
 
 # games
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET emulationstation retroarch"
@@ -45,5 +49,7 @@ post_install() {
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-nestopia"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-picodrive"
 
-# tools
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET ImageMagick mc aml-vnc scan-s2 scan-m3u serviceref"
+# dvb drivers
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET media_build"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET media_build_cc"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET s2-liplianin"
