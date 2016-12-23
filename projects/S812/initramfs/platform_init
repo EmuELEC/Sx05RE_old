@@ -9,9 +9,6 @@ hdmimode="1080p50hz"
 # Parse command line arguments
 for arg in $(cat /proc/cmdline); do
   case ${arg} in
-    hdmitx=*)
-      hdmitx=${arg#*=}
-      ;;
     hdmimode=*)
       hdmimode=${arg#*=}
       ;;
@@ -42,11 +39,6 @@ if [ -z "$BOOT_IMAGE" -o -z "$boot" -o -z "$disk" ]; then
 fi
 
 echo "$hdmimode" > /sys/class/display/mode
-
-# Force enable CEC if configuration parameter not present or empty
-if [ -z "$hdmitx" ]; then
-  echo 0xf > /sys/class/amhdmitx/amhdmitx0/cec_config
-fi
 
 # Enable framebuffer device
 echo 0 > /sys/class/graphics/fb0/blank
