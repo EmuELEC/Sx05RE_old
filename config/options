@@ -18,9 +18,9 @@ fi
 
 # determines DEVICE, if not forced by user
 if [ -z "$DEVICE" ]; then
-  [ "$PROJECT" = "S805" ] && DEVICE="VANDER"
+  [ "$PROJECT" = "S805" ] && DEVICE="TX1"
   [ "$PROJECT" = "S812" ] && DEVICE="Qintex"
-  [ "$PROJECT" = "S905" ] && DEVICE="X96"
+  [ "$PROJECT" = "S905" ] && DEVICE="T95N"
 else
   DEVICE="$DEVICE"
 fi

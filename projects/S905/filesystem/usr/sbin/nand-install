@@ -7,6 +7,7 @@
 IMAGE_KERNEL="/flash/kernel.img"
 IMAGE_SYSTEM="/flash/SYSTEM"
 IMAGE_DTB="/flash/dtb.img"
+IMAGE_LOGO="/usr/share/bootloader/logo.img"
 BACKUP_DATE=$(date +%Y%m%d%H%M%S)
 
 install_to_nand() {
@@ -24,17 +25,31 @@ install_to_nand() {
     mkdir -p /tmp/system
 
     mount -o rw,remount /flash
-    if [ -e /dev/dtb ] ; then
-      echo -n "Backing up device tree..."
-      dd if="/dev/dtb" of="/flash/dtb$BACKUP_DATE.img" status=none && sync
-      echo "done."
-    fi
 
-    if [ -e /dev/recovery ] ; then
-      echo -n "Backing up recovery partition..."
-      dd if="/dev/recovery" of="/flash/recovery$BACKUP_DATE.img" bs=64K status=none && sync
-      echo "done."
-    fi
+    read -p "Backup NAND to SD card? [Y/n] " choice
+    case "$choice" in
+      [nN]*)
+        ;;
+      *)
+        if [ -e /dev/dtb ] ; then
+          echo -n "Backing up device tree..."
+          dd if="/dev/dtb" of="/flash/dtb-$BACKUP_DATE.img" status=none && sync
+          echo "done."
+        fi
+
+        if [ -e /dev/recovery ] ; then
+          echo -n "Backing up recovery partition..."
+          dd if="/dev/recovery" of="/flash/recovery-$BACKUP_DATE.img" bs=64K status=none && sync
+          echo "done."
+        fi
+
+        if [ -e /dev/logo -a -e $IMAGE_LOGO ] ; then
+          echo -n "Backing up logo partition..."
+          dd if="/dev/logo" of="/flash/logo-$BACKUP_DATE.img" status=none && sync
+          echo "done."
+        fi
+        ;;
+    esac
 
     echo -n "Writing kernel image..."
     dd if="$IMAGE_KERNEL" of="/dev/boot" bs=64K status=none && sync
@@ -57,22 +72,45 @@ install_to_nand() {
       echo "done."
     fi
 
+    if [ -f $IMAGE_LOGO ] ; then
+      echo -n "Writing logo image..."
+      dd if="$IMAGE_LOGO" of="/dev/logo" status=none && sync
+      echo "done."
+    fi
+
     echo -n "Formatting DATA partition..."
     mke2fs -F -q -t ext4 -m 0 /dev/data > /dev/null
     e2fsck -n /dev/data &> /dev/null
     echo "done."
 
-    echo "All done! Rebooting in 5s..."
-    sleep 5
-    nand-reboot
+    read -p "Do you want to copy your user data to internal data partition? [Y/n] " choice
+    case "$choice" in
+      [nN]*)
+        ;;
+      *)
+        echo -n "Stopping FS4K..."
+        systemctl stop kodi
+        echo "done."
+        echo "Copying user data..."
+        mkdir -p /tmp/data
+        mount -o rw /dev/data /tmp/data
+        cp -av /storage/. /tmp/data/
+        echo -n "Restarting FS4K..."
+        systemctl start kodi
+        echo "done."
+        ;;
+    esac
+
+    echo "All done! You can now continue using your FS4K system or type \"nand-reboot\" to reboot from internal memory."
+    echo "WARNING: If your internal memory layout is different from standard Amlogic, you have to reboot and perform this operation again!"
 
   else
-    echo "No AlexELEC image found on /flash! Exiting..."
+    echo "No FS4K image found on /flash! Exiting..."
   fi
 }
 
 echo "This script will erase BOOT, SYSTEM, DATA and DTB on your device"
-echo "and install AlexELEC that you booted from SD card/USB drive."
+echo "and install FS4K that you booted from SD card/USB drive."
 echo ""
 echo "It will create a backup of device tree and recovery partition on your boot media."
 echo ""

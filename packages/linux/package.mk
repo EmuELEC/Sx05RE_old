@@ -26,22 +26,6 @@ case "$LINUX" in
     PKG_URL="https://github.com/LibreELEC/linux-amlogic/archive/$PKG_VERSION.tar.gz"
     PKG_SOURCE_DIR="$PKG_NAME-amlogic-$PKG_VERSION*"
     ;;
-  imx6)
-    PKG_VERSION="3.14-mx6-sr"
-    PKG_COMMIT="4386797"
-    PKG_SOURCE_DIR="$PKG_NAME-$PKG_VERSION-$PKG_COMMIT"
-    PKG_SOURCE_NAME="$PKG_SOURCE_DIR.tar.xz"
-    PKG_URL="$DISTRO_SRC/$PKG_SOURCE_NAME"
-    PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET imx6-status-led imx6-soc-fan"
-    ;;
-  imx6-4.4-xbian)
-    PKG_VERSION="4.4-xbian"
-    PKG_COMMIT="20160821-f14907b"
-    PKG_SOURCE_DIR="$PKG_NAME-$PKG_VERSION-$PKG_COMMIT"
-    PKG_SOURCE_NAME="$PKG_SOURCE_DIR.tar.xz"
-    PKG_URL="$DISTRO_SRC/$PKG_SOURCE_NAME"
-    PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET imx6-status-led imx6-soc-fan irqbalanced"
-    ;;
   custom)
     PKG_VERSION="$KERNEL_VERSION"
     PKG_URL="$KERNEL_URL"
