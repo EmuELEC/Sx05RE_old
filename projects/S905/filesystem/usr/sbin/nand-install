@@ -88,29 +88,29 @@ install_to_nand() {
       [nN]*)
         ;;
       *)
-        echo -n "Stopping FS4K..."
+        echo -n "Stopping Kodi..."
         systemctl stop kodi
         echo "done."
         echo "Copying user data..."
         mkdir -p /tmp/data
         mount -o rw /dev/data /tmp/data
         cp -av /storage/. /tmp/data/
-        echo -n "Restarting FS4K..."
+        echo -n "Restarting Kodi..."
         systemctl start kodi
         echo "done."
         ;;
     esac
 
-    echo "All done! You can now continue using your FS4K system or type \"nand-reboot\" to reboot from internal memory."
+    echo "All done! You can now continue using your AlexELEC system or type \"nand-reboot\" to reboot from internal memory."
     echo "WARNING: If your internal memory layout is different from standard Amlogic, you have to reboot and perform this operation again!"
 
   else
-    echo "No FS4K image found on /flash! Exiting..."
+    echo "No AlexELEC image found on /flash! Exiting..."
   fi
 }
 
 echo "This script will erase BOOT, SYSTEM, DATA and DTB on your device"
-echo "and install FS4K that you booted from SD card/USB drive."
+echo "and install AlexELEC that you booted from SD card/USB drive."
 echo ""
 echo "It will create a backup of device tree and recovery partition on your boot media."
 echo ""
