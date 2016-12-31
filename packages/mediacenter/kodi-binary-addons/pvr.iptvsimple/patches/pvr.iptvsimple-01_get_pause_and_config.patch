@@ -5,8 +5,8 @@ diff -Naurp pvr.iptvsimple-adee8a7/pvr.iptvsimple/addon.xml.in pvr.iptvsimple-ad
  <?xml version="1.0" encoding="UTF-8"?>
  <addon
    id="pvr.iptvsimple"
--  version="2.4.6"
-+  version="3.4.6"
+-  version="2.4.7"
++  version="3.4.7"
    name="PVR IPTV Simple Client"
 -  provider-name="nightik">
 +  provider-name="nightik (Alex@ELEC)">
@@ -17,7 +17,7 @@ diff -Naurp pvr.iptvsimple-adee8a7/pvr.iptvsimple/changelog.txt pvr.iptvsimple-a
 --- pvr.iptvsimple-adee8a7/pvr.iptvsimple/changelog.txt	2016-10-11 12:45:04.000000000 +0300
 +++ pvr.iptvsimple-adee8a7-patch/pvr.iptvsimple/changelog.txt	2016-11-03 09:41:36.000000000 +0200
 @@ -1,3 +1,6 @@
-+v3.4.6
++v3.4.7
 +- For Alex@ELEC: add pause and config.
 +
  v2.4.4
