@@ -366,21 +366,22 @@ post_makeinstall_target() {
   mkdir -p $INSTALL/usr/lib/python$PYTHON_VERSION/site-packages/kodi
     cp -R tools/EventClients/lib/python/* $INSTALL/usr/lib/python$PYTHON_VERSION/site-packages/kodi
 
-  mkdir -p $INSTALL/usr/share/kodi/config
-    cp $PKG_DIR/config/guisettings.xml $INSTALL/usr/share/kodi/config
-    cp $PKG_DIR/config/sources.xml $INSTALL/usr/share/kodi/config
-
 # install project specific configs
+  mkdir -p $INSTALL/usr/share/kodi/config
     if [ -n "$DEVICE" -a -f $PROJECT_DIR/$PROJECT/devices/$DEVICE/kodi/guisettings.xml ]; then
-      cp -R $PROJECT_DIR/$PROJECT/devices/$DEVICE/kodi/guisettings.xml $INSTALL/usr/share/kodi/config
+      cp $PROJECT_DIR/$PROJECT/devices/$DEVICE/kodi/guisettings.xml $INSTALL/usr/share/kodi/config
     elif [ -f $PROJECT_DIR/$PROJECT/kodi/guisettings.xml ]; then
-      cp -R $PROJECT_DIR/$PROJECT/kodi/guisettings.xml $INSTALL/usr/share/kodi/config
+      cp $PROJECT_DIR/$PROJECT/kodi/guisettings.xml $INSTALL/usr/share/kodi/config
+    else
+      cp $PKG_DIR/config/guisettings.xml $INSTALL/usr/share/kodi/config
     fi
 
     if [ -n "$DEVICE" -a -f $PROJECT_DIR/$PROJECT/devices/$DEVICE/kodi/sources.xml ]; then
-      cp -R $PROJECT_DIR/$PROJECT/devices/$DEVICE/kodi/sources.xml $INSTALL/usr/share/kodi/config
+      cp $PROJECT_DIR/$PROJECT/devices/$DEVICE/kodi/sources.xml $INSTALL/usr/share/kodi/config
     elif [ -f $PROJECT_DIR/$PROJECT/kodi/sources.xml ]; then
-      cp -R $PROJECT_DIR/$PROJECT/kodi/sources.xml $INSTALL/usr/share/kodi/config
+      cp $PROJECT_DIR/$PROJECT/kodi/sources.xml $INSTALL/usr/share/kodi/config
+    else
+      cp $PKG_DIR/config/sources.xml $INSTALL/usr/share/kodi/config
     fi
 
   mkdir -p $INSTALL/usr/share/kodi/system/
