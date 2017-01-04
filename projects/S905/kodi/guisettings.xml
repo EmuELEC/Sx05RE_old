@@ -46,40 +46,8 @@
         <trafficadvisoryvolume default="true">10</trafficadvisoryvolume>
     </pvrplayback>
     <videoplayer>
-        <adjustrefreshrate default="true">0</adjustrefreshrate>
         <autoplaynextitem>false</autoplaynextitem>
-        <errorinaspect default="true">0</errorinaspect>
-        <hqscalers default="true">20</hqscalers>
-        <preferdefaultflag default="true">true</preferdefaultflag>
-        <prefervaapirender default="true">true</prefervaapirender>
-        <quitstereomodeonstop default="true">true</quitstereomodeonstop>
-        <rendermethod default="true">0</rendermethod>
-        <seekdelay default="true">750</seekdelay>
-        <seeksteps default="true">-600,-300,-180,-60,-30,-10,10,30,60,180,300,600</seeksteps>
-        <stereoscopicplaybackmode default="true">0</stereoscopicplaybackmode>
-        <stretch43 default="true">4</stretch43>
-        <teletextenabled default="true">false</teletextenabled>
-        <teletextscale default="true">true</teletextscale>
-        <useamcodec default="true">true</useamcodec>
-        <useamcodech264>800</useamcodech264>
         <useamcodecmpeg2>800</useamcodecmpeg2>
-        <useamcodecmpeg4 default="true">800</useamcodecmpeg4>
-        <usedisplayasclock default="true">false</usedisplayasclock>
-        <usedxva2 default="true">true</usedxva2>
-        <usemediacodec default="true">true</usemediacodec>
-        <usemediacodecsurface default="true">true</usemediacodecsurface>
-        <useomx default="true">true</useomx>
-        <useomxplayer default="true">true</useomxplayer>
-        <usevaapi default="true">true</usevaapi>
-        <usevaapimpeg2 default="true">true</usevaapimpeg2>
-        <usevaapimpeg4 default="true">true</usevaapimpeg4>
-        <usevaapivc1 default="true">true</usevaapivc1>
-        <usevdpau default="true">true</usevdpau>
-        <usevdpaumixer default="true">true</usevdpaumixer>
-        <usevdpaumpeg2 default="true">true</usevdpaumpeg2>
-        <usevdpaumpeg4 default="true">false</usevdpaumpeg4>
-        <usevdpauvc1 default="true">true</usevdpauvc1>
-        <usevtb default="true">true</usevtb>
     </videoplayer>
     <weather>
         <addon>weather.yahoo</addon>
