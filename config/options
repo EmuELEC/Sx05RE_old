@@ -2,7 +2,7 @@
   export LC_ALL=C
 
 # determines DISTRO, if not forced by user
-# default is LibreELEC
+# default is AlexELEC
 if [ -z "$DISTRO" ]; then
   DISTRO="AlexELEC"
 else
@@ -11,14 +11,14 @@ fi
 
 # determines PROJECT, if not forced by user (S805, S812, S905)
 if [ -z "$PROJECT" ]; then
-  PROJECT="S905"
+  PROJECT="S805"
 else
   PROJECT="$PROJECT"
 fi
 
 # determines DEVICE, if not forced by user
 if [ -z "$DEVICE" ]; then
-  [ "$PROJECT" = "S805" ] && DEVICE="TX1"
+  [ "$PROJECT" = "S805" ] && DEVICE="VANDER"
   [ "$PROJECT" = "S812" ] && DEVICE="Qintex"
   [ "$PROJECT" = "S905" ] && DEVICE="T95N"
 else

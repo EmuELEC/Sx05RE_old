@@ -4,7 +4,7 @@
 ################################################################################
 
 PKG_NAME="kodi"
-PKG_VERSION="17.0-rc3-20bb734"
+PKG_VERSION="17.0-rc3-fdcf55d"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
