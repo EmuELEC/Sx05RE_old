@@ -1,7 +1,7 @@
 From f35b302861b90fb25acad6ea3430e95a58ac394e Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Fri, 18 Nov 2016 14:39:30 +0100
-Subject: [PATCH 01/29] sync kodi clock to AML clock
+Subject: [PATCH 01/30] sync kodi clock to AML clock
 
 ---
  .../cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 219 +++++++++++----------
@@ -922,7 +922,7 @@ index 828f584a..bbef504 100644
 From 62209dbd993a5dfe1dc5ee6083c061bbc781ff7f Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Fri, 18 Nov 2016 18:59:35 +0100
-Subject: [PATCH 02/29] Increase size of render buffers (4)
+Subject: [PATCH 02/30] Increase size of render buffers (4)
 
 ---
  xbmc/cores/VideoPlayer/VideoRenderers/HwDecRender/RendererAML.h | 2 +-
@@ -945,7 +945,7 @@ index bbef504..0d9f126 100644
 From d4742523c14dbed5724e80c5160334cf09cfedc7 Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Fri, 18 Nov 2016 21:38:32 +0100
-Subject: [PATCH 03/29] Limit timesize to be never > 2.0
+Subject: [PATCH 03/30] Limit timesize to be never > 2.0
 
 ---
  xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 2 +-
@@ -968,7 +968,7 @@ index 0ab8567..56884af 100644
 From 514370bfd06881cc972ebd7a6f29c1948f12c91c Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Sat, 19 Nov 2016 20:47:47 +0100
-Subject: [PATCH 04/29] sleep / vfs
+Subject: [PATCH 04/30] sleep / vfs
 
 ---
  xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 15 ++++++++++++++-
@@ -1017,7 +1017,7 @@ index 56884af..6f2cfa9 100644
 From 383c5cd6fdaddd7be841fe9898398e0812fa56c1 Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Sun, 20 Nov 2016 11:29:13 +0100
-Subject: [PATCH 05/29] log vfstates / throttle prefill
+Subject: [PATCH 05/30] log vfstates / throttle prefill
 
 ---
  .../cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 34 +++++++++++++---------
@@ -1106,7 +1106,7 @@ index 6f2cfa9..920ba29 100644
 From e7885610feb970c3b596c158ab09d7eb53bbe4fb Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Sun, 20 Nov 2016 15:08:31 +0100
-Subject: [PATCH 06/29] throttle during playback as well, not only at prefill
+Subject: [PATCH 06/30] throttle during playback as well, not only at prefill
 
 ---
  xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 5 +++--
@@ -1139,7 +1139,7 @@ index 920ba29..d038d6a 100644
 From 35c24254ab9eafd9bd9f5b0025c94636e3c19889 Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Thu, 24 Nov 2016 10:56:07 +0100
-Subject: [PATCH 07/29] Don't use DTS in case PTS is NO_PTS, instead don't call
+Subject: [PATCH 07/30] Don't use DTS in case PTS is NO_PTS, instead don't call
  checkin_pts
 
 ---
@@ -1209,7 +1209,7 @@ index d038d6a..8c51ac4c 100644
 From afb5e69423bf5a6b3b3a1e0c654fbfcd7f4c3121 Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Fri, 25 Nov 2016 16:25:44 +0100
-Subject: [PATCH 08/29] allow streams without PTS (matroska)
+Subject: [PATCH 08/30] allow streams without PTS (matroska)
 
 ---
  .../cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 64 ++++++++++------------
@@ -1395,7 +1395,7 @@ index 33fa0b7..3a2d986 100644
 From f328dec6ca6dde3564c565a674c41bce215f9ab6 Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Sun, 4 Dec 2016 17:34:15 +0100
-Subject: [PATCH 09/29] initialize cur_pts at Open / log oob timesizes
+Subject: [PATCH 09/30] initialize cur_pts at Open / log oob timesizes
 
 ---
  xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 11 +++++++++--
@@ -1446,7 +1446,7 @@ index d96c96c..3e33480 100644
 From a4aa3de63681f34a11b8c6491b2e6f49bc8b75a1 Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Sun, 4 Dec 2016 21:16:17 +0100
-Subject: [PATCH 10/29] Set AV sync to 30 again
+Subject: [PATCH 10/30] Set AV sync to 30 again
 
 ---
  xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 2 +-
@@ -1469,7 +1469,7 @@ index 3e33480..c1a4359 100644
 From 11dded59ec9ab893eb2b3e75f0aaec32450d6d95 Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Sun, 4 Dec 2016 21:43:51 +0100
-Subject: [PATCH 11/29] Disable audio and sub
+Subject: [PATCH 11/30] Disable audio and sub
 
 ---
  xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 2 ++
@@ -1492,7 +1492,7 @@ index c1a4359..0d3ca38 100644
 From 569c477ddfc180e4692b7762f47d04330d4fb5d5 Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Mon, 5 Dec 2016 17:26:54 +0100
-Subject: [PATCH 12/29] remove videodelay calculation
+Subject: [PATCH 12/30] remove videodelay calculation
 
 ---
  .../cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 35 ++++++++--------------
@@ -1610,7 +1610,7 @@ index 3a2d986..9cdd258 100644
 From aaa27fee01327a586d74ae04571b91ccd14138e1 Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Tue, 6 Dec 2016 17:42:38 +0100
-Subject: [PATCH 13/29] enable seek for streams without PTS
+Subject: [PATCH 13/30] enable seek for streams without PTS
 
 ---
  xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 9 +++++++--
@@ -1686,7 +1686,7 @@ index 9cdd258..0e5334bd 100644
 From 90249e2a3c6b53aa99a3ce1f4a2d301f798d896d Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Wed, 7 Dec 2016 21:16:18 +0100
-Subject: [PATCH 14/29] start with h.264 IDR frame
+Subject: [PATCH 14/30] start with h.264 IDR frame
 
 ---
  .../DVDCodecs/Video/DVDVideoCodecAmlogic.cpp       | 32 +++++++++++++++++-----
@@ -1851,7 +1851,7 @@ index 9045ef9..8b66f0f 100644
 From 3164250375995ae6af361f5c946540c2199fe053 Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Thu, 8 Dec 2016 08:37:36 +0100
-Subject: [PATCH 15/29] IDR and SEI:recovery are keyframes -> implement
+Subject: [PATCH 15/30] IDR and SEI:recovery are keyframes -> implement
  SEI:recovery_count
 
 ---
@@ -2124,7 +2124,7 @@ index 8b66f0f..d953907 100644
 From ea31d4f1ae26060752caaa87e71f840134768b5b Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Thu, 8 Dec 2016 14:47:02 +0100
-Subject: [PATCH 16/29] Fix BitsreamParser SEI start adress
+Subject: [PATCH 16/30] Fix BitsreamParser SEI start adress
 
 ---
  .../VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp   | 14 +++++++-------
@@ -2219,7 +2219,7 @@ index 6cb25fd..be942a1 100644
 From 2400cddfebd2d0120a396aff5cc7e3259273ea35 Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Tue, 13 Dec 2016 12:07:00 +0100
-Subject: [PATCH 17/29] wait for next displayed frame for sync measurement
+Subject: [PATCH 17/30] wait for next displayed frame for sync measurement
 
 ---
  .../VideoRenderers/HwDecRender/RendererAML.cpp     | 45 ++++++++++++++--------
@@ -2327,7 +2327,7 @@ index 0d9f126..7b4203b 100644
 From d675e0689584f84627604a07f6a5b3d62baba88a Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Tue, 13 Dec 2016 21:23:34 +0100
-Subject: [PATCH 18/29] check for amlclodec != 0
+Subject: [PATCH 18/30] check for amlclodec != 0
 
 ---
  xbmc/cores/VideoPlayer/VideoRenderers/HwDecRender/RendererAML.cpp | 3 ++-
@@ -2351,7 +2351,7 @@ index 54a2588..cb000bb 100644
 From a2260af19fce474edf1378fc636feecbfc84b03d Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Tue, 13 Dec 2016 23:18:27 +0100
-Subject: [PATCH 19/29] resume aml on time we got first picture
+Subject: [PATCH 19/30] resume aml on time we got first picture
 
 ---
  xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp               | 8 ++++++--
@@ -2411,7 +2411,7 @@ index cb000bb..e6b39f3 100644
 From 94031c39a596e7ac14f77170565a1a2c0f969802 Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Wed, 14 Dec 2016 14:22:11 +0100
-Subject: [PATCH 20/29] more log / fix start-adjusting
+Subject: [PATCH 20/30] more log / fix start-adjusting
 
 ---
  xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 9 ++++++---
@@ -2465,7 +2465,7 @@ index 0e5334bd..b18e6e2 100644
 From 2dec8f56f8aa7614b48527739d98b6fc2d0e246d Mon Sep 17 00:00:00 2001
 From: peak3d <pfau@peak3d.de>
 Date: Tue, 20 Dec 2016 13:53:03 +0100
-Subject: [PATCH 21/29] [AML] queue_buf
+Subject: [PATCH 21/30] [AML] queue_buf
 
 ---
  .../cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 87 ++++++++++++++++------
@@ -2724,7 +2724,7 @@ index e6b39f3..d390c08 100644
 From e1557505b865a912a87e80258b5ad8ad3306cf6a Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Wed, 21 Dec 2016 23:38:53 +0100
-Subject: [PATCH 22/29] videosync impl. / cleanup
+Subject: [PATCH 22/30] videosync impl. / cleanup
 
 ---
  .../cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 39 ++++------
@@ -3150,7 +3150,7 @@ index 0000000..f48e3b4
 From fcc5dfb9a8a7edaa66bda89424fbf68802a83198 Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Fri, 23 Dec 2016 16:17:47 +0100
-Subject: [PATCH 23/29] pts -> buffer-index
+Subject: [PATCH 23/30] pts -> buffer-index
 
 ---
  .../cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 45 +++++++++-------------
@@ -3397,7 +3397,7 @@ index 9ebcbf6..5bd0a0f 100644
 From 29cbcbe1fa813473431d1f3322d6ecd67295dc1e Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Mon, 26 Dec 2016 15:01:08 +0100
-Subject: [PATCH 24/29] implement frame drop
+Subject: [PATCH 24/30] implement frame drop
 
 ---
  .../cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 49 ++++++++++++++--------
@@ -3635,7 +3635,7 @@ index 5bd0a0f..292f07b 100644
 From 1aa22d7a3526d21a5d9abe1ac2106828bbd86c2c Mon Sep 17 00:00:00 2001
 From: Markus Pfau <pfau@peak3d.de>
 Date: Wed, 28 Dec 2016 23:40:19 +0100
-Subject: [PATCH 25/29] log pts/dts as double, sleep in dequeue at least 10ms
+Subject: [PATCH 25/30] log pts/dts as double, sleep in dequeue at least 10ms
 
 ---
  .../cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 25 +++++++++++++++++++---
@@ -3714,7 +3714,7 @@ index 95307ae..861801f 100644
 From 795416b9dea2e7ab9de696176845c237bcdcee0d Mon Sep 17 00:00:00 2001
 From: peak3d <pfau@peak3d.de>
 Date: Thu, 29 Dec 2016 17:01:44 +0100
-Subject: [PATCH 26/29] pass readjusted PTS value in GetPicture()
+Subject: [PATCH 26/30] pass readjusted PTS value in GetPicture()
 
 ---
  xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 2 +-
@@ -3737,7 +3737,7 @@ index 861801f..db544ce 100644
 From bd1554621f0310c40b133e0fa3b9296b55bc75a8 Mon Sep 17 00:00:00 2001
 From: peak3d <pfau@peak3d.de>
 Date: Mon, 2 Jan 2017 18:10:35 +0100
-Subject: [PATCH 27/29] Remove GetDataSize() / GetTimeSize()
+Subject: [PATCH 27/30] Remove GetDataSize() / GetTimeSize()
 
 ---
  .../cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 80 +++++-----------------
@@ -3945,7 +3945,7 @@ index bbebf57..9e57295 100644
 From 48da105c90fd4518f2541b25ac8fcee3085f64fd Mon Sep 17 00:00:00 2001
 From: peak3d <pfau@peak3d.de>
 Date: Wed, 4 Jan 2017 14:28:46 +0100
-Subject: [PATCH 28/29] increase buffer level
+Subject: [PATCH 28/30] increase buffer level
 
 ---
  xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 4 ++--
@@ -3970,7 +3970,7 @@ index 2cfb486..cedc177 100644
 From 52a6360260c590e3a7a08c5fa7a39816c4760f8d Mon Sep 17 00:00:00 2001
 From: peak3d <pfau@peak3d.de>
 Date: Thu, 5 Jan 2017 14:58:20 +0100
-Subject: [PATCH 29/29] prefeed based on frame durations
+Subject: [PATCH 29/30] prefeed based on frame durations
 
 ---
  .../cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp | 54 +++++++++++++++-------
@@ -4120,3 +4120,143 @@ index 04146a0..2885a88 100644
    static long  m_pollSync;
    static int   m_pollDevice;
  };
+
+From 087c11d45925912921fe1d7434fb4eee50cbf0fd Mon Sep 17 00:00:00 2001
+From: Markus Pfau <pfau@peak3d.de>
+Date: Mon, 9 Jan 2017 11:14:31 +0100
+Subject: [PATCH 30/30] disable h/w flv1 / vsync clock for s/w
+
+---
+ .../cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp |  3 +--
+ .../DVDCodecs/Video/DVDVideoCodecAmlogic.cpp       | 18 +++++++-------
+ xbmc/video/videosync/VideoSyncAML.cpp              | 28 ++++++++++++++++++++--
+ 3 files changed, 36 insertions(+), 13 deletions(-)
+
+diff --git a/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp b/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp
+index db36553..38dcd23 100644
+--- a/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp
++++ b/xbmc/cores/VideoPlayer/DVDCodecs/Video/AMLCodec.cpp
+@@ -1917,7 +1917,6 @@ int CAMLCodec::PollFrame()
+     return 0;
+ 
+   struct pollfd codec_poll_fd[1];
+-  static unsigned int pc(0);
+ 
+   codec_poll_fd[0].fd = m_pollDevice;
+   codec_poll_fd[0].events = POLLOUT;
+@@ -2001,7 +2000,7 @@ float CAMLCodec::GetTimeSize()
+   m_dll->codec_get_vbuf_state(&am_private->vcodec, &bs);
+ 
+   //CLog::Log(LOGDEBUG, "CAMLCodec::Decode: buf status: s:%d dl:%d fl:%d rp:%u wp:%u",bs.size, bs.data_len, bs.free_len, bs.read_pointer, bs.write_pointer);  
+-  while (m_frameSizeSum >  bs.data_len)
++  while (m_frameSizeSum >  (unsigned int)bs.data_len)
+   {
+     m_frameSizeSum -= m_frameSizes.front();
+     m_frameSizes.pop_front();
+diff --git a/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp b/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp
+index aef4060..da46973 100644
+--- a/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp
++++ b/xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodecAmlogic.cpp
+@@ -44,17 +44,17 @@ typedef struct frame_queue {
+ CDVDVideoCodecAmlogic::CDVDVideoCodecAmlogic(CProcessInfo &processInfo) : CDVDVideoCodec(processInfo),
+   m_Codec(NULL),
+   m_pFormatName("amcodec"),
++  m_opened(false),
+   m_last_pts(0.0),
+   m_frame_queue(NULL),
+   m_queue_depth(0),
+   m_framerate(0.0),
+   m_video_rate(0),
+   m_mpeg2_sequence(NULL),
+-  m_bitparser(NULL),
+-  m_bitstream(NULL),
+-  m_opened(false),
+   m_drop(false),
+-  m_has_keyframe(false)
++  m_has_keyframe(false),
++  m_bitparser(NULL),
++  m_bitstream(NULL)
+ {
+   pthread_mutex_init(&m_queue_mutex, NULL);
+ }
+@@ -153,9 +153,9 @@ bool CDVDVideoCodecAmlogic::Open(CDVDStreamInfo &hints, CDVDCodecOptions &option
+       // amcodec can't handle h263
+       return false;
+       break;
+-    case AV_CODEC_ID_FLV1:
+-      m_pFormatName = "am-flv1";
+-      break;
++//    case AV_CODEC_ID_FLV1:
++//      m_pFormatName = "am-flv1";
++//      break;
+     case AV_CODEC_ID_RV10:
+     case AV_CODEC_ID_RV20:
+     case AV_CODEC_ID_RV30:
+@@ -288,7 +288,7 @@ int CDVDVideoCodecAmlogic::Decode(uint8_t *pData, int iSize, double dts, double
+ 
+       if (!m_bitstream->HasKeyframe())
+       {
+-        CLog::Log(LOGDEBUG, "CDVDVideoCodecAmlogic::Decode waiting for keyframe (bitstream)", __MODULE_NAME__);
++        CLog::Log(LOGDEBUG, "%s::Decode waiting for keyframe (bitstream)", __MODULE_NAME__);
+         return VC_BUFFER;
+       }
+       pData = m_bitstream->GetConvertBuffer();
+@@ -298,7 +298,7 @@ int CDVDVideoCodecAmlogic::Decode(uint8_t *pData, int iSize, double dts, double
+     {
+       if (!m_bitparser->HasKeyframe(pData, iSize))
+       {
+-        CLog::Log(LOGDEBUG, "CDVDVideoCodecAmlogic::Decode waiting for keyframe (bitparser)", __MODULE_NAME__);
++        CLog::Log(LOGDEBUG, "%s::Decode waiting for keyframe (bitparser)", __MODULE_NAME__);
+         return VC_BUFFER;
+       }
+       else
+diff --git a/xbmc/video/videosync/VideoSyncAML.cpp b/xbmc/video/videosync/VideoSyncAML.cpp
+index fb744e2..02c613e 100644
+--- a/xbmc/video/videosync/VideoSyncAML.cpp
++++ b/xbmc/video/videosync/VideoSyncAML.cpp
+@@ -30,6 +30,9 @@
+ #include "threads/Thread.h"
+ #include <sys/poll.h>
+ 
++#include <chrono>
++#include <thread>
++
+ extern CEvent g_aml_sync_event;
+ 
+ CVideoSyncAML::CVideoSyncAML(CVideoReferenceClock *clock)
+@@ -56,12 +59,33 @@ bool CVideoSyncAML::Setup(PUPDATECLOCK func)
+ 
+ void CVideoSyncAML::Run(std::atomic<bool>& stop)
+ {
++  // We use the wall clock for timout handling (no AML h/w, startup)
++  std::chrono::time_point<std::chrono::system_clock> now(std::chrono::system_clock::now());
++  unsigned int waittime (3000 / m_fps);
++  uint64_t numVBlanks (0);
++
+   while (!stop && !m_abort)
+   {
+-    g_aml_sync_event.WaitMSec(100);
++    int countVSyncs(1);
++    if( !g_aml_sync_event.WaitMSec(waittime))
++    {
++      std::chrono::milliseconds elapsed(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - now).count());
++      uint64_t curVBlanks = (m_fps * elapsed.count()) / 1000;
++      int64_t lastVBlankTime((curVBlanks * 1000) / m_fps);
++      if (elapsed.count() > lastVBlankTime)
++      {
++        lastVBlankTime = (++curVBlanks * 1000) / m_fps;
++        std::this_thread::sleep_for(std::chrono::milliseconds(lastVBlankTime - elapsed.count()));
++      }
++      countVSyncs = curVBlanks - numVBlanks;
++      numVBlanks = curVBlanks;
++    }
++    else
++      ++numVBlanks;
++
+     uint64_t now = CurrentHostCounter();
+ 
+-    UpdateClock(1, now, m_refClock);
++    UpdateClock(countVSyncs, now, m_refClock);
+   }
+ }
+ 
