@@ -4,7 +4,8 @@
 ################################################################################
 
 PKG_NAME="kodi"
-PKG_VERSION="17.0-rc3-fdcf55d"
+PKG_VERSION="17.0-rc3-f52937f"
+GIT_VERSION="f52937f"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
@@ -191,7 +192,7 @@ PKG_CMAKE_OPTS_TARGET="-DNATIVEPREFIX=$ROOT/$TOOLCHAIN \
                        -DWITH_TEXTUREPACKER=$ROOT/$TOOLCHAIN/bin/TexturePacker \
                        -DDEPENDS_PATH=$ROOT/$PKG_BUILD/depends \
                        -DPYTHON_INCLUDE_DIRS=$SYSROOT_PREFIX/usr/include/python2.7 \
-                       -DGIT_VERSION=$PKG_VERSION \
+                       -DGIT_VERSION=$GIT_VERSION \
                        -DENABLE_INTERNAL_FFMPEG=OFF \
                        -DFFMPEG_INCLUDE_DIRS=$SYSROOT_PREFIX/usr \
                        -DENABLE_INTERNAL_CROSSGUID=OFF \
