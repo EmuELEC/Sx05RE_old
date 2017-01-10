@@ -4,8 +4,8 @@
 ################################################################################
 
 PKG_NAME="kodi"
-PKG_VERSION="17.0-rc3-fdcf55d"
 GIT_VERSION="fdcf55d"
+PKG_VERSION="17.0-rc3-$GIT_VERSION"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
