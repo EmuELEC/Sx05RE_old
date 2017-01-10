@@ -4,8 +4,8 @@
 ################################################################################
 
 PKG_NAME="kodi"
-PKG_VERSION="17.0-rc3-f52937f"
-GIT_VERSION="f52937f"
+PKG_VERSION="17.0-rc3-fdcf55d"
+GIT_VERSION="fdcf55d"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
@@ -271,7 +271,6 @@ post_makeinstall_target() {
     $SED "s|@OS_VERSION@|$OS_VERSION|g" -i $INSTALL/usr/share/kodi/addons/os.alexelec/addon.xml
     cp -R $PKG_DIR/config/repository.alexelec $INSTALL/usr/share/kodi/addons
     $SED "s|@ADDON_URL@|$ADDON_URL|g" -i $INSTALL/usr/share/kodi/addons/repository.alexelec/addon.xml
-    cp -R $PKG_DIR/config/repository.kodi.game $INSTALL/usr/share/kodi/addons
 
 # install project specific configs
   mkdir -p $INSTALL/usr/share/kodi/config
@@ -313,7 +312,6 @@ post_makeinstall_target() {
   ADDON_MANIFEST=$INSTALL/usr/share/kodi/system/addon-manifest.xml
   xmlstarlet ed -L -d "/addons/addon[text()='service.xbmc.versioncheck']" $ADDON_MANIFEST
   xmlstarlet ed -L -d "/addons/addon[text()='skin.estouchy']" $ADDON_MANIFEST
-  xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "repository.kodi.game" $ADDON_MANIFEST
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "os.alexelec" $ADDON_MANIFEST
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "repository.alexelec" $ADDON_MANIFEST
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "service.system.settings" $ADDON_MANIFEST
