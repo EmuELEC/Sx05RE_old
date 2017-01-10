@@ -15,4 +15,9 @@
   <samba>
     <clienttimeout>30</clienttimeout>
   </samba>
+  <cache>
+    <memorysize>20971520</memorysize>
+    <buffermode>2</buffermode>
+    <readfactor>30</readfactor>
+  </cache>
 </advancedsettings>
