@@ -36,7 +36,7 @@
     <pvrplayback>
         <channelentrytimeout default="true">0</channelentrytimeout>
         <confirmchannelswitch default="true">false</confirmchannelswitch>
-        <enableradiords default="true">true</enableradiords>
+        <enableradiords>false</enableradiords>
         <fps default="true">0</fps>
         <playminimized>true</playminimized>
         <scantime default="true">10</scantime>

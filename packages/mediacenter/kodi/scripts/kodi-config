@@ -54,8 +54,10 @@ if [ ! -d $HOME/.kodi/userdata/addon_data/skin.aeon.nox.5 ]; then
 fi
 
 # add default config file to HOME dir Kodi
-if [ ! -f $HOME/.kodi/userdata/advancedsettings.xml ] ; then
-  cp /usr/share/kodi/system/advancedsettings.xml $HOME/.kodi/userdata
+if [ ! -f $HOME/.kodi/userdata/advancedsettings.xml.sample ] ; then
+  if [ -f /usr/share/kodi/system/advancedsettings.xml.sample ]; then
+    cp /usr/share/kodi/system/advancedsettings.xml.sample $HOME/.kodi/userdata
+  fi
 fi
 
 if [ ! -f $HOME/.kodi/userdata/keymaps/keyboard.xml ] ; then

@@ -298,6 +298,13 @@ post_makeinstall_target() {
     else
       cp $PKG_DIR/config/advancedsettings.xml $INSTALL/usr/share/kodi/system/
     fi
+    if [ -n "$DEVICE" -a -f $PROJECT_DIR/$PROJECT/devices/$DEVICE/kodi/advancedsettings.xml.sample ]; then
+      cp $PROJECT_DIR/$PROJECT/devices/$DEVICE/kodi/advancedsettings.xml.sample $INSTALL/usr/share/kodi/system/
+    elif [ -f $PROJECT_DIR/$PROJECT/kodi/advancedsettings.xml.sample ]; then
+      cp $PROJECT_DIR/$PROJECT/kodi/advancedsettings.xml.sample $INSTALL/usr/share/kodi/system/
+    else
+      cp $PKG_DIR/config/advancedsettings.xml.sample $INSTALL/usr/share/kodi/system/
+    fi
 
   mkdir -p $INSTALL/usr/share/kodi/system/settings
     if [ -n "$DEVICE" -a -f $PROJECT_DIR/$PROJECT/devices/$DEVICE/kodi/appliance.xml ]; then
