@@ -1,21 +1,21 @@
-From dabfc33004b94d2f06d20ad4f8a889dd5a94e796 Mon Sep 17 00:00:00 2001
+From ce2be16078cd2b4b55ee4bc8f74b6befbed45ad5 Mon Sep 17 00:00:00 2001
 From: Gerald Dachs <gda@dachsweb.de>
 Date: Tue, 6 Dec 2016 11:06:49 +0100
-Subject: [PATCH] Amlogic CEC adapter
+Subject: [PATCH] Amlogic CEC adapter for Meson 6 and Meson 8(b)
 
 ---
- include/cectypes.h                                 |  15 +-
+ include/cectypes.h                                 |  13 +-
  src/libcec/CMakeLists.txt                          |   3 +
  src/libcec/adapter/AdapterFactory.cpp              |  24 +-
- src/libcec/adapter/Amlogic/AmlogicCEC.h            |  41 +++
- .../Amlogic/AmlogicCECAdapterCommunication.cpp     | 306 +++++++++++++++++++++
- .../Amlogic/AmlogicCECAdapterCommunication.h       | 105 +++++++
+ src/libcec/adapter/Amlogic/AmlogicCEC.h            |  40 +++
+ .../Amlogic/AmlogicCECAdapterCommunication.cpp     | 285 +++++++++++++++++++++
+ .../Amlogic/AmlogicCECAdapterCommunication.h       | 104 ++++++++
  .../adapter/Amlogic/AmlogicCECAdapterDetection.cpp |  50 ++++
  .../adapter/Amlogic/AmlogicCECAdapterDetection.h   |  46 ++++
- src/libcec/cmake/CheckPlatformSupport.cmake        |  13 +
+ src/libcec/cmake/CheckPlatformSupport.cmake        |  14 +
  src/libcec/cmake/DisplayPlatformSupport.cmake      |   6 +
  src/libcec/env.h.in                                |   3 +
- 11 files changed, 610 insertions(+), 2 deletions(-)
+ 11 files changed, 586 insertions(+), 2 deletions(-)
  create mode 100644 src/libcec/adapter/Amlogic/AmlogicCEC.h
  create mode 100644 src/libcec/adapter/Amlogic/AmlogicCECAdapterCommunication.cpp
  create mode 100644 src/libcec/adapter/Amlogic/AmlogicCECAdapterCommunication.h
@@ -23,10 +23,10 @@ Subject: [PATCH] Amlogic CEC adapter
  create mode 100644 src/libcec/adapter/Amlogic/AmlogicCECAdapterDetection.h
 
 diff --git a/include/cectypes.h b/include/cectypes.h
-index 9c91842..1bc7b52 100644
+index 9c91842..3af93ca 100644
 --- a/include/cectypes.h
 +++ b/include/cectypes.h
-@@ -276,6 +276,18 @@ namespace CEC {
+@@ -276,6 +276,16 @@ namespace CEC {
   */
  #define CEC_EXYNOS_VIRTUAL_COM		"Exynos"
  
@@ -40,12 +40,10 @@ index 9c91842..1bc7b52 100644
 + */
 +#define CEC_AMLOGIC_VIRTUAL_COM                "Amlogic"
 +
-+/*!
-+
  /**
   * Maximum size of a data packet
   */
-@@ -861,7 +873,8 @@ typedef enum cec_adapter_type
+@@ -861,7 +871,8 @@ typedef enum cec_adapter_type
    ADAPTERTYPE_RPI              = 0x100,
    ADAPTERTYPE_TDA995x          = 0x200,
    ADAPTERTYPE_EXYNOS           = 0x300,
@@ -118,10 +116,10 @@ index 1e946e6..a539394 100644
  #endif
 diff --git a/src/libcec/adapter/Amlogic/AmlogicCEC.h b/src/libcec/adapter/Amlogic/AmlogicCEC.h
 new file mode 100644
-index 0000000..7b86982
+index 0000000..ac80865
 --- /dev/null
 +++ b/src/libcec/adapter/Amlogic/AmlogicCEC.h
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,40 @@
 +#pragma once
 +/*
 + * This file is part of the libCEC(R) library.
@@ -159,16 +157,15 @@ index 0000000..7b86982
 + */
 +
 +
-+#define CEC_DEFAULT_PADDR   0x1000
 +#define CEC_IOC_SETLADDR    _IOW('c', 0, unsigned int)
 +#define CEC_IOC_GETPADDR    _IO('c', 1)
 +#define CEC_MAX_FRAME_SIZE  16
 diff --git a/src/libcec/adapter/Amlogic/AmlogicCECAdapterCommunication.cpp b/src/libcec/adapter/Amlogic/AmlogicCECAdapterCommunication.cpp
 new file mode 100644
-index 0000000..88d19db
+index 0000000..b01a457
 --- /dev/null
 +++ b/src/libcec/adapter/Amlogic/AmlogicCECAdapterCommunication.cpp
-@@ -0,0 +1,306 @@
+@@ -0,0 +1,285 @@
 +/*
 + * This file is part of the libCEC(R) library.
 + *
@@ -226,19 +223,17 @@ index 0000000..88d19db
 +CAmlogicCECAdapterCommunication::CAmlogicCECAdapterCommunication(IAdapterCommunicationCallback *callback) :
 +    IAdapterCommunication(callback),
 +    m_bLogicalAddressChanged(false)
-+{ 
++{
 +  CLockObject lock(m_mutex);
 +
 +  m_logicalAddresses.Clear();
 +  m_fd = INVALID_SOCKET_VALUE;
 +}
 +
-+
 +CAmlogicCECAdapterCommunication::~CAmlogicCECAdapterCommunication(void)
 +{
 +  Close();
 +}
-+
 +
 +bool CAmlogicCECAdapterCommunication::IsOpen(void)
 +{
@@ -246,13 +241,12 @@ index 0000000..88d19db
 +  return IsInitialised() && m_fd != INVALID_SOCKET_VALUE;
 +}
 +
-+
 +bool CAmlogicCECAdapterCommunication::Open(uint32_t UNUSED(iTimeoutMs), bool UNUSED(bSkipChecks), bool bStartListening)
 +{
++  CLockObject lock(m_mutex);
++
 +  if (IsOpen())
 +    Close();
-+
-+  CLockObject lock(m_mutex);
 +
 +  if ((m_fd = open(CEC_AMLOGIC_PATH, O_RDWR)) > 0)
 +  {
@@ -265,7 +259,6 @@ index 0000000..88d19db
 +  return false;
 +}
 +
-+
 +void CAmlogicCECAdapterCommunication::Close(void)
 +{
 +  StopThread(0);
@@ -276,40 +269,30 @@ index 0000000..88d19db
 +  m_fd = INVALID_SOCKET_VALUE;
 +}
 +
-+
 +std::string CAmlogicCECAdapterCommunication::GetError(void) const
 +{
 +  std::string strError(m_strError);
 +  return strError;
 +}
 +
-+int CAmlogicCECAdapterCommunication::getFileDescriptor(void)
-+{
-+  CLockObject lock(m_mutex);
-+
-+  return m_fd;
-+}
-+
-+
-+
 +cec_adapter_message_state CAmlogicCECAdapterCommunication::Write(
 +  const cec_command &data, bool &UNUSED(bRetry), uint8_t UNUSED(iLineTimeout), bool UNUSED(bIsReply))
 +{
 +  uint8_t buffer[CEC_MAX_FRAME_SIZE];
 +  int32_t size = 1;
-+  cec_adapter_message_state rc = ADAPTER_MESSAGE_STATE_ERROR;
++  cec_adapter_message_state rc = ADAPTER_MESSAGE_STATE_SENT_NOT_ACKED;
++
++  CLockObject lock(m_mutex);
 +
 +  if (!IsOpen())
 +    return rc;
 +
-+  CLockObject lock(m_mutex);
-+
 +  if ((size_t)data.parameters.size + data.opcode_set > sizeof(buffer))
 +  {
-+    LIB_CEC->AddLog(CEC_LOG_ERROR, "%s: data size too large !", __func__);
++    LIB_CEC->AddLog(CEC_LOG_WARNING, "%s: buffer too small for data", __func__);
 +    return ADAPTER_MESSAGE_STATE_ERROR;
 +  }
-+ 
++
 +  buffer[0] = (data.initiator << 4) | (data.destination & 0x0f);
 +
 +  if (data.opcode_set)
@@ -327,60 +310,57 @@ index 0000000..88d19db
 +  }
 +  else
 +  {
-+    LIB_CEC->AddLog(CEC_LOG_ERROR, "%s: write failed !", __func__);
++    LIB_CEC->AddLog(CEC_LOG_WARNING, "%s: write failed",  __func__);
 +  }
 +
 +  return rc;
 +}
-+
 +
 +uint16_t CAmlogicCECAdapterCommunication::GetFirmwareVersion(void)
 +{
 +  return 0;
 +}
 +
-+
 +cec_vendor_id CAmlogicCECAdapterCommunication::GetVendorId(void)
 +{
 +  return cec_vendor_id(CEC_VENDOR_UNKNOWN);
 +}
 +
-+
 +uint16_t CAmlogicCECAdapterCommunication::GetPhysicalAddress(void)
 +{
-+  int phys_addr = CEC_DEFAULT_PADDR;
++  int phys_addr = CEC_INVALID_PHYSICAL_ADDRESS;
++
++  CLockObject lock(m_mutex);
 +
 +  if (!IsOpen())
 +    return (uint16_t)phys_addr;
 +
-+  CLockObject lock(m_mutex);
-+
 +  if ((phys_addr = ioctl(m_fd, CEC_IOC_GETPADDR)) < 0)
 +  {
-+    LIB_CEC->AddLog(CEC_LOG_ERROR, "%s: IOCTL GetPhysicalAddr failed !", __func__);
-+    phys_addr = CEC_DEFAULT_PADDR;
++    LIB_CEC->AddLog(CEC_LOG_WARNING, "%s: ioctl(CEC_IOC_GETPADDR) failed", __func__);
++    phys_addr = CEC_INVALID_PHYSICAL_ADDRESS;
 +  }
 +  return (uint16_t)phys_addr;
 +}
 +
-+
 +cec_logical_addresses CAmlogicCECAdapterCommunication::GetLogicalAddresses(void)
 +{
++  CLockObject lock(m_mutex);
 +  return m_logicalAddresses;
 +}
 +
-+
 +bool CAmlogicCECAdapterCommunication::SetLogicalAddresses(const cec_logical_addresses &addresses)
 +{
++  CLockObject lock(m_mutex);
++
 +  unsigned int log_addr = addresses.primary;
++
 +  if (!IsOpen())
 +    return false;
 +
-+  CLockObject lock(m_mutex);
-+
 +  if (ioctl(m_fd, CEC_IOC_SETLADDR, &log_addr))
 +  {
-+    LIB_CEC->AddLog(CEC_LOG_ERROR, "%s: IOCTL SetLogicalAddr failed !", __func__);
++    LIB_CEC->AddLog(CEC_LOG_WARNING, "%s: ioctl(CEC_IOC_SETLADDR) failed", __func__);
 +    return false;
 +  }
 +  m_logicalAddresses = addresses;
@@ -389,22 +369,20 @@ index 0000000..88d19db
 +  return true;
 +}
 +
-+
 +void CAmlogicCECAdapterCommunication::HandleLogicalAddressLost(cec_logical_address UNUSED(oldAddress))
 +{
 +  unsigned int log_addr = CECDEVICE_BROADCAST;
 +
++  CLockObject lock(m_mutex);
++
 +  if (!IsOpen())
 +    return;
 +
-+  CLockObject lock(m_mutex);
-+
 +  if (ioctl(m_fd, CEC_IOC_SETLADDR, &log_addr))
 +  {
-+    LIB_CEC->AddLog(CEC_LOG_ERROR, "%s: IOCTL SetLogicalAddr failed !", __func__);
++    LIB_CEC->AddLog(CEC_LOG_WARNING, "%s: ioctl(CEC_IOC_SETLADDR) failed", __func__);
 +  }
 +}
-+
 +
 +void *CAmlogicCECAdapterCommunication::Process(void)
 +{
@@ -419,27 +397,25 @@ index 0000000..88d19db
 +
 +  while (!IsStopped())
 +  {
-+    int fd = getFileDescriptor();
-+
-+    if (fd == INVALID_SOCKET_VALUE)
++    if (m_fd == INVALID_SOCKET_VALUE)
 +    {
 +      Sleep(250);
 +      continue;
 +    }
 +
 +    FD_ZERO(&rfds);
-+    FD_SET(fd, &rfds);
++    FD_SET(m_fd, &rfds);
 +
 +    tv.tv_sec = 1;
 +    tv.tv_usec = 0;
 +
-+    if (select(fd + 1, &rfds, NULL, NULL, &tv) >= 0 )
++    if (select(m_fd + 1, &rfds, NULL, NULL, &tv) >= 0 )
 +    {
 +
-+      if (!FD_ISSET(fd, &rfds))
++      if (!FD_ISSET(m_fd, &rfds))
 +	  continue;
 +
-+      size = read(fd, buffer, CEC_MAX_FRAME_SIZE);
++      size = read(m_fd, buffer, CEC_MAX_FRAME_SIZE);
 +
 +      if (size > 0)
 +      {
@@ -477,10 +453,10 @@ index 0000000..88d19db
 +#endif	// HAVE_AMLOGIC_API
 diff --git a/src/libcec/adapter/Amlogic/AmlogicCECAdapterCommunication.h b/src/libcec/adapter/Amlogic/AmlogicCECAdapterCommunication.h
 new file mode 100644
-index 0000000..0e99cf8
+index 0000000..395607c
 --- /dev/null
 +++ b/src/libcec/adapter/Amlogic/AmlogicCECAdapterCommunication.h
-@@ -0,0 +1,105 @@
+@@ -0,0 +1,104 @@
 +#pragma once
 +/*
 + * This file is part of the libCEC(R) library.
@@ -575,7 +551,6 @@ index 0000000..0e99cf8
 +
 +  private:
 +    bool IsInitialised(void) const { return 1; };
-+    int getFileDescriptor(void);
 +
 +    std::string                 m_strError; /**< current error message */
 +
@@ -695,7 +670,7 @@ index 0000000..8a7418d
 +  };
 +}
 diff --git a/src/libcec/cmake/CheckPlatformSupport.cmake b/src/libcec/cmake/CheckPlatformSupport.cmake
-index 532f213..382c39c 100644
+index 532f213..339a698 100644
 --- a/src/libcec/cmake/CheckPlatformSupport.cmake
 +++ b/src/libcec/cmake/CheckPlatformSupport.cmake
 @@ -11,6 +11,7 @@
@@ -706,14 +681,22 @@ index 532f213..382c39c 100644
  #       HAVE_P8_USB_DETECT        ON if Pulse-Eight devices can be auto-detected
  #       HAVE_DRM_EDID_PARSER      ON if DRM EDID parsing is supported
  #
-@@ -137,6 +138,18 @@ else()
+@@ -30,6 +31,7 @@ SET(HAVE_RPI_API         OFF CACHE BOOL "raspberry pi not supported")
+ SET(HAVE_TDA995X_API     OFF CACHE BOOL "tda995x not supported")
+ SET(HAVE_EXYNOS_API      OFF CACHE BOOL "exynos not supported")
+ SET(HAVE_AOCEC_API       OFF CACHE BOOL "aocec not supported")
++SET(HAVE_AMLOGIC_API     OFF CACHE BOOL "amlogic not supported")
+ # Pulse-Eight devices are always supported
+ set(HAVE_P8_USB          ON  CACHE BOOL "p8 usb-cec supported" FORCE)
+ set(HAVE_P8_USB_DETECT   OFF CACHE BOOL "p8 usb-cec detection not supported")
+@@ -137,6 +139,18 @@ else()
      list(APPEND CEC_SOURCES ${CEC_SOURCES_ADAPTER_EXYNOS})
    endif()
  
 +  # Amlogic
 +  if (${HAVE_AMLOGIC_API})
 +    set(LIB_INFO "${LIB_INFO}, Amlogic")
-+    set(HAVE_AMLOGIC_API 1)
++    set(HAVE_AMLOGIC_API ON CACHE BOOL "Amlogic supported" FORCE)
 +    set(CEC_SOURCES_ADAPTER_AMLOGIC adapter/Amlogic/AmlogicCECAdapterDetection.cpp
 +                                   adapter/Amlogic/AmlogicCECAdapterCommunication.cpp)
 +    source_group("Source Files\\adapter\\Amlogic" FILES ${CEC_SOURCES_ADAPTER_AMLOGIC})

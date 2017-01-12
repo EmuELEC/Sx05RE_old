@@ -324,7 +324,8 @@ post_makeinstall_target() {
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "service.system.settings" $ADDON_MANIFEST
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "service.alexelec.settings" $ADDON_MANIFEST
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "resource.language.ru_ru" $ADDON_MANIFEST
-  xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "weather.yahoo" $ADDON_MANIFEST
+  xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "script.openweathermap.maps" $ADDON_MANIFEST
+  xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "weather.openweathermap.extended" $ADDON_MANIFEST
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "script.skinshortcuts" $ADDON_MANIFEST
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "skin.aeon.nox.5" $ADDON_MANIFEST
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "repository.search.db" $ADDON_MANIFEST
@@ -348,8 +349,8 @@ post_makeinstall_target() {
   fi
 
 # install addons config
-  if [ -d $PKG_DIR/config/weather.yahoo ]; then
-      cp -R $PKG_DIR/config/weather.yahoo $INSTALL/usr/share/kodi/config
+  if [ -d $PKG_DIR/config/weather.openweathermap.extended ]; then
+      cp -R $PKG_DIR/config/weather.openweathermap.extended $INSTALL/usr/share/kodi/config
   fi
 
   if [ -d $PKG_DIR/config/script.skinshortcuts ]; then

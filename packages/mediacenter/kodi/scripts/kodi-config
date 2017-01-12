@@ -32,10 +32,10 @@ if [ ! -d $HOME/.kodi/addons ]; then
 fi
 
 # add default addons settings
-if [ ! -d $HOME/.kodi/userdata/addon_data/weather.yahoo ]; then
-  if [ -d /usr/share/kodi/config/weather.yahoo ]; then
+if [ ! -d $HOME/.kodi/userdata/addon_data/weather.openweathermap.extended ]; then
+  if [ -d /usr/share/kodi/config/weather.openweathermap.extended ]; then
     mkdir -p $HOME/.kodi/userdata/addon_data
-    cp -R /usr/share/kodi/config/weather.yahoo $HOME/.kodi/userdata/addon_data
+    cp -R /usr/share/kodi/config/weather.openweathermap.extended $HOME/.kodi/userdata/addon_data
   fi
 fi
 
