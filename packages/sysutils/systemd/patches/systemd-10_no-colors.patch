@@ -1,0 +1,17 @@
+commit cbf5f309bd26e55a0d4fef79532f281b0fe02dfd
+Author: Lukas Rusak <lorusak@gmail.com>
+Date:   Thu Jan 12 10:51:28 2017 -0800
+
+    disable colors globally because of non printing ANSI characters
+
+diff --git a/src/basic/terminal-util.c b/src/basic/terminal-util.c
+index eafdea9..cdd937a 100644
+--- a/src/basic/terminal-util.c
++++ b/src/basic/terminal-util.c
+@@ -1220,5 +1220,5 @@ bool colors_enabled(void) {
+                         enabled = !terminal_is_dumb();
+         }
+ 
+-        return enabled;
++        return 0;
+ }
