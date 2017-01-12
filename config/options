@@ -11,7 +11,7 @@ fi
 
 # determines PROJECT, if not forced by user (S805, S812, S905)
 if [ -z "$PROJECT" ]; then
-  PROJECT="S805"
+  PROJECT="S812"
 else
   PROJECT="$PROJECT"
 fi
