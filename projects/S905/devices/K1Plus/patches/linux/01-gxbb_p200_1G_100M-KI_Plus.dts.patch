@@ -1,0 +1,116 @@
+--- a/arch/arm64/boot/dts/amlogic/gxbb_p200.dts	2016-11-30 15:43:57.000000000 +0100
++++ b/arch/arm64/boot/dts/amlogic/gxbb_p200.dts	2016-12-05 19:24:47.244026999 +0100
+@@ -190,15 +190,15 @@
+ 			status = "okay";
+ 	};
+ 	ethmac: ethernet@0xc9410000{
+-                compatible = "amlogic, gxbb-rgmii-dwmac";
++                compatible = "amlogic, gxbb-rmii-dwmac";
+                 reg = <0x0 0xc9410000 0x0 0x10000
+                 0x0 0xc8834540 0x0 0x8>;
+                 interrupts = <0 8 1>;
+-                phy-mode= "rgmii";
++                phy-mode= "rmii";
+                 pinctrl-names = "eth_pins";
+                 pinctrl-0 = <&eth_pins>;
+                 rst_pin-gpios = <&gpio GPIOZ_14 0>;
+-                mc_val = <0x1621>;
++                mc_val = <0x1800>;
+                 resets = <&clock GCLK_IDX_ETHERNET>;
+                 reset-names = "ethpower";
+                 interrupt-names = "macirq";
+@@ -371,13 +371,13 @@
+ 			3: 250.0M    4: 333.3M    5: 400.0M
+ 			6: 500.0M    7: 666.7M */
+ 	};
+-	bt-dev{
+-		compatible = "amlogic, bt-dev";
+-		dev_name = "bt-dev";
+-		status = "ok";
+-		gpio_reset = <&gpio       GPIOX_20       GPIO_ACTIVE_HIGH>;
+-		//power_low_level;
+-	};
++//	bt-dev{
++//		compatible = "amlogic, bt-dev";
++//		dev_name = "bt-dev";
++//		status = "ok";
++//		gpio_reset = <&gpio       GPIOX_20       GPIO_ACTIVE_HIGH>;
++//		//power_low_level;
++//	};
+ 	bluesleep{
+ 		compatible = "amlogic, bluesleep";
+ 		dev_name = "bluesleep";
+@@ -402,9 +402,9 @@
+ 		status = "okay";
+ 		interrupt_pin = <&gpio       GPIOX_7       GPIO_ACTIVE_HIGH>;
+ 		interrupts = <	0 68 4>;
+-		irq_trigger_type = "GPIO_IRQ_LOW";
++		irq_trigger_type = "GPIO_IRQ_HIGH";
+ 		power_on_pin = <&gpio       GPIOX_6       GPIO_ACTIVE_HIGH>;
+-		dhd_static_buf;
++		power_on_pin2 = <&gpio       GPIOX_20       GPIO_ACTIVE_HIGH>;
+ 		pinctrl-names = "wifi_32k_pins";
+ 		pinctrl-0 = <&wifi_32k_pins>;
+ 	};
+@@ -1137,11 +1137,12 @@
+ 			};
+ 		};
+ 	};
+-
+-/*
+ 	dvb {
+-		compatible = "amlogic, dvb";
++		compatible = "amlogic,dvb";
+ 		dev_name = "dvb";
++		status = "okay";
++		fec_reset_gpio-gpios = <&gpio GPIOY_13 GPIO_ACTIVE_HIGH>;
++		power_ctrl_gpio-gpios = <&gpio GPIOY_11 GPIO_ACTIVE_LOW>;
+ 		//"parallel","serial","disable"
+ 		ts0 = "parallel";
+ 		ts0_control = <0>;
+@@ -1156,28 +1157,33 @@
+ 		reset-names = "demux", "asyncfifo", "ahbarb0", "uparsertop";
+ 	};
+ 	dvbfe {
+-		compatible = "amlogic, dvbfe";
+-		dev_name = "dvbfe";
+-		dtv_demod0 = "Mxl241";
+-		dtv_demod0_i2c_adap_id = <2>;
+-		dtv_demod0_i2c_addr = <0x60>;
+-		dtv_demod0_reset_value = <0>;
+-		dtv_demod0_reset_gpio-gpios = <&gpio GPIOY_12 GPIO_ACTIVE_HIGH>;
++		compatible = "amlogic,dvbfe";
++		//dev_name = "avl6211";
++		status = "okay";
++		dtv_demod0 = "Avl6211";
++		dtv_demod0_i2c_adap_id = <1>;
++		dtv_demod0_i2c_addr = <0xC0>;
++ 		dtv_demod0_reset_value = <0>;
++		//dtv_demod0_reset_gpio = <&gpio GPIOY_13 GPIO_ACTIVE_HIGH>;
++		dtv_demod0_reset_gpio-gpios = <&gpio GPIOY_13 GPIO_ACTIVE_LOW>;
++		dtv_demod0_power_gpio-gpios = <&gpio GPIOY_11 GPIO_ACTIVE_LOW>;
+ 		fe0_dtv_demod = <0>;
+ 		fe0_ts = <0>;
+ 		fe0_dev = <0>;
+ 	};
+-*/
+ };
+ &i2c_a {
+-  status = "disabled";
+-  /*p200: multiplex with usb PWR, disbaled*/
++  status = "okay";
+ };
+-/*
+ &i2c_b {
+   status = "okay";
+ };
+-*/
++&i2c_c {
++  status = "okay";
++};
++&i2c_d {
++  status = "okay";
++};
+ 
+ &i2c_slave {
+ 	status = "disabled";

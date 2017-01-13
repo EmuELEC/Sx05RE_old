@@ -1,0 +1,15 @@
+#
+# AVL6862 DVB-Sx/Tx/C driver configuration
+#
+
+menu "AVL6862 DVB-Sx/Tx/C driver"
+
+config AM_DVB
+	tristate "AVL6862 DVB-Sx/Tx/C driver"
+	default y
+	select DVB_CORE
+	help
+	Select to enable AVL6862 DVB-Sx/Tx/C driver.
+
+endmenu
+
