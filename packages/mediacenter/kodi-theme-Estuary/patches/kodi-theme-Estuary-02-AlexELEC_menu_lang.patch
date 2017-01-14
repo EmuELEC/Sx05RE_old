@@ -1,7 +1,7 @@
-diff -Naurp kodi-theme-Estuary-17.0-beta7-9ee8824/language/resource.language.en_gb/strings.po kodi-theme-Estuary-17.0-beta7-9ee8824-patch/language/resource.language.en_gb/strings.po
---- kodi-theme-Estuary-17.0-beta7-9ee8824/language/resource.language.en_gb/strings.po	2016-12-19 09:25:33.000000000 +0200
-+++ kodi-theme-Estuary-17.0-beta7-9ee8824-patch/language/resource.language.en_gb/strings.po	2016-12-19 09:33:41.000000000 +0200
-@@ -666,6 +666,16 @@ msgctxt "#31150"
+diff -Naurp kodi-theme-Estuary-17.0-rc4-d229f1f/language/resource.language.en_gb/strings.po kodi-theme-Estuary-17.0-rc4-d229f1f-patch/language/resource.language.en_gb/strings.po
+--- kodi-theme-Estuary-17.0-rc4-d229f1f/language/resource.language.en_gb/strings.po	2017-01-14 10:18:28.000000000 +0200
++++ kodi-theme-Estuary-17.0-rc4-d229f1f-patch/language/resource.language.en_gb/strings.po	2017-01-14 10:53:25.000000000 +0200
+@@ -671,6 +671,16 @@ msgctxt "#31150"
  msgid "Repository"
  msgstr ""
  
@@ -15,12 +15,12 @@ diff -Naurp kodi-theme-Estuary-17.0-beta7-9ee8824/language/resource.language.en_
 +msgid "Advanced"
 +msgstr ""
 +
- #: /1080i/Home.xml
+ #: /xml/Home.xml
  msgctxt "#31151"
  msgid "Unwatched music videos"
-diff -Naurp kodi-theme-Estuary-17.0-beta7-9ee8824/language/resource.language.ru_ru/strings.po kodi-theme-Estuary-17.0-beta7-9ee8824-patch/language/resource.language.ru_ru/strings.po
---- kodi-theme-Estuary-17.0-beta7-9ee8824/language/resource.language.ru_ru/strings.po	2016-12-19 09:25:33.000000000 +0200
-+++ kodi-theme-Estuary-17.0-beta7-9ee8824-patch/language/resource.language.ru_ru/strings.po	2016-12-19 09:34:26.000000000 +0200
+diff -Naurp kodi-theme-Estuary-17.0-rc4-d229f1f/language/resource.language.ru_ru/strings.po kodi-theme-Estuary-17.0-rc4-d229f1f-patch/language/resource.language.ru_ru/strings.po
+--- kodi-theme-Estuary-17.0-rc4-d229f1f/language/resource.language.ru_ru/strings.po	2017-01-14 10:18:28.000000000 +0200
++++ kodi-theme-Estuary-17.0-rc4-d229f1f-patch/language/resource.language.ru_ru/strings.po	2017-01-14 10:54:19.000000000 +0200
 @@ -496,6 +496,14 @@ msgctxt "#31150"
  msgid "Repository"
  msgstr "Репозиторий"
