@@ -229,7 +229,7 @@ if [ "$BUILD_ANDROID_BOOTIMG" = "yes" ]; then
     ANDROID_BOOTIMG_SECOND="--second $DTB_BLOB_OUTPUT"
   elif [ "$DTB_BLOBS_COUNT" -eq 1 ]; then
     cp -f $DTB_BLOBS $DTB_BLOB_OUTPUT
-	ANDROID_BOOTIMG_SECOND="--second $DTB_BLOBS"
+    ANDROID_BOOTIMG_SECOND="--second $DTB_BLOBS"
   else
     ANDROID_BOOTIMG_SECOND=""
   fi
