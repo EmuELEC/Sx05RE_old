@@ -26,8 +26,10 @@ fi
 # add AlexELEC addons
 if [ ! -d $HOME/.kodi/addons ]; then
   if [ -e /usr/share/kodi/config/addons-alexelec/plugins.tbz2 ]; then
+    logger -t kodi-config "Unpack Kodi addons..."
     mkdir -p $HOME/.kodi/addons
     tar xjf /usr/share/kodi/config/addons-alexelec/plugins.tbz2 -C $HOME/.kodi/addons/
+    logger -t kodi-config "Unpack Kodi addons: completed."
   fi
 fi
 
