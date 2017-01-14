@@ -46,10 +46,10 @@ if [ ! -d $HOME/.kodi/userdata/addon_data/script.skinshortcuts ]; then
   fi
 fi
 
-if [ ! -d $HOME/.kodi/userdata/addon_data/skin.aeon.nox.5 ]; then
-  if [ -d /usr/share/kodi/config/skin.aeon.nox.5 ]; then
+if [ ! -d $HOME/.kodi/userdata/addon_data/skin.aeon.nox.5ae ]; then
+  if [ -d /usr/share/kodi/config/skin.aeon.nox.5ae ]; then
     mkdir -p $HOME/.kodi/userdata/addon_data
-    cp -R /usr/share/kodi/config/skin.aeon.nox.5 $HOME/.kodi/userdata/addon_data
+    cp -R /usr/share/kodi/config/skin.aeon.nox.5ae $HOME/.kodi/userdata/addon_data
   fi
 fi
 

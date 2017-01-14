@@ -1,0 +1,34 @@
+diff -Naurp kodi-theme-AeonNox-bbd197d/addon.xml kodi-theme-AeonNox-bbd197d-patch/addon.xml
+--- kodi-theme-AeonNox-bbd197d/addon.xml	2017-01-12 11:08:54.000000000 +0200
++++ kodi-theme-AeonNox-bbd197d-patch/addon.xml	2017-01-14 15:58:30.000000000 +0200
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+-<addon id="skin.aeon.nox.5" version="5.9.9" name="Aeon Nox" provider-name="BigNoid">
++<addon id="skin.aeon.nox.5ae" version="5.9.9" name="Aeon Nox AE" provider-name="BigNoid (Alex@ELEC)">
+ 	<requires>
+ 		<import addon="xbmc.gui" version="5.12.0"/>
+ 		<import addon="script.grab.fanart" version="0.12.8"/>
+@@ -74,23 +74,9 @@
+ 		<disclaimer lang="en_GB">Mouse control is supported, althoug not recommended. It may not work correctly in all cases.</disclaimer>
+ 		<platform>all</platform>
+ 		<license>CC BY-NC-SA 4.0</license>
+-		<forum>http://forum.kodi.tv/showthread.php?tid=183504</forum>
+-		<website>https://github.com/BigNoid/Aeon-Nox</website>
+-		<email>big.noid@kodi.tv</email>
+-		<source>https://github.com/BigNoid/Aeon-Nox</source>
+-		<news>[B]***If you have removed or customized the Apps menu entry, please reset that item in the main menu customizer to gain acces to the add-ons section.***[/B][CR]For a full list of changes visit https://github.com/BigNoid/Aeon-Nox/commits/master</news>
+ 		<assets>
+ 			<icon>resources/icon.png</icon>
+ 			<fanart>resources/fanart.jpg</fanart>
+-			<screenshot>resources/screenshot-01.jpg</screenshot>
+-			<screenshot>resources/screenshot-02.jpg</screenshot>
+-			<screenshot>resources/screenshot-03.jpg</screenshot>
+-			<screenshot>resources/screenshot-04.jpg</screenshot>
+-			<screenshot>resources/screenshot-05.jpg</screenshot>
+-			<screenshot>resources/screenshot-06.jpg</screenshot>
+-			<screenshot>resources/screenshot-07.jpg</screenshot>
+-			<screenshot>resources/screenshot-08.jpg</screenshot>
+-			<screenshot>resources/screenshot-09.jpg</screenshot>
+ 		</assets>
+ 	</extension>
+ </addon>

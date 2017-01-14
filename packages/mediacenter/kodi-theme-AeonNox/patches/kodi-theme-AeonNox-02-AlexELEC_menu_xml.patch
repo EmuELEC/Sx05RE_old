@@ -1,0 +1,219 @@
+diff -Naurp kodi-theme-AeonNox-bbd197d/1080i/DialogBusy.xml kodi-theme-AeonNox-bbd197d-patch/1080i/DialogBusy.xml
+--- kodi-theme-AeonNox-bbd197d/1080i/DialogBusy.xml	2017-01-12 11:08:54.000000000 +0200
++++ kodi-theme-AeonNox-bbd197d-patch/1080i/DialogBusy.xml	2017-01-14 16:17:39.000000000 +0200
+@@ -105,4 +105,4 @@
+ 			</control>
+ 		</control>
+ 	</controls>
+-</window>
+\ В конце файла нет новой строки
++</window>
+diff -Naurp kodi-theme-AeonNox-bbd197d/1080i/DialogButtonMenu.xml kodi-theme-AeonNox-bbd197d-patch/1080i/DialogButtonMenu.xml
+--- kodi-theme-AeonNox-bbd197d/1080i/DialogButtonMenu.xml	2017-01-12 11:08:54.000000000 +0200
++++ kodi-theme-AeonNox-bbd197d-patch/1080i/DialogButtonMenu.xml	2017-01-14 16:24:10.000000000 +0200
+@@ -19,18 +19,6 @@
+ 				<texture border="30,20,30,2">dialog_top2.png</texture>
+ 			</control>
+ 			<control type="button" id="2">
+-				<description>Exit button</description>
+-				<width>510</width>
+-				<height>60</height>
+-				<textwidth>435</textwidth>
+-				<textoffsetx>45</textoffsetx>
+-				<texturefocus border="35,2,35,2">button_shutdown_focus.png</texturefocus>
+-				<texturenofocus border="35,2,35,2">button_shutdown_nofocus.png</texturenofocus>
+-				<onclick>Quit()</onclick>
+-				<label>13012</label>
+-				<visible>System.ShowExitButton</visible>
+-			</control>
+-			<control type="button" id="3">
+ 				<description>Shutdown button</description>
+ 				<width>510</width>
+ 				<height>60</height>
+@@ -41,8 +29,9 @@
+ 				<onclick>Powerdown()</onclick>
+ 				<visible>System.CanPowerDown</visible>
+ 				<label>13016</label>
++                <align>center</align>
+ 			</control>
+-			<control type="button" id="4">
++			<control type="button" id="3">
+ 				<description>Custom Shutdown Timer</description>
+ 				<width>510</width>
+ 				<height>60</height>
+@@ -54,8 +43,9 @@
+ 				<label>20150</label>
+ 				<visible>!System.HasAlarm(shutdowntimer)</visible>
+ 				<visible>System.CanPowerDown | System.CanSuspend | System.CanHibernate</visible>
++                <align>center</align>
+ 			</control>
+-			<control type="button" id="5">
++			<control type="button" id="4">
+ 				<description>Cancel Shutdown Timer</description>
+ 				<width>510</width>
+ 				<height>60</height>
+@@ -64,8 +54,21 @@
+ 				<texturefocus border="35,2,35,2">button_shutdown_focus.png</texturefocus>
+ 				<texturenofocus border="35,2,35,2">button_shutdown_nofocus.png</texturenofocus>
+ 				<onclick>CancelAlarm(shutdowntimer)</onclick>
+-				<label>$LOCALIZE[20151]$INFO[System.Alarmpos, (,)]</label>
++				<label>$LOCALIZE[31203] [B]$INFO[System.Alarmpos][/B]</label>
+ 				<visible>System.HasAlarm(shutdowntimer)</visible>
++                <align>center</align>
++			</control>
++			<control type="button" id="5">
++				<description>Games</description>
++				<width>510</width>
++				<height>60</height>
++				<textwidth>435</textwidth>
++				<textoffsetx>45</textoffsetx>
++				<texturefocus border="35,2,35,2">button_shutdown_focus.png</texturefocus>
++				<texturenofocus border="35,2,35,2">button_shutdown_nofocus.png</texturenofocus>
++				<onclick>Quit()</onclick>
++				<label>13012</label>
++				<align>center</align>
+ 			</control>
+ 			<control type="button" id="6">
+ 				<description>Suspend button</description>
+@@ -78,6 +81,7 @@
+ 				<onclick>Suspend()</onclick>
+ 				<visible>System.CanSuspend</visible>
+ 				<label>13011</label>
++                <align>center</align>
+ 			</control>
+ 			<control type="button" id="7">
+ 				<description>Hibernate button</description>
+@@ -88,22 +92,10 @@
+ 				<texturefocus border="35,2,35,2">button_shutdown_focus.png</texturefocus>
+ 				<texturenofocus border="35,2,35,2">button_shutdown_nofocus.png</texturenofocus>
+ 				<onclick>Hibernate()</onclick>
+-				<visible>System.CanHibernate</visible>
+ 				<label>13010</label>
++                <align>center</align>
+ 			</control>
+ 			<control type="button" id="8">
+-				<description>Reboot button</description>
+-				<width>510</width>
+-				<height>60</height>
+-				<textwidth>435</textwidth>
+-				<textoffsetx>45</textoffsetx>
+-				<texturefocus border="35,2,35,2">button_shutdown_focus.png</texturefocus>
+-				<texturenofocus border="35,2,35,2">button_shutdown_nofocus.png</texturenofocus>
+-				<onclick>Reset()</onclick>
+-				<visible>System.CanReboot</visible>
+-				<label>13013</label>
+-			</control>
+-			<control type="button" id="9">
+ 				<description>Logoff button</description>
+ 				<width>510</width>
+ 				<height>60</height>
+@@ -116,8 +108,9 @@
+ 				<label>$LOCALIZE[20126] $INFO[system.profilename]</label>
+ 				<visible>System.HasLoginScreen | Integer.IsGreater(System.ProfileCount,1)</visible>
+ 				<visible>System.Loggedon</visible>
++                <align>center</align>
+ 			</control>
+-			<control type="togglebutton" id="10">
++			<control type="togglebutton" id="9">
+ 				<description>Master mode button</description>
+ 				<width>510</width>
+ 				<height>60</height>
+@@ -132,8 +125,9 @@
+ 				<alttexturenofocus border="35,2,35,2">button_shutdown_nofocus.png</alttexturenofocus>
+ 				<onclick>xbmc.mastermode</onclick>
+ 				<visible>System.HasLocks</visible>
++                <align>center</align>
+ 			</control>
+-			<control type="button" id="12">
++			<control type="button" id="10">
+ 				<description>Inhibit idle shutdown</description>
+ 				<width>510</width>
+ 				<height>60</height>
+@@ -144,8 +138,9 @@
+ 				<onclick>InhibitIdleShutdown(true)</onclick>
+ 				<label>13017</label>
+ 				<visible>System.HasShutdown +!System.IsInhibit</visible>
++                <align>center</align>
+ 			</control>
+-			<control type="button" id="13">
++			<control type="button" id="11">
+ 				<description>Allow idle shutdown</description>
+ 				<width>510</width>
+ 				<height>60</height>
+@@ -156,8 +151,21 @@
+ 				<onclick>InhibitIdleShutdown(false)</onclick>
+ 				<label>13018</label>
+ 				<visible>System.HasShutdown + System.IsInhibit</visible>
++                <align>center</align>
+ 			</control>
+-			<control type="button" id="14">
++			<control type="button" id="12">
++				<description>Favorites</description>
++				<width>510</width>
++				<height>60</height>
++				<textwidth>435</textwidth>
++				<textoffsetx>45</textoffsetx>
++				<texturefocus border="35,2,35,2">button_shutdown_focus.png</texturefocus>
++				<texturenofocus border="35,2,35,2">button_shutdown_nofocus.png</texturenofocus>
++				<onclick>ActivateWindow(favourites)</onclick>
++				<label>1036</label>
++                <align>center</align>
++			</control>
++			<control type="button" id="13">
+ 				<description>Settings</description>
+ 				<width>510</width>
+ 				<height>60</height>
+@@ -168,17 +176,20 @@
+ 				<onclick>Dialog.Close(all,true)</onclick>
+ 				<onclick>ActivateWindow(settings)</onclick>
+ 				<label>$LOCALIZE[5]</label>
++                <align>center</align>
+ 			</control>
+-			<control type="button" id="15">
+-				<description>Favorites</description>
++			<control type="button" id="14">
++				<description>Reboot button</description>
+ 				<width>510</width>
+ 				<height>60</height>
+ 				<textwidth>435</textwidth>
+ 				<textoffsetx>45</textoffsetx>
+ 				<texturefocus border="35,2,35,2">button_shutdown_focus.png</texturefocus>
+ 				<texturenofocus border="35,2,35,2">button_shutdown_nofocus.png</texturenofocus>
+-				<onclick>ActivateWindow(favourites)</onclick>
+-				<label>1036</label>
++				<onclick>Reset()</onclick>
++				<visible>System.CanReboot</visible>
++				<label>13013</label>
++                <align>center</align>
+ 			</control>
+ 			<control type="image" id="16">
+ 				<description>background image</description>
+@@ -188,4 +199,4 @@
+ 			</control>
+ 		</control>
+ 	</controls>
+-</window>
+\ В конце файла нет новой строки
++</window>
+diff -Naurp kodi-theme-AeonNox-bbd197d/language/English/strings.po kodi-theme-AeonNox-bbd197d-patch/language/English/strings.po
+--- kodi-theme-AeonNox-bbd197d/language/English/strings.po	2017-01-12 11:08:54.000000000 +0200
++++ kodi-theme-AeonNox-bbd197d-patch/language/English/strings.po	2017-01-14 16:21:38.000000000 +0200
+@@ -1122,3 +1122,7 @@ msgstr ""
+ msgctxt "#31964"
+ msgid "NoTo"
+ msgstr ""
++
++msgctxt "#31203"
++msgid "System shutdown in"
++msgstr ""
+diff -Naurp kodi-theme-AeonNox-bbd197d/language/Russian/strings.po kodi-theme-AeonNox-bbd197d-patch/language/Russian/strings.po
+--- kodi-theme-AeonNox-bbd197d/language/Russian/strings.po	2017-01-12 11:08:54.000000000 +0200
++++ kodi-theme-AeonNox-bbd197d-patch/language/Russian/strings.po	2017-01-14 16:20:49.000000000 +0200
+@@ -743,3 +743,7 @@ msgstr "КОНЦЕРТЫ"
+ msgctxt "#31961"
+ msgid "Hide ratings in list views"
+ msgstr "Скрывать рейтинги в режиме списка"
++
++msgctxt "#31203"
++msgid "System shutdown in"
++msgstr "Выключение через"

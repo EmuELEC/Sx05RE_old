@@ -29,7 +29,7 @@
 # Skins to install (Estuary)
 # Space separated list is supported,
 # e.g. SKINS="Estuary"
-  SKINS="Estuary"
+  SKINS="Estuary AeonNox"
 
 # Default Skin (Estuary)
   SKIN_DEFAULT="Estuary"

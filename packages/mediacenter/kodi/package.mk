@@ -327,7 +327,7 @@ post_makeinstall_target() {
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "script.openweathermap.maps" $ADDON_MANIFEST
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "weather.openweathermap.extended" $ADDON_MANIFEST
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "script.skinshortcuts" $ADDON_MANIFEST
-  xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "skin.aeon.nox.5" $ADDON_MANIFEST
+  xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "skin.aeon.nox.5ae" $ADDON_MANIFEST
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "repository.search.db" $ADDON_MANIFEST
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "script.module.unidecode" $ADDON_MANIFEST
   xmlstarlet ed -L --subnode "/addons" -t elem -n "addon" -v "script.module.simplejson" $ADDON_MANIFEST
@@ -357,8 +357,8 @@ post_makeinstall_target() {
       cp -R $PKG_DIR/config/script.skinshortcuts $INSTALL/usr/share/kodi/config
   fi
 
-  if [ -d $PKG_DIR/config/skin.aeon.nox.5 ]; then
-      cp -R $PKG_DIR/config/skin.aeon.nox.5 $INSTALL/usr/share/kodi/config
+  if [ -d $PKG_DIR/config/skin.aeon.nox.5ae ]; then
+      cp -R $PKG_DIR/config/skin.aeon.nox.5ae $INSTALL/usr/share/kodi/config
   fi
 
   debug_strip $INSTALL/usr/lib/kodi/kodi.bin
