@@ -4,12 +4,12 @@
 ################################################################################
 
 PKG_NAME="libretro-ppsspp"
-PKG_VERSION="ea17e27"
+PKG_VERSION="5f7bcf7"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="GPLv2"
 PKG_SITE="https://github.com/libretro/libretro-ppsspp"
-PKG_URL="$ALEXELEC_SRC/ppsspp-$PKG_VERSION.tar.xz"
+PKG_URL="$LAKKA_MIRROR/ppsspp-$PKG_VERSION.tar.xz"
 PKG_SOURCE_DIR="ppsspp-$PKG_VERSION*"
 PKG_DEPENDS_TARGET="toolchain"
 PKG_SECTION="xmedia/games"

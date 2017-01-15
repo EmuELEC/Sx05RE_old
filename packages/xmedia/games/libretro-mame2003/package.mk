@@ -4,7 +4,7 @@
 ################################################################################
 
 PKG_NAME="libretro-mame2003"
-PKG_VERSION="57f6dae"
+PKG_VERSION="686bda7"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="MAME"
