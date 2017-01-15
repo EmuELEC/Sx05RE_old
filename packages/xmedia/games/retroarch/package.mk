@@ -4,7 +4,7 @@
 ################################################################################
 
 PKG_NAME="retroarch"
-PKG_VERSION="df4107b"
+PKG_VERSION="9d7fe2c"
 PKG_REV="1"
 PKG_ARCH="arm aarch64"
 PKG_LICENSE="GPLv3"
@@ -30,7 +30,7 @@ unpack() {
 TARGET_CONFIGURE_OPTS=""
 PKG_CONFIGURE_OPTS_TARGET="--disable-vg \
                            --disable-sdl \
-						   --disable-xvideo \
+                           --disable-xvideo \
                            --disable-al \
                            --disable-oss \
                            --enable-opengles \
@@ -38,7 +38,7 @@ PKG_CONFIGURE_OPTS_TARGET="--disable-vg \
                            --enable-mali_fbdev \
                            --enable-neon \
                            --enable-fbo \
-						   --enable-zlib \
+                           --enable-zlib \
                            --enable-freetype"
 
 pre_configure_target() {

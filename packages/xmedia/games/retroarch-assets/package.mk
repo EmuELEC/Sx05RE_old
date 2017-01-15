@@ -4,7 +4,7 @@
 ################################################################################
 
 PKG_NAME="retroarch-assets"
-PKG_VERSION="e72f35b"
+PKG_VERSION="41b3b3c"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
