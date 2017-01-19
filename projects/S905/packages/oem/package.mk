@@ -35,7 +35,7 @@ post_install() {
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET minidlna"
 
 # tv services
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET vdr-all wicard"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET vdr-all wicard tvheadend"
 
 # tools
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET ImageMagick mc aml-vnc scan-s2 scan-m3u serviceref"

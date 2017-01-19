@@ -1,0 +1,20 @@
+diff -Naurp tvheadend-3927788/src/input/mpegts/linuxdvb/linuxdvb_switch.c tvheadend-3927788-patch/src/input/mpegts/linuxdvb/linuxdvb_switch.c
+--- tvheadend-3927788/src/input/mpegts/linuxdvb/linuxdvb_switch.c	2016-03-13 19:20:43.000000000 +0200
++++ tvheadend-3927788-patch/src/input/mpegts/linuxdvb/linuxdvb_switch.c	2016-03-14 09:22:08.000000000 +0200
+@@ -203,7 +203,15 @@ linuxdvb_switch_tune
+       if (ls->ls_committed >= 0) {
+         if (linuxdvb_diseqc_send(fd, 0xE0 | r1, 0x10, 0x38, 1, com))
+           return -1;
+-        tvh_safe_usleep(slp);
++        tvh_safe_usleep(15000); // 15ms
++        // Diseqc set votage invert
++        if (linuxdvb_diseqc_set_volt_invert(lsp, pol))
++          return -1;
++        if (linuxdvb_diseqc_send(fd, 0xE0 | r1, 0x10, 0x38, 1, com))
++          return -1;
++        tvh_safe_usleep(15000); // 15ms
++        if (linuxdvb_diseqc_set_volt(lsp, pol))
++          return -1;
+       }
+ 
+       if (!ls->ls_uncommitted_first) {

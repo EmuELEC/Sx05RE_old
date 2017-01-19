@@ -1,0 +1,46 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+. /etc/profile
+
+SERVICE_DIR="/storage/.cache/services"
+LOG_TVH="/var/log/tvheadend.log"
+LOG_TVH_OLD="/var/log/tvheadend.log.old"
+TVH_HOME="/storage/.config/tvheadend"
+
+. $SERVICE_DIR/tvheadend.conf
+
+if [ "$TVH_DEBUG" == "1" ]; then
+  [ -f "$LOG_TVH" ] && mv -f $LOG_TVH $LOG_TVH_OLD
+  TVHEADEND_ARG="-B -C -u root -g video -c $TVH_HOME -l $LOG_TVH -S"
+else
+  TVHEADEND_ARG="-B -C -u root -g video -c $TVH_HOME -S"
+fi
+
+if [ "$TVH_BINDADDR" != "All" -a "$TVH_BINDADDR" != "" ] ; then
+  TVHEADEND_ARG="$TVHEADEND_ARG -b $TVH_BINDADDR"
+
+  ping -q -4 -c 1 -w 1 $TVH_BINDADDR > /dev/null 2>&1
+  if [ "$?" != "0" ]; then
+    # wait network
+    [ -z "$TVH_TIMEOUT" ] && TVH_TIMEOUT=5
+    TIMEOUT=$(expr $TVH_TIMEOUT \* 4)
+    for i in $(seq 1 $TIMEOUT) ; do
+        ping -q -4 -c 1 -w 1 $TVH_BINDADDR > /dev/null 2>&1
+        if [ "$?" == "0" ]; then
+            usleep 500000
+            logger -t tvheadend "Tvheadend wait network: $i count"
+            break
+        fi
+        usleep 250000
+    done
+  fi
+
+fi
+
+CPU_ARCH=$(grep 'CPU architecture' /proc/cpuinfo | awk '{print $3}')
+[ "$CPU_ARCH" != "AArch64" ] && echo 'performance' > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+echo "TVH_ARGS=\"$TVHEADEND_ARG\"" > /run/alexelec/tvh.conf

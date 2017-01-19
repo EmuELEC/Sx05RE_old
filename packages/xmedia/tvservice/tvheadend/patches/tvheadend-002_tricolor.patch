@@ -1,0 +1,17 @@
+diff -Naurp hts-tvheadend-078e61b/src/input/mpegts/dvb_psi.c hts-tvheadend-078e61b-patch/src/input/mpegts/dvb_psi.c
+--- hts-tvheadend-078e61b/src/input/mpegts/dvb_psi.c	2014-10-07 11:40:09.000000000 +0300
++++ hts-tvheadend-078e61b-patch/src/input/mpegts/dvb_psi.c	2014-10-07 12:36:15.000000000 +0300
+@@ -1201,13 +1201,6 @@ psi_desc_ca(mpegts_service_t *t, const u
+       i += nanolen;
+     }
+     break;
+-  case 0x4a00:
+-    if (caid == 0x4ad2)//streamguard
+-       provid=0;
+-    if (caid != 0x4aee && caid != 0x4ad2) { // Bulcrypt
+-       provid = size < 4 ? 0 : buffer[4];
+-    }
+-    break;
+   default:
+     provid = 0;
+     break;
