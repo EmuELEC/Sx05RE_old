@@ -59,6 +59,8 @@ else
 fi
 
 # dvb drivers
+if [ "$DEVICE" != "K1Plus" ]; then
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET media_build"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET media_build_cc"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET s2-liplianin"
+fi
