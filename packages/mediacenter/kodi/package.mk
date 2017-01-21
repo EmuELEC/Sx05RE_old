@@ -366,6 +366,10 @@ post_makeinstall_target() {
       cp -R $PKG_DIR/config/skin.aeon.nox.5ae $INSTALL/usr/share/kodi/config
   fi
 
+  if [ -d $PKG_DIR/config/pvr.hts ]; then
+      cp -R $PKG_DIR/config/pvr.hts $INSTALL/usr/share/kodi/config
+  fi
+
   debug_strip $INSTALL/usr/lib/kodi/kodi.bin
 }
 

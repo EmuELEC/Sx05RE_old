@@ -1,0 +1,20 @@
+<settings>
+    <setting id="autorec_approxtime" value="0" />
+    <setting id="autorec_maxdiff" value="15" />
+    <setting id="connect_timeout" value="10" />
+    <setting id="dvr_dubdetect" value="0" />
+    <setting id="dvr_lifetime" value="8" />
+    <setting id="dvr_priority" value="2" />
+    <setting id="epg_async" value="false" />
+    <setting id="host" value="127.0.0.1" />
+    <setting id="htsp_port" value="9982" />
+    <setting id="http_port" value="9981" />
+    <setting id="pass" value="" />
+    <setting id="pretuner_closedelay" value="10" />
+    <setting id="pretuner_enabled" value="false" />
+    <setting id="response_timeout" value="5" />
+    <setting id="streaming_profile" value="" />
+    <setting id="total_tuners" value="2" />
+    <setting id="trace_debug" value="false" />
+    <setting id="user" value="" />
+</settings>

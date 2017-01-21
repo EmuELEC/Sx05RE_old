@@ -55,6 +55,13 @@ if [ ! -d $HOME/.kodi/userdata/addon_data/skin.aeon.nox.5ae ]; then
   fi
 fi
 
+if [ ! -d $HOME/.kodi/userdata/addon_data/pvr.hts ]; then
+  if [ -d /usr/share/kodi/config/pvr.hts ]; then
+    mkdir -p $HOME/.kodi/userdata/addon_data
+    cp -R /usr/share/kodi/config/pvr.hts $HOME/.kodi/userdata/addon_data
+  fi
+fi
+
 # add default config file to HOME dir Kodi
 if [ ! -f $HOME/.kodi/userdata/advancedsettings.xml.sample ] ; then
   if [ -f /usr/share/kodi/system/advancedsettings.xml.sample ]; then
