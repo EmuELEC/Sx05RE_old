@@ -1,7 +1,7 @@
 diff -Naurp pvr.iptvsimple-c06f367/lib/rapidxml/rapidxml.hpp pvr.iptvsimple-c06f367-patch/lib/rapidxml/rapidxml.hpp
 --- pvr.iptvsimple-c06f367/lib/rapidxml/rapidxml.hpp	2017-01-20 09:42:57.000000000 +0200
-+++ pvr.iptvsimple-c06f367-patch/lib/rapidxml/rapidxml.hpp	2017-01-20 18:28:00.000000000 +0200
-@@ -1596,7 +1596,15 @@ namespace rapidxml
++++ pvr.iptvsimple-c06f367-patch/lib/rapidxml/rapidxml.hpp	2017-01-21 19:47:00.000000000 +0200
+@@ -1596,7 +1596,23 @@ namespace rapidxml
                          {
  
                          // &amp; &apos;
@@ -11,6 +11,14 @@ diff -Naurp pvr.iptvsimple-c06f367/lib/rapidxml/rapidxml.hpp pvr.iptvsimple-c06f
 +                            if (src[2] == Ch('m') && src[3] == Ch('p') && src[4] == Ch(';') && src[5] == Ch('q') && src[6] == Ch('u') && src[7] == Ch('o') && src[8] == Ch('t') && src[9] == Ch(';'))
 +                            {
 +                                *dest = Ch('"');
++                                ++dest;
++                                src += 10;
++                                continue;
++                            }
++                            // fix &amp;apos;
++                            if (src[2] == Ch('m') && src[3] == Ch('p') && src[4] == Ch(';') && src[5] == Ch('a') && src[6] == Ch('p') && src[7] == Ch('o') && src[8] == Ch('s') && src[9] == Ch(';'))
++                            {
++                                *dest = Ch('\'');
 +                                ++dest;
 +                                src += 10;
 +                                continue;
