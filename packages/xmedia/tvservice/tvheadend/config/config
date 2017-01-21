@@ -7,8 +7,8 @@
 	"caclient_ui": true,
 	"epg_compress": true,
 	"prefer_picon": true,
-	"chiconpath": "file:///storage/picons/tvh/%C.png",
-	"chiconscheme": 2,
-	"piconpath": "file:///storage/picons/vdr/",
+	"chiconpath": "file:///storage/picons/tvh/%c.png",
+	"chiconscheme": 1,
+	"piconpath": "file:///storage/picons/tvh/",
 	"piconscheme": 1
 }
