@@ -132,4 +132,5 @@ post_install() {
   enable_service tmp-database.mount
   enable_service tmp-joypads.mount
   enable_service tmp-shaders.mount
+  enable_service upperdir-clear.service
 }
