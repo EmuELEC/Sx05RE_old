@@ -1,0 +1,28 @@
+diff -Naurp kodi-17.0-rc4-53a5c83/system/keymaps/keyboard.xml kodi-17.0-rc4-53a5c83-patch/system/keymaps/keyboard.xml
+--- kodi-17.0-rc4-53a5c83/system/keymaps/keyboard.xml	2017-01-22 19:17:26.000000000 +0200
++++ kodi-17.0-rc4-53a5c83-patch/system/keymaps/keyboard.xml	2017-01-22 16:21:41.000000000 +0200
+@@ -108,6 +108,13 @@
+       <green>ActivateWindow(Videos)</green>
+       <yellow>ActivateWindow(Music)</yellow>
+       <blue>ActivateWindow(Pictures)</blue>
++      <f1>ActivateWindow(TVChannels)</f1>
++      <f2>ActivateWindow(Videos)</f2>
++      <f3>ActivateWindow(Music)</f3>
++      <f4>ActivateWindow(Pictures)</f4>
++      <f5>ActivateWindow(Favourites)</f5>
++      <f6>PlayerControl(ShowVideoMenu)</f6>
++      <f7>ActivateWindow(Settings)</f7>
+       <!-- Multimedia keyboard keys -->
+       <browser_back>Back</browser_back>
+       <browser_forward/>
+@@ -327,8 +334,8 @@
+     <keyboard>
+       <f>FastForward</f>
+       <r>Rewind</r>
+-      <period>StepForward</period>
+-      <comma>StepBack</comma>
++      <period>SkipNext</period>
++      <comma>SkipPrevious</comma>
+       <backspace>Fullscreen</backspace>
+       <backspace mod="longpress">Stop</backspace>
+       <browser_back>Fullscreen</browser_back>
