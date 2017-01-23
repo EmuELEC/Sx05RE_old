@@ -50,6 +50,17 @@ make_target() {
     mv arch/$TARGET_KERNEL_ARCH/boot/dts/amlogic/$f $TARGET_IMG
   done
 
+  # Patched device trees double
+  for f in $PKG_DIR/double/*.patch; do
+    if [ -e $f ]; then
+      DTB_NAME="$(basename $f .patch).dtb"
+      DTS_NAME="$(basename $f .patch).dts"
+      patch -d arch/$TARGET_KERNEL_ARCH/boot/dts/amlogic/ -o $DTS_NAME --merge < $f
+      LDFLAGS="" make $DTB_NAME
+      mv arch/$TARGET_KERNEL_ARCH/boot/dts/amlogic/$DTB_NAME $TARGET_IMG
+    fi
+  done
+
   popd > /dev/null
 }
 

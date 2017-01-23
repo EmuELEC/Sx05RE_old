@@ -104,3 +104,15 @@
  
  &pinmux {
  	audio_pins:audio_pin{
+--- a/mesongxbb.dtsi	2016-12-23 10:16:30.000000000 +0100
++++ b/mesongxbb.dtsi	2017-01-02 21:07:45.607259000 +0100
+@@ -465,7 +465,7 @@
+ 	i2c_a: i2c@c1108500{ /*I2C-A*/
+ 		compatible = "amlogic, meson-i2c";
+ 		dev_name = "i2c-A";
+-		status = "disabled";
++		status = "okay";
+ 		reg = <0x0 0xc1108500 0x0 0x20>;
+ 		device_id = <1>;
+ 		pinctrl-names="default";
+
