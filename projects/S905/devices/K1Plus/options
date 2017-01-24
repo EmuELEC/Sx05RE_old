@@ -11,3 +11,6 @@
 # Space separated list is supported,
 # e.g. FIRMWARE="dvb-firmware misc-firmware wlan-firmware"
   FIRMWARE="misc-firmware wlan-firmware dvb-firmware brcmfmac_sdio-firmware-aml rtl8723bs_bt"
+
+# build in a separate environment
+  SEPARATE="yes"
