@@ -1,0 +1,19 @@
+[Unit]
+Description=udpxy server
+Requires=network-online.target
+After=network-online.target
+Before=kodi.service
+ConditionPathExists=/storage/.cache/services/udpxy.conf
+
+[Service]
+EnvironmentFile=-/run/alexelec/udpxy.conf
+ExecStartPre=/usr/bin/udpxy-config
+ExecStart=/usr/bin/udpxy $UDPXY_ARGS
+ExecStop=/bin/kill -TERM $MAINPID
+TimeoutStopSec=3
+Restart=always
+RestartSec=2
+StartLimitInterval=0
+
+[Install]
+WantedBy=kodi.target

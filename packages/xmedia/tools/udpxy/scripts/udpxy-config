@@ -1,0 +1,24 @@
+#!/bin/sh
+################################################################################
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+################################################################################
+
+SERVICE_DIR="/storage/.cache/services"
+LOG_FILE="/var/log/udpxy.log"
+
+[ -f $SERVICE_DIR/udpxy.conf ] && . $SERVICE_DIR/udpxy.conf
+
+[ -z "$UDPXY_IN" -o "$UDPXY_IN" == "All" ] && UDPXY_IN="0.0.0.0"
+[ -z "$UDPXY_OUT" -o "$UDPXY_OUT" == "All" ] && UDPXY_OUT="0.0.0.0"
+[ -z "$UDPXY_PORT" ] && UDPXY_PORT="8686"
+[ -z "$UDPXY_MAXCLIENTS" ] && UDPXY_MAXCLIENTS="5"
+[ -z "$UDPXY_DEBUG" ] && UDPXY_DEBUG="0"
+
+if [ "$UDPXY_DEBUG" == "0" ]; then
+  UDPXY_ARGS="-T -S -m $UDPXY_IN -a $UDPXY_OUT -p $UDPXY_PORT -c $UDPXY_MAXCLIENTS"
+else
+  UDPXY_ARGS="-T -S -m $UDPXY_IN -a $UDPXY_OUT -p $UDPXY_PORT -c $UDPXY_MAXCLIENTS -l $LOG_FILE"
+fi
+
+echo "UDPXY_ARGS=\"$UDPXY_ARGS\"" > /run/alexelec/udpxy.conf
