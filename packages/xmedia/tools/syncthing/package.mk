@@ -1,38 +1,21 @@
 ################################################################################
-#      This file is part of LibreELEC - https://libreelec.tv
-#      Copyright (C) 2016 Team LibreELEC
-#
-#  LibreELEC is free software: you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 2 of the License, or
-#  (at your option) any later version.
-#
-#  LibreELEC is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with LibreELEC.  If not, see <http://www.gnu.org/licenses/>.
+#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
 ################################################################################
 
 PKG_NAME="syncthing"
-PKG_VERSION="0.14.3"
-PKG_REV="103"
+PKG_VERSION="0.14.21"
+PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="MPLv2"
 PKG_SITE="https://syncthing.net/"
 PKG_URL="https://github.com/syncthing/syncthing/archive/v${PKG_VERSION}.tar.gz"
 PKG_DEPENDS_TARGET="toolchain go:host"
-PKG_SECTION="service/system"
+PKG_SECTION="xmedia/tools"
 PKG_SHORTDESC="Syncthing: open source continuous file synchronization"
 PKG_LONGDESC="Syncthing ($PKG_VERSION) replaces proprietary sync and cloud services with something open, trustworthy and decentralized. Your data is your data alone and you deserve to choose where it is stored, if it is shared with some third party and how it's transmitted over the Internet."
 PKG_AUTORECONF="no"
-
-PKG_IS_ADDON="yes"
-PKG_ADDON_NAME="Syncthing"
-PKG_ADDON_TYPE="xbmc.service"
-PKG_MAINTAINER="Anton Voyl (awiouy)"
+PKG_IS_ADDON="no"
 
 configure_target() {
   go run build.go assets
@@ -79,10 +62,11 @@ make_target() {
 }
 
 makeinstall_target() {
-  :
+  mkdir -p $INSTALL/usr/bin
+    cp -P bin/syncthing $INSTALL/usr/bin
+    cp -P $PKG_DIR/scripts/* $INSTALL/usr/bin
 }
 
-addon() {
-  mkdir -p $ADDON_BUILD/$PKG_ADDON_ID/bin
-  cp -P $ROOT/$PKG_BUILD/bin/syncthing $ADDON_BUILD/$PKG_ADDON_ID/bin
+post_install() {
+  enable_service syncthing.service
 }
