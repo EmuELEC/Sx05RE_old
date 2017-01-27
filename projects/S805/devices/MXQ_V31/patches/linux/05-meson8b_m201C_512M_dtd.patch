@@ -1,0 +1,18 @@
+diff -Naurp linux-amlogic-3.10-c954850/arch/arm/boot/dts/amlogic/meson8b_m201C_512M.dtd linux-amlogic-3.10-c954850-patch/arch/arm/boot/dts/amlogic/meson8b_m201C_512M.dtd
+--- linux-amlogic-3.10-c954850/arch/arm/boot/dts/amlogic/meson8b_m201C_512M.dtd	2016-04-29 15:25:30.000000000 +0300
++++ linux-amlogic-3.10-c954850-patch/arch/arm/boot/dts/amlogic/meson8b_m201C_512M.dtd	2016-04-29 14:34:18.000000000 +0300
+@@ -316,6 +316,14 @@ void root_func(){
+ 		status = "okay";
+ 	};
+ 
++	amvideocap{
++		compatible = "amlogic,amvideocap";
++		dev_name = "amvideocap.0";
++		status = "okay";
++		reserve-memory = <0x00600000>;//1920*1088*3
++		reserve-iomap = "true";
++	};
++
+ /// ***************************************************************************************
+ ///	-	RTC
+ //$$ MODULE="RTC"
