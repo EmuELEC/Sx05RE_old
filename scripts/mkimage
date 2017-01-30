@@ -117,7 +117,7 @@ trap cleanup SIGINT
     echo "Signing the env-update package"
     mkdir -p sign
     SIGNAPK_DIR="$ROOT/tools/signapk"
-    java -Xmx1024m -jar $SIGNAPK_DIR/signapk.jar -w $SIGNAPK_DIR/testkey.x509.pem $SIGNAPK_DIR/testkey.pk8 env-update.zip sign/aml_autoscript.zip
+    java -Xmx2048m -jar $SIGNAPK_DIR/signapk.jar -w $SIGNAPK_DIR/testkey.x509.pem $SIGNAPK_DIR/testkey.pk8 env-update.zip sign/aml_autoscript.zip
 	popd > /dev/null
     mcopy "$LE_TMP/sign/aml_autoscript.zip" ::
   fi

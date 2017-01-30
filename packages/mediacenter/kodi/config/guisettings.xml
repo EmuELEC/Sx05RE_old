@@ -5,22 +5,22 @@
     <general>
         <settinglevel>3</settinglevel>
     </general>
-    <locale>
-        <audiolanguage default="true">original</audiolanguage>
-        <charset default="true">DEFAULT</charset>
-        <country default="true">Russia</country>
-        <keyboardlayouts default="true">English QWERTY|Russian ЙЦУКЕН</keyboardlayouts>
-        <language default="true">resource.language.ru_ru</language>
-        <longdateformat default="true">regional</longdateformat>
-        <shortdateformat default="true">regional</shortdateformat>
-        <speedunit default="true">regional</speedunit>
-        <subtitlelanguage default="true">original</subtitlelanguage>
-        <temperatureunit default="true">regional</temperatureunit>
-        <timeformat default="true">regional</timeformat>
-        <timezone>Europe/Kiev</timezone>
-        <timezonecountry>Ukraine</timezonecountry>
-        <use24hourclock default="true">regional</use24hourclock>
-    </locale>
+     <locale>
+            <audiolanguage default="true">original</audiolanguage>
+            <charset default="true">DEFAULT</charset>
+            <country>USA (12h)</country>
+            <keyboardlayouts default="true">English QWERTY</keyboardlayouts>
+            <language>resource.language.en_gb</language>
+            <longdateformat default="true">regional</longdateformat>
+            <shortdateformat default="true">regional</shortdateformat>
+            <speedunit>kmh</speedunit>
+            <subtitlelanguage default="true">original</subtitlelanguage>
+            <temperatureunit>c</temperatureunit>
+            <timeformat default="true">regional</timeformat>
+            <timezone>America/Mexico_City</timezone>
+            <timezonecountry>Mexico</timezonecountry>
+            <use24hourclock default="true">regional</use24hourclock>
+        </locale>
     <lookandfeel>
         <enablerssfeeds>true</enablerssfeeds>
         <font default="true">Default</font>

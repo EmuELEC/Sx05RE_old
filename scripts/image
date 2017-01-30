@@ -410,7 +410,7 @@ if [ "$1" = "release" -o "$1" = "mkimage" -o "$1" = "amlpkg" ]; then
     echo "Signing the update package"
     mkdir -p sign
     SIGNAPK_DIR="$ROOT/tools/signapk"
-        java -Xmx1024m -jar $SIGNAPK_DIR/signapk.jar -w $SIGNAPK_DIR/testkey.x509.pem $SIGNAPK_DIR/testkey.pk8 update.zip sign/$AML_UPDATE_NAME-update.zip
+        java -Xmx2048m -jar $SIGNAPK_DIR/signapk.jar -w $SIGNAPK_DIR/testkey.x509.pem $SIGNAPK_DIR/testkey.pk8 update.zip sign/$AML_UPDATE_NAME-update.zip
 
     # create the auto-install package
     echo "Creating Amlogic ZIP auto-install package"

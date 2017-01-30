@@ -56,6 +56,10 @@ else
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-fuse"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-nestopia"
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-picodrive"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-vba-next"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-gambatte"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET libretro-beetle-pce-fast"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET retroarchm"
 fi
 
 # dvb drivers

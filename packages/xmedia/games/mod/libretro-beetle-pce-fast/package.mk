@@ -3,23 +3,23 @@
 #      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
 ################################################################################
 
-PKG_NAME="libretro-genesis-plus-gx"
-PKG_VERSION="b1eb064"
+PKG_NAME="libretro-beetle-pce-fast"
+PKG_VERSION="39185a6"
 PKG_REV="1"
 PKG_ARCH="any"
-PKG_LICENSE="Non-commercial"
-PKG_SITE="https://github.com/libretro/Genesis-Plus-GX"
-PKG_URL="https://github.com/libretro/Genesis-Plus-GX/archive/$PKG_VERSION.tar.gz"
-PKG_SOURCE_DIR="Genesis-Plus-GX-$PKG_VERSION*"
+PKG_LICENSE="MAME"
+PKG_SITE="https://github.com/libretro/beetle-pce-fast-libretro"
+PKG_URL="https://github.com/libretro/beetle-pce-fast-libretro/archive/$PKG_VERSION.tar.gz"
+PKG_SOURCE_DIR="beetle-pce-fast-libretro-$PKG_VERSION*"
 PKG_DEPENDS_TARGET="toolchain"
 PKG_SECTION="xmedia/games"
-PKG_SHORTDESC="An enhanced port of Genesis Plus for Gamecube/Wii"
-PKG_LONGDESC="Genesis Plus GX is an open-source & portable Sega Mega Drive / Genesis emulator, now also emulating SG-1000, Master System, Game Gear and Sega/Mega CD hardware."
+PKG_SHORTDESC="Optimized port of VBA-M to Libretro"
+PKG_LONGDESC="Optimized port of VBA-M to Libretro"
 PKG_IS_ADDON="no"
 PKG_AUTORECONF="no"
 
 make_target() {
-  make -f Makefile.libretro
+  make ARCH="" CC="$CC" NATIVE_CC="$CC" LD="$CC" -j 1
 }
 
 makeinstall_target() {
