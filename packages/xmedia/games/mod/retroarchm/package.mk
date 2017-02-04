@@ -48,9 +48,8 @@ pre_configure_target() {
 }
 
 make_target() {
-  make V=1
- 
-}
+  make V=1 HAVE_NETWORKING=1 HAVE_WIFI=1 HAVE_LAKKA=1 
+ }
 
 makeinstall_target() {
   mkdir -p $INSTALL/usr/bin
