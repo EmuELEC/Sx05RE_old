@@ -9,3 +9,4 @@ diff -Naur a/src/crypto/x509/root_unix.go b/src/crypto/x509/root_unix.go
  }
  
  func (c *Certificate) systemVerify(opts *VerifyOptions) (chains [][]*Certificate, err error) {
+

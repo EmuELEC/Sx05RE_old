@@ -46,3 +46,4 @@ makeinstall_host() {
   mkdir -p $ROOT/$TOOLCHAIN/lib/golang
     cp -av $ROOT/$PKG_BUILD/* $ROOT/$TOOLCHAIN/lib/golang/
 }
+
