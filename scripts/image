@@ -29,9 +29,9 @@ GIT_HASH=$(git rev-parse HEAD)
 ORIGIN_URL="$(git remote -v | awk '$1 == "origin" { print $2 }' | head -1 | sed 's#\.git$##;s#^git:#https:#;s#^git@github\.com:#https://github.com/#')"
 
 if [ -z "$DEVICE" ]; then
-  TARGET_VERSION="$PROJECT.$TARGET_ARCH-$ALEXELEC_VERSION"
+  TARGET_VERSION="$PROJECT.$TARGET_ARCH-$Sx05RE_VERSION"
 else
-  TARGET_VERSION="$PROJECT.$DEVICE.$TARGET_ARCH-$ALEXELEC_VERSION"
+  TARGET_VERSION="$PROJECT.$DEVICE.$TARGET_ARCH-$Sx05RE_VERSION"
 fi
 IMAGE_NAME="$DISTRONAME-$TARGET_VERSION"
 
@@ -70,18 +70,18 @@ echo "$TARGET_VERSION" > $INSTALL/etc/release
 # create /etc/os-release
 echo -e "NAME=\"$DISTRONAME\"" > $INSTALL/etc/os-release
 if [ -z "$DEVICE" ]; then
-  echo -e "VERSION=\"$ALEXELEC_VERSION\"" >> $INSTALL/etc/os-release
+  echo -e "VERSION=\"$Sx05RE_VERSION\"" >> $INSTALL/etc/os-release
 else
-  echo -e "VERSION=\"$DEVICE-$ALEXELEC_VERSION\"" >> $INSTALL/etc/os-release
+  echo -e "VERSION=\"$DEVICE-$Sx05RE_VERSION\"" >> $INSTALL/etc/os-release
 fi
-echo -e "ID=\"alexelec\"" >> $INSTALL/etc/os-release
+echo -e "ID=\"sx05re\"" >> $INSTALL/etc/os-release
 echo -e "VERSION_ID=\"$OS_VERSION\"" >> $INSTALL/etc/os-release
-echo -e "PRETTY_NAME=\"$DISTRONAME ($ALEXELEC_BUILD) - Version: $ALEXELEC_VERSION\"" >> $INSTALL/etc/os-release
+echo -e "PRETTY_NAME=\"$DISTRONAME ($Sx05RE_BUILD) - Version: $Sx05RE_VERSION\"" >> $INSTALL/etc/os-release
 echo -e "HOME_URL=\"https://alexelec.in.ua\"" >> $INSTALL/etc/os-release
 echo -e "BUG_REPORT_URL=\"$ORIGIN_URL\"" >> $INSTALL/etc/os-release
 echo -e "BUILD_ID=\"$GIT_HASH\"" >> $INSTALL/etc/os-release
-echo -e "ALEXELEC_ARCH=\"$PROJECT.$TARGET_ARCH\"" >> $INSTALL/etc/os-release
-echo -e "ALEXELEC_BUILD=\"$ALEXELEC_BUILD\"" >> $INSTALL/etc/os-release
+echo -e "Sx05RE_ARCH=\"$PROJECT.$TARGET_ARCH\"" >> $INSTALL/etc/os-release
+echo -e "Sx05RE_BUILD=\"$Sx05RE_BUILD\"" >> $INSTALL/etc/os-release
 
 # create /etc/issue
 echo "$GREETING0" >  $INSTALL/etc/issue
@@ -89,7 +89,7 @@ echo "$GREETING1" >> $INSTALL/etc/issue
 echo "$GREETING2" >> $INSTALL/etc/issue
 echo "$GREETING3" >> $INSTALL/etc/issue
 echo "$GREETING4" >> $INSTALL/etc/issue
-echo "$DISTRONAME ($ALEXELEC_BUILD) Version: $ALEXELEC_VERSION" >> $INSTALL/etc/issue
+echo "$DISTRONAME ($Sx05RE_BUILD) Version: $Sx05RE_VERSION" >> $INSTALL/etc/issue
 
 ln -sf /etc/issue $INSTALL/etc/motd
 

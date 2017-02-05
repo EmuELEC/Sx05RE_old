@@ -1,10 +1,10 @@
 ################################################################################
 #      This file is part of Alex@ELEC - http://www.alexelec.in.ua
-#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)b816fab
 ################################################################################
 
 PKG_NAME="libretro-pcsx_rearmed"
-PKG_VERSION="b816fab"
+PKG_VERSION="731139f"
 PKG_REV="1"
 PKG_ARCH="arm"
 PKG_LICENSE="GPLv2"

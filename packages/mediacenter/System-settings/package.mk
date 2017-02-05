@@ -18,7 +18,7 @@ PKG_LONGDESC="System-settings: is a settings dialog for AlexELEC"
 PKG_IS_ADDON="no"
 PKG_AUTORECONF="no"
 
-PKG_MAKE_OPTS_TARGET="DISTRONAME=$DISTRONAME ROOT_PASSWORD=$ROOT_PASSWORD"
+PKG_MAKE_OPTS_TARGET="DISTRONAME=AlexELEC ROOT_PASSWORD=$ROOT_PASSWORD"
 
 post_makeinstall_target() {
   mkdir -p $INSTALL/usr/lib/alexelec

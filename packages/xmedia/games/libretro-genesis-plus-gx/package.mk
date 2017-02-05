@@ -4,7 +4,7 @@
 ################################################################################
 
 PKG_NAME="libretro-genesis-plus-gx"
-PKG_VERSION="b1eb064"
+PKG_VERSION="afa38e3"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="Non-commercial"

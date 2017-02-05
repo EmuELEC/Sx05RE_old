@@ -1,6 +1,5 @@
-diff -Naurp retroarch-df4107b/command.c retroarch-df4107b-patch/command.c
---- retroarch-df4107b/command.c	2016-11-11 10:12:26.000000000 +0200
-+++ retroarch-df4107b-patch/command.c	2016-11-11 10:37:25.000000000 +0200
+--- ./command.c	2017-02-04 00:35:26.098777272 -0600
++++ ./command.c	2017-02-04 00:38:14.727455808 -0600
 @@ -17,6 +17,7 @@
  #include <stdio.h>
  #include <string.h>
@@ -9,23 +8,24 @@ diff -Naurp retroarch-df4107b/command.c retroarch-df4107b-patch/command.c
  
  #ifdef _WIN32
  #include <direct.h>
-@@ -1817,9 +1818,6 @@ bool command_event(enum event_command cm
+@@ -1876,9 +1877,7 @@
           break;
        case CMD_EVENT_LOAD_CORE:
           command_event(CMD_EVENT_LOAD_CORE_PERSIST, NULL);
 -#ifndef HAVE_DYNAMIC
 -         command_event(CMD_EVENT_QUIT, NULL);
 -#endif
++
           break;
        case CMD_EVENT_LOAD_STATE:
-          /* Immutable - disallow savestate load when
-@@ -1925,6 +1923,9 @@ bool command_event(enum event_command cm
- #endif
+          {
+@@ -1993,6 +1992,9 @@
+          }
           break;
        case CMD_EVENT_QUIT:
-+         remove("/var/lock/start.retro");
-+         creat("/var/lock/start.games", S_IRUSR|S_IROTH);
-+         system("systemctl start emustation.service");
++remove("/var/lock/start.retro");
++creat("/var/lock/start.games", S_IRUSR|S_IROTH);
++system("systemctl start emustation.service");
           handle_quit_event();
           break;
        case CMD_EVENT_CHEEVOS_HARDCORE_MODE_TOGGLE:

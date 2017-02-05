@@ -4,7 +4,7 @@
 #      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
 ################################################################################
 
-hdmimode="1080p50hz"
+hdmimode="1080p60hz"
 
 # Parse command line arguments
 for arg in $(cat /proc/cmdline); do
@@ -27,11 +27,11 @@ for arg in $(cat /proc/cmdline); do
   esac
 done
 
-# Add information where to run AlexELEC from
+# Add information where to run Sx05RE from
 if [ -z "$BOOT_IMAGE" -o -z "$boot" -o -z "$disk" ]; then
   cmdline=$(cat /proc/cmdline)
   if [ -n "$bootfromext" ]; then
-    cmdline="$cmdline BOOT_IMAGE=kernel.img boot=LABEL=ALEXELEC disk=LABEL=ALEXELEC_DISK"
+    cmdline="$cmdline BOOT_IMAGE=kernel.img boot=LABEL=SX05RE disk=LABEL=SX05RE_DISK"
   else
     cmdline="$cmdline BOOT_IMAGE=/dev/boot boot=/dev/system disk=/dev/data"
   fi

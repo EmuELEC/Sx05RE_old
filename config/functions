@@ -350,7 +350,7 @@ show_config() {
 
   dashes="==========================="
   config_message="$config_message\n $dashes$dashes$dashes"
-  config_message="$config_message\n Configuration for $DISTRONAME ($ALEXELEC_BUILD)"
+  config_message="$config_message\n Configuration for $DISTRONAME ($Sx05RE_BUILD)"
   config_message="$config_message\n $dashes$dashes$dashes"
 
   # Build options
@@ -494,7 +494,7 @@ show_config() {
 
   config_message="$config_message\n"
   config_message="$config_message\n $dashes$dashes$dashes"
-  config_message="$config_message\n End Configuration for $DISTRONAME-$PROJECT.$DEVICE ($ALEXELEC_BUILD)"
+  config_message="$config_message\n End Configuration for $DISTRONAME-$PROJECT.$DEVICE ($Sx05RE_BUILD)"
   config_message="$config_message\n $dashes$dashes$dashes"
   config_message="$config_message\n\n\n"
 

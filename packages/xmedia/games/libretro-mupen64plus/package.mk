@@ -1,10 +1,10 @@
 ################################################################################
 #      This file is part of Alex@ELEC - http://www.alexelec.in.ua
-#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)41724aa
 ################################################################################
 
 PKG_NAME="libretro-mupen64plus"
-PKG_VERSION="41724aa"
+PKG_VERSION="78f37ec"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="GPLv2"
