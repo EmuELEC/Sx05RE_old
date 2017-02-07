@@ -56,8 +56,6 @@ makeinstall_target() {
     cp $ROOT/$PKG_BUILD/retroarch $INSTALL/usr/bin/retroarchm
  mkdir -p $INSTALL/usr/config/
 cp $PKG_DIR/autostart.sh $INSTALL/usr/config/autostart.sh
- mkdir -p $INSTALL/storage/.cache/
-cp $PKG_DIR/timezone $INSTALL/storage/.cache/timezone
 
 }
 

@@ -10,7 +10,7 @@ PKG_ARCH="arm aarch64"
 PKG_LICENSE="GPLv3"
 PKG_SITE="https://github.com/libretro/RetroArch"
 PKG_URL="none"
-PKG_DEPENDS_TARGET="toolchain samba avahi nss-mdns ffmpeg alsa-lib freetype zlib retroarch-assets core-info retroarch-joypad-autoconfig common-shaders libretro-database"
+PKG_DEPENDS_TARGET="toolchain samba avahi nss-mdns ffmpeg alsa-lib freetype zlib retroarch-assets core-info retroarch-joypad-autoconfig common-shaders libretro-database common-overlays"
 PKG_SECTION="xmedia/games"
 PKG_SHORTDESC="Reference frontend for the libretro API."
 PKG_LONGDESC="RetroArch is the reference frontend for the libretro API. Popular examples of implementations for this API includes videogame system emulators and game engines, but also more generalized 3D programs. These programs are instantiated as dynamic libraries. We refer to these as libretro cores."
@@ -48,7 +48,7 @@ pre_configure_target() {
 }
 
 make_target() {
-  make V=1
+  make V=1 HAVE_LAKKA=1
   make -C gfx/video_filters compiler=$CC extra_flags="$CFLAGS"
   # make -C audio/audio_filters compiler=$CC extra_flags="$CFLAGS"
   make -C libretro-common/audio/dsp_filters compiler=$CC extra_flags="$CFLAGS"
@@ -67,6 +67,9 @@ makeinstall_target() {
     cp $ROOT/$PKG_BUILD/retroarch.cfg $INSTALL/etc
   mkdir -p $INSTALL/usr/config/retroarch
     cp $PKG_DIR/config/* $INSTALL/usr/config/retroarch
+
+ mkdir -p $INSTALL/usr/config/
+cp $PKG_DIR/autostart.sh $INSTALL/usr/config/autostart.sh
 
   # General configuration
   sed -i -e "s/# screenshot_directory =/screenshot_directory = \"\/storage\/screenshots\"/" $INSTALL/etc/retroarch.cfg

@@ -1,8 +1,0 @@
-<menus suffix="">
-    <system name="Channels" />
-	<system name="Schedule" />
-    <system name="Timers" />
-    <system name="Recordings" />
-	<plugin name="channelscan" />
-	<system name="Setup" />
-</menus>

@@ -1,8 +1,9 @@
 #!/bin/sh
 
+
 # USB roms 
 
-sleep 5
+sleep 2
 
 #name of the file we need to put in the roms folder
 ROMFILE="sx05reroms"
@@ -31,8 +32,6 @@ if [[ -z "${FULLPATHTOROMS}" ]]; then
        ln -sf $PATHTOROMS /storage/roms
 
  fi
-
-
 
 rm -r /var/lock/start.kodi
 touch /var/lock/start.games
