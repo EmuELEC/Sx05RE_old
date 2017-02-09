@@ -9,12 +9,13 @@ BIOS_DIR="/storage/roms/bios"
 N64_DIR="/storage/roms/n64"
 
 # ping site
-ping_site () {
-  IS_SITE="false"
-  ping -4 -c 1 -W 1 alexelec.in.ua > /dev/null 2>&1
-  [ $? -eq 0 ] && IS_SITE="true"
-  echo $IS_SITE
-}
+
+#ping_site () {
+#  IS_SITE="false"
+#  ping -4 -c 1 -W 1 alexelec.in.ua > /dev/null 2>&1
+#  [ $? -eq 0 ] && IS_SITE="true"
+#  echo $IS_SITE
+#}
 
 # RetroArch load BIOS
 load_bios () {
@@ -33,6 +34,7 @@ if [ ! -f "$N64_DIR/dummy.z64" ]; then
     touch $N64_DIR/dummy.z64
 fi
 }
+
 
 
 load_bios

@@ -6,7 +6,7 @@ diff -Naurp kodi-17.0-beta7-b9fe8e9/addons/resource.language.en_gb/resources/str
  #: addons/skin.estuary/1080i/DialogButtonMenu.xml
  msgctxt "#13010"
 -msgid "Hibernate"
-+msgid "Switch to Android"
++msgid "Boot From Nand"
  msgstr ""
  
  #: system/settings/settings.xml
@@ -15,7 +15,7 @@ diff -Naurp kodi-17.0-beta7-b9fe8e9/addons/resource.language.en_gb/resources/str
  #: addons/skin.estouchy/xml/Home.xml
  msgctxt "#13012"
 -msgid "Exit"
-+msgid "Games"
++msgid "Emulationstation"
  msgstr ""
  
  #: addons/skin.estuary/1080i/DialogButtonMenu.xml
