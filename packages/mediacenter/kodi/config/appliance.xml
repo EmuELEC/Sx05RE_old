@@ -48,7 +48,7 @@
     <category id="pvrmanager">
       <group id="2">
         <setting id="pvrmanager.syncchannelgroups">
-          <default>true</default>
+          <default>false</default>
         </setting>
       </group>
     </category>

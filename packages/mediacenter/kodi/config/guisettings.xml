@@ -1,59 +1,8 @@
 <settings>
-    <debug>
-        <screenshotpath pathversion="1">/storage/screenshots/</screenshotpath>
-    </debug>
-    <general>
-        <settinglevel>3</settinglevel>
-    </general>
-     <locale>
-            <audiolanguage default="true">original</audiolanguage>
-            <charset default="true">DEFAULT</charset>
-            <country>USA (12h)</country>
-            <keyboardlayouts default="true">English QWERTY</keyboardlayouts>
-            <language>resource.language.en_gb</language>
-            <longdateformat default="true">regional</longdateformat>
-            <shortdateformat default="true">regional</shortdateformat>
-            <speedunit>kmh</speedunit>
-            <subtitlelanguage default="true">original</subtitlelanguage>
-            <temperatureunit>c</temperatureunit>
-            <timeformat default="true">regional</timeformat>
-            <timezone>America/Mexico_City</timezone>
-            <timezonecountry>Mexico</timezonecountry>
-            <use24hourclock default="true">regional</use24hourclock>
-        </locale>
-    <lookandfeel>
-        <enablerssfeeds>true</enablerssfeeds>
-        <font default="true">Default</font>
-        <rssedit default="true"></rssedit>
-        <skin default="true">skin.estuary</skin>
-        <skincolors default="true">SKINDEFAULT</skincolors>
-        <skintheme default="true">SKINDEFAULT</skintheme>
-        <skinzoom default="true">0</skinzoom>
-        <soundskin default="true">resource.uisounds.kodi</soundskin>
-        <startupwindow default="true">10000</startupwindow>
-        <stereostrength default="true">5</stereostrength>
-    </lookandfeel>
-    <pvrplayback>
-        <channelentrytimeout default="true">0</channelentrytimeout>
-        <confirmchannelswitch default="true">false</confirmchannelswitch>
-        <enableradiords>false</enableradiords>
-        <fps default="true">0</fps>
-        <playminimized>true</playminimized>
-        <scantime default="true">10</scantime>
-        <signalquality>true</signalquality>
-        <startlast default="true">0</startlast>
-        <trafficadvisory default="true">false</trafficadvisory>
-        <trafficadvisoryvolume default="true">10</trafficadvisoryvolume>
-    </pvrplayback>
-    <videoplayer>
-        <autoplaynextitem>false</autoplaynextitem>
-    </videoplayer>
-    <weather>
-        <addon>weather.openweathermap.extended</addon>
-        <currentlocation default="true">1</currentlocation>
-    </weather>
-    <audio>
-        <mute>false</mute>
-        <fvolumelevel>0.500000</fvolumelevel>
-    </audio>
+  <debug>
+    <screenshotpath pathversion="1">/storage/screenshots/</screenshotpath>
+  </debug>
+  <general>
+    <settinglevel>2</settinglevel>
+  </general>
 </settings>

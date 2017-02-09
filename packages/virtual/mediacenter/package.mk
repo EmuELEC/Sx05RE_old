@@ -1,63 +1,48 @@
 ################################################################################
-#      This file is part of Alex@ELEC - http://www.alexelec.in.ua
-#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+#      This file is part of OpenELEC - http://www.openelec.tv
+#      Copyright (C) 2009-2016 Stephan Raue (stephan@openelec.tv)
+#
+#  OpenELEC is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 2 of the License, or
+#  (at your option) any later version.
+#
+#  OpenELEC is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with OpenELEC.  If not, see <http://www.gnu.org/licenses/>.
 ################################################################################
 
 PKG_NAME="mediacenter"
 PKG_VERSION=""
-PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
-PKG_SITE="https://alexelec.in.ua"
+PKG_SITE="https://libreelec.tv"
 PKG_URL=""
 PKG_DEPENDS_TARGET="toolchain $MEDIACENTER"
 PKG_SECTION="virtual"
 PKG_SHORTDESC="Mediacenter: Metapackage"
 PKG_LONGDESC=""
+
 PKG_IS_ADDON="no"
 PKG_AUTORECONF="no"
 
-# kodi skins
+if [ "$MEDIACENTER" = "kodi" ]; then
   PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET $MEDIACENTER-theme-$SKIN_DEFAULT"
 
   for i in $SKINS; do
     PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET $MEDIACENTER-theme-$i"
   done
-
+  
 # some python stuff needed for various addons
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET Pillow simplejson pycrypto xmlstarlet"
-
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET Pillow \
+                                          simplejson \
+                                          pycrypto"
 # other packages
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET peripheral.joystick"
-
-# system settings addons
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET System-settings"
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET Alexelec-settings"
-
-  if [ "$KODI_LANGUAGE_ADDONS" = "yes" ]; then
-    PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET kodi-language-addons"
-  fi
-
-# kodi-binary-addons pvr
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET pvr.iptvsimple"
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET pvr.iptvsimple.multi"
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET pvr.vdr.vnsi"
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET pvr.hts"
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET pvr.dvblink"
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET pvr.vuplus"
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET pvr.stalker"
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET pvr.mediaportal.tvserver"
-
-# kodi-binary-addons inputstream
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET inputstream.rtmp"
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET inputstream.adaptive"
-
-# kodi-binary-addons visualization
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET visualization.spectrum"
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET visualization.waveform"
-
-# audioencoder
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET audioencoder.flac"
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET audioencoder.lame"
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET audioencoder.vorbis"
-  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET audioencoder.wav"
+  PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET LibreELEC-settings \
+                                          xmlstarlet \
+                                          peripheral.joystick"
+fi

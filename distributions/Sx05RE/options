@@ -29,7 +29,7 @@
 # Skins to install (Estuary)
 # Space separated list is supported,
 # e.g. SKINS="Estuary"
-  SKINS="Estuary AeonNox"
+  SKINS="Estuary"
 
 # Default Skin (Estuary)
   SKIN_DEFAULT="Estuary"
@@ -105,7 +105,7 @@
   KODI_LANGUAGE_ADDONS="yes"
 
 # list language addons for Kodi (ru_ru de_de en_us pl_pl ...)
-  KODI_LANGUAGE_LIST="ru_ru"
+  KODI_LANGUAGE_LIST="en_us"
 
 # build with NFS support (mounting nfs shares via the OS) (yes / no)
   NFS_SUPPORT="yes"
