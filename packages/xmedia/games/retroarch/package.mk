@@ -1,10 +1,10 @@
 ################################################################################
 #      This file is part of Alex@ELEC - http://www.alexelec.in.ua
-#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)9d7fe2c
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)9d7fe2c  7d30b47
 ################################################################################
 
 PKG_NAME="retroarch"
-PKG_VERSION="7d30b47"
+PKG_VERSION="8e6df5f"
 PKG_REV="1"
 PKG_ARCH="arm aarch64"
 PKG_LICENSE="GPLv3"

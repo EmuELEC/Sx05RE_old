@@ -31,7 +31,7 @@ make_target() {
 }
 
 makeinstall_target() {
-  mkdir -p $INSTALL/usr/share/retroarch/overlay
-    cp -R overlays/* $INSTALL/usr/share/retroarch/overlay
+  mkdir -p $INSTALL/usr/share/retroarch/overlays
+    cp -R overlays/* $INSTALL/usr/share/retroarch/overlays
    
 }
