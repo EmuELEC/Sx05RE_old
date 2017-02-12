@@ -66,7 +66,7 @@ PKG_CONFIGURE_OPTS_TARGET="--enable-silent-rules \
             --enable-swscale \
             --enable-postproc \
             --disable-faad \
-            --enable-flac \
+            --disable-flac \
             --enable-aa \
             --disable-twolame \
             --disable-quicktime \

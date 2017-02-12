@@ -37,3 +37,4 @@ mkpkg-temp
 
 # other
 /projects/S905/packages/32bit-libs/sources/*
+/libretro
