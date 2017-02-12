@@ -2,6 +2,8 @@
 
 Sx05RE is based on LibreELEC (AlexELEC originally) and it runs Emulationstation/Retroarch to turn your Amlogic Sx05 device into a Retro EmulationStation! 
 
+Please note that, Kodi is not the main focus of this, It boots directly into emulationstation with the beautiful Tronkyfran theme! 
+
 **Features**
 
 * Ultra fast boot
