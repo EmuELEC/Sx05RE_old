@@ -5,3 +5,10 @@ To view recent changes/commits to the project (master branch) please visit:
 
 https://github.com/shantigilbert/Sx05RE/tree/Sx05RE
 
+
+v1.2
+Added Emulationstation from the Retropie repository, this includes vide thumbnails!
+changed the n64 core to glupen64
+Added atari800 for Atari 5200 emualtion, but it is not yet working 
+Added atari7800 and atari2600
+other minor bug fixes
