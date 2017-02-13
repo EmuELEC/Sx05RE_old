@@ -1,10 +1,10 @@
 ################################################################################
 #      This file is part of Alex@ELEC - http://www.alexelec.in.ua
-#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua)
+#      Copyright (C) 2011-2017 Alexandr Zuyev (alex@alexelec.in.ua) e95eb4e
 ################################################################################
 
 PKG_NAME="emulationstation"
-PKG_VERSION="e95eb4e"
+PKG_VERSION="b05e846"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
@@ -25,6 +25,6 @@ PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET emulationstation-theme-tronkyfran"
 post_makeinstall_target() {
   mkdir -p $INSTALL/usr/bin
     cp $PKG_DIR/scripts/* $INSTALL/usr/bin
-  mkdir -p $INSTALL/usr/.emulationstation
-    cp $PKG_DIR/config/* $INSTALL/usr/.emulationstation
+  mkdir -p $INSTALL/usr/config/emulationstation
+    cp $PKG_DIR/config/* $INSTALL/usr/config/emulationstation
 }
