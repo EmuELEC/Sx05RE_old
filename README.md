@@ -7,12 +7,13 @@ Please note that, Kodi is not the main focus of this, It boots directly into emu
 **Features**
 
 * Ultra fast boot
+* EmulationStation with video previews
 * Retroarch 1.4.1 with Lakka interface
 * Plug and Play external storage
 * Supports ROMS on USB (just create a file names sx05reroms and recreate the rom folders)
 * Includes KODI v17 but please note that it will not be the focus of this build, only major updates will be implemented.
 * Emulationstation with Tronkyfran EmulationStation theme.
-* Based on LibreELEC (AlexELEC)
+* Based on LibreELEC (Originally forked from AlexELEC)
 * Most up to date Libretro Cores
 * Pre-configured for many gamepads
 * Samba server – File transfer from any PC client

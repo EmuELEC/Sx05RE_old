@@ -4,12 +4,12 @@
 ################################################################################
 
 PKG_NAME="emulationstation"
-PKG_VERSION="b05e846"
+PKG_VERSION="15d9041"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="GPL"
-PKG_SITE="https://github.com/RetroPie/EmulationStation"
-PKG_URL="https://github.com/RetroPie/EmulationStation/archive/$PKG_VERSION.tar.gz"
+PKG_SITE="https://github.com/fieldofcows/EmulationStation/"
+PKG_URL="https://github.com/fieldofcows/EmulationStation/archive/$PKG_VERSION.tar.gz"
 PKG_SOURCE_DIR="EmulationStation*"
 PKG_DEPENDS_TARGET="toolchain systemd SDL2 boost freetype curl cmake:host freeimage eigen vlc"
 PKG_SECTION="xmedia/games"
@@ -19,8 +19,9 @@ PKG_AUTORECONF="no"
 
 # theme for Emulationstation
 PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET emulationstation-theme-simple-dark"
-PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET emulationstation-theme-carbon"
+#PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET emulationstation-theme-carbon"
 PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET emulationstation-theme-tronkyfran"
+PKG_DEPENDS_TARGET="$PKG_DEPENDS_TARGET emulationstation-theme-crt"
 
 post_makeinstall_target() {
   mkdir -p $INSTALL/usr/bin
