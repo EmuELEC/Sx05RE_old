@@ -24,7 +24,7 @@
           break;
        case CMD_EVENT_QUIT:
 +remove("/var/lock/start.retro");
-+creat("/var/lock/start.games", S_IRUSR|S_IROTH);
++system("touch /var/lock/start.games");
 +system("systemctl start emustation.service"); system("systemctl stop retroarch.service");
           handle_quit_event();
           break;
