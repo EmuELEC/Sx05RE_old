@@ -1,6 +1,5 @@
 #!/bin/sh
 
-
 # USB roms 
 
 sleep 2
@@ -32,6 +31,10 @@ if [[ -z "${FULLPATHTOROMS}" ]]; then
        ln -sf $PATHTOROMS /storage/roms
 
  fi
+
+#hacky way to get samba on boot
+./usr/lib/samba/samba-config
+systemctl start smbd
 
 rm -r /var/lock/start.kodi
 touch /var/lock/start.games
