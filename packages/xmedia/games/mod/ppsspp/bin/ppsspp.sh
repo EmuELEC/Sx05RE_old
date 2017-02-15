@@ -22,7 +22,9 @@ echo 0 > /sys/class/graphics/fb0/free_scale
 echo 0 > /sys/class/graphics/fb1/free_scale
 echo 1 > /sys/class/video/disable_video
 
-SDL_AUDIODRIVER=alsa PPSSPPSDL $1 > /dev/null 2>&1
+ARG=${1//[\\]/}
+         
+SDL_AUDIODRIVER=alsa PPSSPPSDL "$ARG" > /dev/null 2>&1
 
 while pgrep PPSSPP > /dev/null; do sleep 1; done
 
