@@ -1,0 +1,55 @@
+diff --git a/drivers/amlogic/input/gpio_key/aml_gpiokey.c b/drivers/amlogic/input/gpio_key/aml_gpiokey.c
+index 213cb54..937f566 100644
+--- a/drivers/amlogic/input/gpio_key/aml_gpiokey.c
++++ b/drivers/amlogic/input/gpio_key/aml_gpiokey.c
+@@ -106,13 +106,13 @@ static void kp_work(struct kp *kp)
+ 		if (io_status != key->status) {
+ 			if (io_status) {
+ 				dev_info(&kp->input->dev,
+-					 "key %d up\n", key->code);
+-				input_report_key(kp->input ,  key->code , 0);
++					"key %d down\n", key->code);
++				input_report_key(kp->input ,  key->code , 1);
+ 				input_sync(kp->input);
+ 			} else {
+ 				dev_info(&kp->input->dev,
+-					 "key %d down\n", key->code);
+-				input_report_key(kp->input , key->code , 1);
++					"key %d up\n", key->code);
++				input_report_key(kp->input , key->code , 0);
+ 				input_sync(kp->input);
+ 			}
+ 			key->status = io_status;
+@@ -326,8 +326,8 @@ static int gpio_key_probe(struct platform_device *pdev)
+ 		gpio_request(pdata->key[i].pin ,  MOD_NAME);
+ 		if (!gpio_highz) {
+ 			gpio_direction_input(pdata->key[i].pin);
+-			gpio_set_pullup(pdata->key[i].pin , 1);
+-			gpio_set_pullup(pdata->key[i].pin , 1);
++			gpio_set_pullup(pdata->key[i].pin , 0);
++			gpio_set_pullup(pdata->key[i].pin , 0);
+ 		}
+ #ifdef USE_IRQ
+ 		gpio_for_irq(pdata->key[i].pin ,
+diff --git a/drivers/amlogic/pm/gxbb_pm.c b/drivers/amlogic/pm/gxbb_pm.c
+index 46de6a9..49bed6e 100644
+--- a/drivers/amlogic/pm/gxbb_pm.c
++++ b/drivers/amlogic/pm/gxbb_pm.c
+@@ -35,6 +35,7 @@
+ #include <linux/of_address.h>
+ #include <linux/input.h>
+ #include <linux/amlogic/pm.h>
++#include <asm-generic/gpio.h>
+ #ifdef CONFIG_HAS_EARLYSUSPEND
+ #include <linux/earlysuspend.h>
+ static struct early_suspend early_suspend;
+@@ -148,6 +149,9 @@ static void meson_gx_suspend(void)
+ 	early_resume();
+ 	pr_info(KERN_INFO "... wake up\n");
+ 
++	//gpio_request(227 , "gpio_key");
++	//gpio_direction_output(227,0);
++
+ }
+ 
+ static int meson_pm_prepare(void)

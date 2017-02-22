@@ -16,7 +16,7 @@
 ################################################################################
 
 PKG_NAME="ppsspp"
-PKG_VERSION="123"
+PKG_VERSION="1"
 PKG_REV="1"
 PKG_ARCH="any"
 PKG_LICENSE="GPLv2"
@@ -63,9 +63,11 @@ make_target() {
 
 makeinstall_target() {
   mkdir -p $INSTALL/usr/bin
-    cp -r bin/* $INSTALL/usr/bin
+   cp -r $PKG_DIR/bin/* $INSTALL/usr/bin
+   chmod +x $INSTALL/usr/bin/*
   mkdir -p $INSTALL/usr/lib
-    cp lib/* $INSTALL/usr/lib
+    cp -r $PKG_DIR/lib/* $INSTALL/usr/lib
+   chmod +x $INSTALL/usr/lib/*
   mkdir -p $INSTALL/usr/config
-    cp -r config/* $INSTALL/usr/config
+   cp -r $PKG_DIR/config/* $INSTALL/usr/config
 }

@@ -1,0 +1,25 @@
+diff --git a/drivers/media/dvb-core/dvb-usb-ids.h b/drivers/media/dvb-core/dvb-usb-ids.h
+index fabe2fc..c0c4eac 100644
+--- a/drivers/media/dvb-core/dvb-usb-ids.h
++++ b/drivers/media/dvb-core/dvb-usb-ids.h
+@@ -239,6 +239,7 @@
+ #define USB_PID_AVERMEDIA_A835B_4835			0x4835
+ #define USB_PID_AVERMEDIA_1867				0x1867
+ #define USB_PID_AVERMEDIA_A867				0xa867
++#define USB_PID_AVERMEDIA_HP_A867			0x0337
+ #define USB_PID_AVERMEDIA_H335				0x0335
+ #define USB_PID_AVERMEDIA_TWINSTAR			0x0825
+ #define USB_PID_TECHNOTREND_CONNECT_S2400               0x3006
+diff --git a/drivers/media/usb/dvb-usb-v2/af9035.c b/drivers/media/usb/dvb-usb-v2/af9035.c
+index 88228f7..d0d0098 100644
+--- a/drivers/media/usb/dvb-usb-v2/af9035.c
++++ b/drivers/media/usb/dvb-usb-v2/af9035.c
+@@ -1521,6 +1521,8 @@ static const struct usb_device_id af9035_id_table[] = {
+ 		&af9035_props, "AVerMedia HD Volar (A867)", NULL) },
+ 	{ DVB_USB_DEVICE(USB_VID_AVERMEDIA, USB_PID_AVERMEDIA_A867,
+ 		&af9035_props, "AVerMedia HD Volar (A867)", NULL) },
++	{ DVB_USB_DEVICE(USB_VID_AVERMEDIA, USB_PID_AVERMEDIA_HP_A867,
++		&af9035_props, "AVerMedia HP (A867)", NULL) },
+ 	{ DVB_USB_DEVICE(USB_VID_AVERMEDIA, USB_PID_AVERMEDIA_TWINSTAR,
+ 		&af9035_props, "AVerMedia Twinstar (A825)", NULL) },
+ 	{ DVB_USB_DEVICE(USB_VID_ASUS, USB_PID_ASUS_U3100MINI_PLUS,

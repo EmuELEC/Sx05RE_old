@@ -192,7 +192,7 @@
   DISTRO_SRC="http://sources.libreelec.tv/devel"
 
 # Addon Server Url
-  ADDON_SERVER_URL="http://addon.alexelec.in.ua"
+  ADDON_SERVER_URL="http://addons.libreelec.tv"
 
 # set the addon dirs
   ADDON_PATH="aml"
