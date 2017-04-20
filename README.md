@@ -1,3 +1,7 @@
+
+# This repo has been moved to: https://github.com/shantigilbert/LibreELEC.tv/tree/Sx05RE
+
+
 # Sx05RE - An emulation build for Sx05 Devices
 
 Sx05RE is based on LibreELEC (AlexELEC originally) and it runs Emulationstation/Retroarch to turn your Amlogic Sx05 device into a Retro EmulationStation! 
