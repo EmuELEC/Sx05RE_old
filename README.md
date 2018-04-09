@@ -1,5 +1,5 @@
 
-# This repo has been moved to: https://github.com/shantigilbert/LibreELEC.tv/tree/Sx05RE
+# This repo has been moved to: https://github.com/shantigilbert/Sx05RE
 
 
 # Sx05RE - An emulation build for Sx05 Devices
